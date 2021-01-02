@@ -1,3 +1,4 @@
+(function() {
 /**
  * @typedef {Object} GitProgressEvent
  * @property {string} phase
@@ -140,6 +141,7 @@ function fromValue(value) {
     if (body) {
       body = await collect(body);
     }
+    throw url;
     const res = await fetch(url, { method, headers, body });
     const iter =
       res.body && res.body.getReader
@@ -159,8 +161,6 @@ function fromValue(value) {
       headers: headers,
     }
   }
-  
-  var index = { request };
-  
-  export default index;
-  export { request };
+  window.http = { request };
+})();
+true;
