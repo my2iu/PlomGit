@@ -79,3 +79,4 @@ flutter:
   assets:
     - assets/js/isomorphic-git.js
     - assets/js/isomorphic-git-http.js
+    - assets/js/fs.js

@@ -81,10 +81,10 @@ class _MyHomePageState extends State<MyHomePage> {
         .whenComplete(() => print('done2'));
   }
 
-  _createLocalRepository(BuildContext context) {
+  _createLocalRepository(BuildContext context, String name) {
     var jsGit = JsForGit();
     jsGit
-        .clone()
+        .init(name)
         .then((val) => Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Clone successful'))))
         .catchError((error) => Scaffold.of(context)
@@ -141,7 +141,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Text('Test')),
               ElevatedButton(
                   onPressed: () {
-                    _createLocalRepository(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<String>(
+                        builder: (BuildContext context) =>
+                            RepositoryLocationDialog(),
+                      ),
+                    ).then((result) {
+                      if (result == null) return;
+                      print(result);
+                      _createLocalRepository(context, result);
+                    });
                   },
                   child: Text('Init')),
             ],
@@ -154,5 +164,41 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class RepositoryLocationDialog extends StatefulWidget {
+  @override
+  _RepositoryLocationState createState() => _RepositoryLocationState();
+}
+
+class _RepositoryLocationState extends State<RepositoryLocationDialog> {
+  String repositoryName = "Test";
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Repository Configuration'),
+        ),
+        body: Builder(builder: (BuildContext context) {
+          return Form(
+              key: _formKey,
+              child: Column(children: [
+                TextFormField(
+                  initialValue: repositoryName,
+                  decoration: InputDecoration(labelText: 'Repository name'),
+                  onChanged: (text) {
+                    repositoryName = text;
+                  },
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, repositoryName);
+                    },
+                    child: Text('Create')),
+              ]));
+        }));
   }
 }
