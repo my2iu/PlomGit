@@ -102,13 +102,12 @@ class JsForGit {
       var fun = jsContext.evaluate("(function(name) {" +
           "git.init({fs:fs, dir:''})" +
           ".then(function(val) {flutter.signalCompletion(val);})" +
-          ".catch(function(err) {flutter.signalError(err);});" +
+          ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
           "})");
       var exception = JSValuePointer();
       fun.toObject().callAsFunction(JSObject(jsContext, nullptr),
           JSValuePointer.array([JSValue.makeString(jsContext, name)]),
           exception: exception);
-      print(exception.getValue(jsContext).string);
       return completer.future;
     });
     return synchronizer;
@@ -145,21 +144,9 @@ class JsForGit {
   Pointer _fsOperation(Pointer function, Pointer thisObject, int argumentCount,
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
     var operation = JSValue(jsContext, arguments[0]).string;
-    print(operation);
-    print(exception);
     switch (operation) {
       case 'readFile':
-        var path = JSValue(jsContext, arguments[0]);
-        var options = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        break;
-      case 'writeFile':
-        var file = JSValue(jsContext, arguments[0]);
-        var data = JSValue(jsContext, arguments[1]);
+        var path = JSValue(jsContext, arguments[1]);
         var options = JSValue(jsContext, arguments[2]);
         var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
@@ -167,54 +154,65 @@ class JsForGit {
           options = null;
         }
         break;
+      case 'writeFile':
+        var file = JSValue(jsContext, arguments[1]);
+        var data = JSValue(jsContext, arguments[2]);
+        var options = JSValue(jsContext, arguments[3]);
+        var callback = JSValue(jsContext, arguments[4]);
+        if (callback.isNull || callback.isUndefined) {
+          callback = options;
+          options = null;
+        }
+        break;
       case 'unlink':
-        var path = JSValue(jsContext, arguments[0]);
-        var callback = JSValue(jsContext, arguments[1]);
+        var path = JSValue(jsContext, arguments[1]);
+        var callback = JSValue(jsContext, arguments[2]);
         break;
       case 'readdir':
-        var path = JSValue(jsContext, arguments[0]);
-        var options = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
+        var path = JSValue(jsContext, arguments[1]);
+        var options = JSValue(jsContext, arguments[2]);
+        var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = options;
           options = null;
         }
         break;
       case 'mkdir':
-        var path = JSValue(jsContext, arguments[0]);
-        var mode = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
+        var path = JSValue(jsContext, arguments[1]);
+        var mode = JSValue(jsContext, arguments[2]);
+        var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = mode;
           mode = null;
         }
         break;
       case 'rmdir':
-        var path = JSValue(jsContext, arguments[0]);
-        var callback = JSValue(jsContext, arguments[1]);
+        var path = JSValue(jsContext, arguments[1]);
+        var callback = JSValue(jsContext, arguments[2]);
         break;
       case 'stat':
-        var path = JSValue(jsContext, arguments[0]);
-        var options = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
+        var path = JSValue(jsContext, arguments[1]).string;
+        var options = JSValue(jsContext, arguments[2]);
+        var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = options;
           options = null;
         }
+        print(path);
         break;
       case 'lstat':
-        var path = JSValue(jsContext, arguments[0]);
-        var options = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
+        var path = JSValue(jsContext, arguments[1]);
+        var options = JSValue(jsContext, arguments[2]);
+        var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = options;
           options = null;
         }
         break;
       case 'readlink':
-        var path = JSValue(jsContext, arguments[0]);
-        var options = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
+        var path = JSValue(jsContext, arguments[1]);
+        var options = JSValue(jsContext, arguments[2]);
+        var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = options;
           options = null;
@@ -222,10 +220,10 @@ class JsForGit {
         // Not implemented
         break;
       case 'symlink':
-        var target = JSValue(jsContext, arguments[0]);
-        var path = JSValue(jsContext, arguments[1]);
-        var type = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
+        var target = JSValue(jsContext, arguments[1]);
+        var path = JSValue(jsContext, arguments[2]);
+        var type = JSValue(jsContext, arguments[3]);
+        var callback = JSValue(jsContext, arguments[4]);
         if (callback.isNull || callback.isUndefined) {
           callback = type;
           type = null;
@@ -233,18 +231,24 @@ class JsForGit {
         // Not implemented
         break;
       case 'chmod':
-        var path = JSValue(jsContext, arguments[0]);
-        var mode = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
+        var path = JSValue(jsContext, arguments[1]);
+        var mode = JSValue(jsContext, arguments[2]);
+        var callback = JSValue(jsContext, arguments[3]);
         // Not used
         break;
       default:
-        (exception[0] as Pointer<Pointer>)[0] = JSValuePointer.array(
-            [JSValue.makeString(jsContext, "Not supported")]).pointer;
+        break;
     }
-    (exception[0] as Pointer<Pointer>)[0] =
-        JSValuePointer.array([JSValue.makeString(jsContext, "Not supported")])
-            .pointer;
+    // Throw an exception for all operations that we don't handle. Isomorphic-git
+    // requires that we throw an actual Error object and not an arbitrary object
+    // like a string.
+    print('fsOperation ' + operation);
+    exception[0] = jsContext.globalObject
+        .getProperty('Error')
+        .toObject()
+        .callAsConstructor(JSValuePointer.array(
+            [JSValue.makeString(jsContext, "Not supported")]))
+        .pointer;
     return nullptr;
   }
 }
@@ -267,7 +271,6 @@ Pointer _jsSignalError(Pointer ctx, Pointer function, Pointer thisObject,
 
 Pointer _jsFsOperation(Pointer ctx, Pointer function, Pointer thisObject,
     int argumentCount, Pointer<Pointer> arguments, Pointer<Pointer> exception) {
-  print('fsOperation');
   JsForGit js = JsForGit.ctxToJsForGit[jSContextGetGlobalContext(ctx)];
   return js._fsOperation(
       function, thisObject, argumentCount, arguments, exception);
