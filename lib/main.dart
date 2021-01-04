@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:PlomGit/src/jsgit.dart' show JsForGit;
+import 'package:universal_platform/universal_platform.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -71,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _pressed(BuildContext context) {
-    var jsGit = JsForGit();
+    var jsGit = JsForGit(null);
     jsGit
         .clone()
         .then((val) => Scaffold.of(context)
@@ -82,14 +84,27 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _createLocalRepository(BuildContext context, String name) {
-    var jsGit = JsForGit();
-    jsGit
-        .init(name)
-        .then((val) => Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Clone successful'))))
-        .catchError((error) => Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error))))
-        .whenComplete(() => print('done2'));
+    var repositoryPath;
+    if (UniversalPlatform.isAndroid) {
+      repositoryPath = getExternalStorageDirectory().then((dir) {
+        var uri = dir.uri;
+        return uri.replace(path: uri.path + 'repositories/' + name + '/');
+      });
+    } else {
+      repositoryPath = getApplicationDocumentsDirectory().then((dir) {
+        var uri = dir.uri;
+        return uri.replace(path: uri.path + 'repositories/' + name + '/');
+      });
+    }
+    repositoryPath.then((pathUri) {
+      var jsGit = JsForGit(pathUri);
+      jsGit
+          .init(name)
+          .then((val) => Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Init successful'))))
+          .catchError((error) => Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Error: ' + error))));
+    });
   }
 
   @override

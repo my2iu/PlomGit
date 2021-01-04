@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:flutter_jscore/flutter_jscore.dart';
 import 'package:flutter_jscore/binding/js_context_ref.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'dart:io';
 
 class JsForGit {
   static Map<Pointer, JsForGit> ctxToJsForGit = Map<Pointer, JsForGit>();
@@ -15,8 +16,14 @@ class JsForGit {
   // we'll do it to be safe anyway
   Completer<dynamic> completer;
 
+  // JS VM for running JS Git code
   JSContext jsContext;
-  JsForGit() {
+
+  // Path to the repository location
+  Uri repositoryUri;
+
+  JsForGit(Uri repositoryUri) {
+    this.repositoryUri = repositoryUri;
     jsContext = JSContext.createInGroup();
     ctxToJsForGit[jsContext.pointer] = this;
     print(jsContext.pointer);
@@ -141,6 +148,17 @@ class JsForGit {
     return nullptr;
   }
 
+  JSValue _createFsError(String msg, String errCode) {
+    final err = jsContext.globalObject
+        .getProperty('Error')
+        .toObject()
+        .callAsConstructor(
+            JSValuePointer.array([JSValue.makeString(jsContext, msg)]));
+    err.setProperty('code', JSValue.makeString(jsContext, errCode),
+        JSPropertyAttributes.kJSPropertyAttributeNone);
+    return err.toValue();
+  }
+
   Pointer _fsOperation(Pointer function, Pointer thisObject, int argumentCount,
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
     var operation = JSValue(jsContext, arguments[0]).string;
@@ -185,6 +203,7 @@ class JsForGit {
           callback = mode;
           mode = null;
         }
+        print(path.string);
         break;
       case 'rmdir':
         var path = JSValue(jsContext, arguments[1]);
@@ -198,8 +217,38 @@ class JsForGit {
           callback = options;
           options = null;
         }
-        print(path);
-        break;
+        File f = File.fromUri(
+            repositoryUri.replace(path: repositoryUri.path + path));
+        var exception = JSValuePointer();
+        f.stat().then((filestat) {
+          if (filestat.type == FileSystemEntityType.notFound) {
+            callback.toObject().callAsFunction(
+                JSObject(jsContext, nullptr),
+                JSValuePointer.array(
+                    [_createFsError('File not found', 'ENOENT')]),
+                exception: exception);
+          } else {
+            var jsFileStat = jsContext.globalObject
+                .getProperty('fs')
+                .toObject()
+                .getProperty('createFileStat')
+                .toObject()
+                .callAsFunction(
+                    JSObject(jsContext, nullptr),
+                    JSValuePointer.array([
+                      JSValue.makeBoolean(jsContext,
+                          filestat.type == FileSystemEntityType.directory),
+                      JSValue.makeNumber(jsContext, filestat.size.toDouble()),
+                      JSValue.makeNumber(jsContext,
+                          filestat.modified.millisecondsSinceEpoch.toDouble())
+                    ]),
+                    exception: exception);
+            callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+                JSValuePointer.array([JSValue.makeNull(jsContext), jsFileStat]),
+                exception: exception);
+          }
+        });
+        return nullptr;
       case 'lstat':
         var path = JSValue(jsContext, arguments[1]);
         var options = JSValue(jsContext, arguments[2]);
@@ -243,12 +292,7 @@ class JsForGit {
     // requires that we throw an actual Error object and not an arbitrary object
     // like a string.
     print('fsOperation ' + operation);
-    exception[0] = jsContext.globalObject
-        .getProperty('Error')
-        .toObject()
-        .callAsConstructor(JSValuePointer.array(
-            [JSValue.makeString(jsContext, "Not supported")]))
-        .pointer;
+    exception[0] = _createFsError("Not supported", "").pointer;
     return nullptr;
   }
 }

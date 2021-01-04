@@ -31,6 +31,21 @@ fs = {
     },
     chmod: function(path, mode, callback) {
         flutter.fsOperation('chmod', path, mode, callback);
+    },
+    createFileStat: function(isDir, size, mtimeMs) {
+        return {
+            isDir: isDir,
+            size: size,
+            ino: 1,   // I'm not sure if it's safe to not set an inode here
+            uid: 1,
+            gid: 1,
+            dev: 1,
+            mtimeMs: mtimeMs,
+            mode: 0,
+            isDirectory: function () { return this.isDir; },
+            isFile: function() { return !this.isDir; },
+            isSymbolicLink: function() { return false; }
+        };
     }
 };
 true;
