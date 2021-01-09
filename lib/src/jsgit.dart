@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:flutter_jscore/flutter_jscore.dart';
 import 'package:flutter_jscore/binding/js_context_ref.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:logging/logging.dart';
 import 'dart:io';
 
 class JsForGit {
@@ -24,6 +25,16 @@ class JsForGit {
 
   JsForGit(Uri repositoryUri) {
     this.repositoryUri = repositoryUri;
+    configureJs();
+  }
+
+  JsForGit.forNewDirectory(Uri repositoryUri) {
+    Directory.fromUri(repositoryUri).createSync(recursive: true);
+    this.repositoryUri = repositoryUri;
+    configureJs();
+  }
+
+  void configureJs() {
     jsContext = JSContext.createInGroup();
     ctxToJsForGit[jsContext.pointer] = this;
     print(jsContext.pointer);
@@ -159,6 +170,16 @@ class JsForGit {
     return err.toValue();
   }
 
+  void _callFsCallbackWithException(
+      JSValue callback, String msg, String errCode) {
+    var exception = JSValuePointer();
+    callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+        JSValuePointer.array([_createFsError(msg, errCode)]),
+        exception: exception);
+  }
+
+  final fsLogger = new Logger("plomgit.fs");
+
   Pointer _fsOperation(Pointer function, Pointer thisObject, int argumentCount,
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
     var operation = JSValue(jsContext, arguments[0]).string;
@@ -196,15 +217,36 @@ class JsForGit {
         }
         break;
       case 'mkdir':
-        var path = JSValue(jsContext, arguments[1]);
+        var path = JSValue(jsContext, arguments[1]).string;
         var mode = JSValue(jsContext, arguments[2]);
         var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = mode;
           mode = null;
         }
-        print(path.string);
-        break;
+        fsLogger.fine('mkdir ' + path);
+        Directory.fromUri(
+                repositoryUri.replace(path: repositoryUri.path + path))
+            .create()
+            .then((dir) {
+          // Note: in Flutter, creation will succeed if directory already exists
+          var exception = JSValuePointer();
+          callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+              JSValuePointer.array([JSValue.makeNull(jsContext)]),
+              exception: exception);
+        }).catchError((err) {
+          // We can't tell the type of exception, so we'll just assume that
+          // it's an exception for can't find parent directory
+          var exception = JSValuePointer();
+          callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+              JSValuePointer.array([JSValue.makeNull(jsContext)]),
+              exception: exception);
+          _callFsCallbackWithException(
+              callback,
+              "Directory creation failed, possibly due to missing parent directory",
+              "ENOENT");
+        });
+        return nullptr;
       case 'rmdir':
         var path = JSValue(jsContext, arguments[1]);
         var callback = JSValue(jsContext, arguments[2]);
@@ -219,15 +261,12 @@ class JsForGit {
         }
         File f = File.fromUri(
             repositoryUri.replace(path: repositoryUri.path + path));
-        var exception = JSValuePointer();
+        fsLogger.fine('stat ' + path);
         f.stat().then((filestat) {
           if (filestat.type == FileSystemEntityType.notFound) {
-            callback.toObject().callAsFunction(
-                JSObject(jsContext, nullptr),
-                JSValuePointer.array(
-                    [_createFsError('File not found', 'ENOENT')]),
-                exception: exception);
+            _callFsCallbackWithException(callback, 'File not found', 'ENOENT');
           } else {
+            var exception = JSValuePointer();
             var jsFileStat = jsContext.globalObject
                 .getProperty('fs')
                 .toObject()

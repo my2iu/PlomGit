@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:logging/logging.dart';
+import 'dart:developer' as developer;
 
 void main() {
+  hierarchicalLoggingEnabled = true;
+  Logger("plomgit.fs").level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    developer.log('${record.loggerName}: ${record.message}',
+        level: record.level.value, name: record.loggerName);
+  });
   runApp(MyApp());
 }
 
@@ -97,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
     repositoryPath.then((pathUri) {
-      var jsGit = JsForGit(pathUri);
+      var jsGit = JsForGit.forNewDirectory(pathUri);
       jsGit
           .init(name)
           .then((val) => Scaffold.of(context)
