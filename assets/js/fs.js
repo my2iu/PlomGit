@@ -3,6 +3,8 @@ fs = {
         flutter.fsOperation('readFile', path, options, callback);
     },
     writeFile: function(file, data, options, callback) {
+        if (data instanceof ArrayBuffer)
+            data = new Uint8Array(data);  // flutter_jscore only provides APIs for working with typed arrays, so we need to wrap raw array buffers
         flutter.fsOperation('writeFile', file, data, options, callback);
     },
     unlink: function(path, callback) {

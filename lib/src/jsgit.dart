@@ -194,7 +194,7 @@ class JsForGit {
         }
         break;
       case 'writeFile':
-        var file = JSValue(jsContext, arguments[1]);
+        var file = JSValue(jsContext, arguments[1]).string;
         var data = JSValue(jsContext, arguments[2]);
         var options = JSValue(jsContext, arguments[3]);
         var callback = JSValue(jsContext, arguments[4]);
@@ -202,7 +202,37 @@ class JsForGit {
           callback = options;
           options = null;
         }
-        break;
+        File f = File.fromUri(
+            repositoryUri.replace(path: repositoryUri.path + file));
+        fsLogger.fine('writeFile ' + file);
+        Future<File> writer;
+        if (data.isString) {
+          writer = f.writeAsString(data.string);
+        } else {
+          var typedArrayType = data.getTypedArrayType();
+          if (typedArrayType == JSTypedArrayType.kJSTypedArrayTypeNone) {
+            _callFsCallbackWithException(callback,
+                "Unsupported value written to file", "ERR_INVALID_ARG_VALUE");
+            return nullptr;
+          }
+          JSObject typedArrayObj = data.toObject();
+          Bytes backingStore = typedArrayObj.typedArrayBytes();
+          var offset = typedArrayObj.typedArrayByteOffset();
+          var len = typedArrayObj.typedArrayByteLength();
+          Pointer<Int8> intPointer =
+              Pointer.fromAddress(backingStore.pointer.address);
+          var dataList = intPointer.asTypedList(offset + len).sublist(offset);
+          writer = f.writeAsBytes(dataList);
+        }
+        writer.then((f) {
+          var exception = JSValuePointer();
+          callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+              JSValuePointer.array([JSValue.makeNull(jsContext)]),
+              exception: exception);
+        }).catchError((err) {
+          _callFsCallbackWithException(callback, "Error when writing file", "");
+        });
+        return nullptr;
       case 'unlink':
         var path = JSValue(jsContext, arguments[1]);
         var callback = JSValue(jsContext, arguments[2]);
@@ -237,10 +267,6 @@ class JsForGit {
         }).catchError((err) {
           // We can't tell the type of exception, so we'll just assume that
           // it's an exception for can't find parent directory
-          var exception = JSValuePointer();
-          callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
-              JSValuePointer.array([JSValue.makeNull(jsContext)]),
-              exception: exception);
           _callFsCallbackWithException(
               callback,
               "Directory creation failed, possibly due to missing parent directory",
