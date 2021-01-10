@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:PlomGit/src/jsgit.dart' show JsForGit;
+import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart';
@@ -106,12 +107,15 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     repositoryPath.then((pathUri) {
       var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit
-          .init(name)
-          .then((val) => Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text('Init successful'))))
-          .catchError((error) => Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text('Error: ' + error))));
+      jsGit.init(name).then((val) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+              builder: (BuildContext context) =>
+                  RepositoryView(name, pathUri, jsGit),
+            ));
+      }).catchError((error) => Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: ' + error))));
     });
   }
 
@@ -172,7 +176,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ).then((result) {
                       if (result == null) return;
-                      print(result);
                       _createLocalRepository(context, result);
                     });
                   },
