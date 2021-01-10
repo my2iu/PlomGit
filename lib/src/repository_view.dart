@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:PlomGit/src/jsgit.dart' show JsForGit;
+import 'package:path/path.dart' as path;
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
@@ -36,18 +37,9 @@ class _RepositoryViewState extends State<RepositoryView> {
                     itemCount: snapshot.data.length,
                     itemBuilder: (context, index) {
                       // return Text(snapshot.data[index].path);
-                      var pathSegs = snapshot.data[index].uri.pathSegments;
-                      var lastPathSeg = '';
-                      for (var s in pathSegs) {
-                        // There seems to be empty entries in pathSegments for some reason,
-                        // so we'll grab the last non-empty one
-                        if (s.isNotEmpty) {
-                          lastPathSeg = s;
-                          if (snapshot.data[index] is Directory)
-                            lastPathSeg += '/';
-                        }
-                      }
-                      return ListTile(title: Text(lastPathSeg));
+                      var fname = path.basename(snapshot.data[index].path);
+                      if (snapshot.data[index] is Directory) fname += '/';
+                      return ListTile(title: Text(fname));
                     });
               } else {
                 return Text('Loading');

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
 
 void main() {
@@ -63,10 +66,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  Future<List<Directory>> dirContents;
+
+  _MyHomePageState() {
+    dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
+        .list()
+        .where((entry) => entry is Directory)
+        .map((entry) => entry as Directory)
+        .toList());
+  }
 
   void _setCounter(int val) {
     setState(() {
       _counter = val;
+      dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
+          .list()
+          .where((entry) => entry is Directory)
+          .map((entry) => entry as Directory)
+          .toList());
     });
   }
 
@@ -92,20 +109,27 @@ class _MyHomePageState extends State<MyHomePage> {
         .whenComplete(() => print('done2'));
   }
 
-  _createLocalRepository(BuildContext context, String name) {
+  Future<Uri> _getRepositoryBaseDir() {
     var repositoryPath;
     if (UniversalPlatform.isAndroid) {
       repositoryPath = getExternalStorageDirectory().then((dir) {
         var uri = dir.uri;
-        return uri.replace(path: uri.path + 'repositories/' + name + '/');
+        return uri.replace(path: uri.path + 'repositories/');
       });
     } else {
       repositoryPath = getApplicationDocumentsDirectory().then((dir) {
         var uri = dir.uri;
-        return uri.replace(path: uri.path + 'repositories/' + name + '/');
+        return uri.replace(path: uri.path + 'repositories/');
       });
     }
-    repositoryPath.then((pathUri) {
+    return repositoryPath;
+  }
+
+  _createLocalRepository(BuildContext context, String name) {
+    var repositoryPath = _getRepositoryBaseDir();
+    repositoryPath
+        .then((uri) => uri.replace(path: uri.path + '/' + name + '/'))
+        .then((pathUri) {
       var jsGit = JsForGit.forNewDirectory(pathUri);
       jsGit.init(name).then((val) {
         Navigator.push(
@@ -113,10 +137,16 @@ class _MyHomePageState extends State<MyHomePage> {
             MaterialPageRoute<String>(
               builder: (BuildContext context) =>
                   RepositoryView(name, pathUri, jsGit),
-            ));
+            )).then((result) => _refreshRepositories());
       }).catchError((error) => Scaffold.of(context)
           .showSnackBar(SnackBar(content: Text('Error: ' + error))));
     });
+  }
+
+  // I should create a proper model for storing the list of repositories that
+  // can then refresh different views, but I'm too lazy to implement that right now
+  void _refreshRepositories() {
+    _setCounter(0);
   }
 
   @override
@@ -154,6 +184,40 @@ class _MyHomePageState extends State<MyHomePage> {
             // horizontal).
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              FutureBuilder(
+                  future: dirContents,
+                  builder: (futureContext, snapshot) {
+                    if (snapshot.hasData) {
+                      return Expanded(
+                          child: ListView.builder(
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (itemBuilderContext, index) {
+                                var name =
+                                    path.basename(snapshot.data[index].path);
+                                return ListTile(
+                                    title: Text(name),
+                                    onTap: () {
+                                      _getRepositoryBaseDir()
+                                          .then((uri) => uri.replace(
+                                              path: uri.path + name + '/'))
+                                          .then((uri) {
+                                        var jsGit =
+                                            JsForGit.forNewDirectory(uri);
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute<String>(
+                                              builder: (BuildContext context) =>
+                                                  RepositoryView(
+                                                      name, uri, jsGit)),
+                                        ).then(
+                                            (result) => _refreshRepositories());
+                                      });
+                                    });
+                              }));
+                    } else {
+                      return SizedBox.shrink();
+                    }
+                  }),
               Text(
                 'You have pushed the button this many times:',
               ),

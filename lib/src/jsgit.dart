@@ -37,8 +37,6 @@ class JsForGit {
   void configureJs() {
     jsContext = JSContext.createInGroup();
     ctxToJsForGit[jsContext.pointer] = this;
-    print(jsContext.pointer);
-    print(jsContext.group.pointer);
 
     // Set up self and window properties to point to global object
     jsContext.globalObject.setProperty(
@@ -138,10 +136,8 @@ class JsForGit {
       Pointer<Pointer> arguments,
       Pointer<Pointer> exception) {
     if (argumentCount > 0) {
-      print('completer ok');
       completer.complete(JSValue(jsContext, arguments[0]).string);
     } else {
-      print('completer nothing');
       completer.complete(null);
     }
     return nullptr;
@@ -150,10 +146,8 @@ class JsForGit {
   Pointer _signalError(Pointer function, Pointer thisObject, int argumentCount,
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
     if (argumentCount > 0) {
-      print('completer error');
       completer.completeError(JSValue(jsContext, arguments[0]).string);
     } else {
-      print('completer error nothing');
       completer.completeError(null);
     }
     return nullptr;
@@ -364,7 +358,6 @@ class JsForGit {
 
 Pointer _jsSignalCompletion(Pointer ctx, Pointer function, Pointer thisObject,
     int argumentCount, Pointer<Pointer> arguments, Pointer<Pointer> exception) {
-  print('completer before');
   JsForGit js = JsForGit.ctxToJsForGit[jSContextGetGlobalContext(ctx)];
   return js._signalCompletion(
       function, thisObject, argumentCount, arguments, exception);
@@ -372,7 +365,6 @@ Pointer _jsSignalCompletion(Pointer ctx, Pointer function, Pointer thisObject,
 
 Pointer _jsSignalError(Pointer ctx, Pointer function, Pointer thisObject,
     int argumentCount, Pointer<Pointer> arguments, Pointer<Pointer> exception) {
-  print('completer before');
   JsForGit js = JsForGit.ctxToJsForGit[jSContextGetGlobalContext(ctx)];
   return js._signalError(
       function, thisObject, argumentCount, arguments, exception);
