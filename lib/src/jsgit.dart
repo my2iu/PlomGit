@@ -93,20 +93,22 @@ class JsForGit {
     ctxToJsForGit.remove(jsContext.pointer);
   }
 
-  Future<dynamic> clone() {
+  Future<dynamic> clone(String name, String url) {
     synchronizer = synchronizer.whenComplete(() {
       completer = new Completer<dynamic>();
-
-      print('start clone');
-      print(jsContext.exception.getValue(jsContext).string);
-      print(jsContext
-          .evaluate(
-              "git.clone({fs:fs, http:http, dir:'', url:'https://example.com'})" +
-                  ".then(function(val) {flutter.signalCompletion(val);})" +
-                  ".catch(function(err) {flutter.signalError(err);});")
-          .string);
-      print(jsContext.exception.getValue(jsContext).string);
-      print('end clone');
+      var fun = jsContext.evaluate("(function(name, url) {" +
+          "git.clone({fs:fs, http:http, dir:'', url: url})" +
+          ".then(function(val) {flutter.signalCompletion(val);})" +
+          ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
+          "})");
+      var exception = JSValuePointer();
+      fun.toObject().callAsFunction(
+          JSObject(jsContext, nullptr),
+          JSValuePointer.array([
+            JSValue.makeString(jsContext, name),
+            JSValue.makeString(jsContext, url)
+          ]),
+          exception: exception);
       return completer.future;
     });
     return synchronizer;

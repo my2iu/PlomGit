@@ -146,13 +146,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _pressed(BuildContext context) {
     var jsGit = JsForGit(null);
-    jsGit
-        .clone()
-        .then((val) => Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Clone successful'))))
-        .catchError((error) => Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error))))
-        .whenComplete(() => print('done2'));
+    // jsGit
+    //     .clone()
+    //     .then((val) => Scaffold.of(context)
+    //         .showSnackBar(SnackBar(content: Text('Clone successful'))))
+    //     .catchError((error) => Scaffold.of(context)
+    //         .showSnackBar(SnackBar(content: Text('Error: ' + error))))
+    //     .whenComplete(() => print('done2'));
   }
 
   Future<Uri> _getRepositoryBaseDir() {
@@ -177,15 +177,18 @@ class _MyHomePageState extends State<MyHomePage> {
         .then((uri) => uri.replace(path: uri.path + '/' + name + '/'))
         .then((pathUri) {
       var jsGit = JsForGit.forNewDirectory(pathUri);
-      // jsGit.init(name).then((val) {
-      //   Navigator.push(
-      //       context,
-      //       MaterialPageRoute<String>(
-      //         builder: (BuildContext context) =>
-      //             RepositoryView(name, pathUri, jsGit),
-      //       )).then((result) => _refreshRepositories());
-      // }).catchError((error) => Scaffold.of(context)
-      //     .showSnackBar(SnackBar(content: Text('Error: ' + error))));
+      jsGit.clone(name, pathUri.toString()).then((val) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+              builder: (BuildContext context) =>
+                  RepositoryView(name, pathUri, jsGit),
+            )).then((result) => _refreshRepositories());
+      }).catchError((error) {
+        _refreshRepositories();
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+      });
     });
   }
 
@@ -202,8 +205,11 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (BuildContext context) =>
                   RepositoryView(name, pathUri, jsGit),
             )).then((result) => _refreshRepositories());
-      }).catchError((error) => Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: ' + error))));
+      }).catchError((error) {
+        _refreshRepositories();
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+      });
     });
   }
 
@@ -274,73 +280,74 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Builder(builder: (BuildContext context) {
-        return Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-          child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              FutureBuilder(
-                  future: dirContents,
-                  builder: (futureContext, snapshot) {
-                    return _buildRepositoryList(futureContext, snapshot);
-                  }),
-              Text(
-                'You have pushed the button this many times:',
-              ),
-              Text(
-                '$_counter',
-                style: Theme.of(context).textTheme.headline4,
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    _pressed(context);
-                  },
-                  child: Text('Test')),
-              ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<String>(
-                        builder: (BuildContext context) =>
-                            RepositoryLocationDialog(),
-                      ),
-                    ).then((result) {
-                      if (result == null) return;
-                      _createLocalRepository(context, result);
-                    });
-                  },
-                  child: Text('Init')),
-            ],
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
+        ),
+        body: Builder(builder: (BuildContext context) {
+          return Center(
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+            child: Column(
+              // Column is also a layout widget. It takes a list of children and
+              // arranges them vertically. By default, it sizes itself to fit its
+              // children horizontally, and tries to be as tall as its parent.
+              //
+              // Invoke "debug painting" (press "p" in the console, choose the
+              // "Toggle Debug Paint" action from the Flutter Inspector in Android
+              // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+              // to see the wireframe for each widget.
+              //
+              // Column has various properties to control how it sizes itself and
+              // how it positions its children. Here we use mainAxisAlignment to
+              // center the children vertically; the main axis here is the vertical
+              // axis because Columns are vertical (the cross axis would be
+              // horizontal).
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                FutureBuilder(
+                    future: dirContents,
+                    builder: (futureContext, snapshot) {
+                      return _buildRepositoryList(futureContext, snapshot);
+                    }),
+                Text(
+                  'You have pushed the button this many times:',
+                ),
+                Text(
+                  '$_counter',
+                  style: Theme.of(context).textTheme.headline4,
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      _pressed(context);
+                    },
+                    child: Text('Test')),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute<String>(
+                          builder: (BuildContext context) =>
+                              RepositoryLocationDialog(),
+                        ),
+                      ).then((result) {
+                        if (result == null) return;
+                        _createLocalRepository(context, result);
+                      });
+                    },
+                    child: Text('Init')),
+              ],
+            ),
+          );
+        }),
+        floatingActionButton: Builder(
+          builder: (BuildContext context) => FloatingActionButton(
+            onPressed: () => _newRepositoryPressed(context),
+            tooltip: 'Increment',
+            child: Icon(Icons.add),
           ),
-        );
-      }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _newRepositoryPressed(context),
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        ));
   }
 }
 
