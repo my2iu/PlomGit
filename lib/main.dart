@@ -143,6 +143,31 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _showRepository(String name, BuildContext context) {
+    _getRepositoryBaseDir()
+        .then((uri) => uri.replace(path: uri.path + name + '/'))
+        .then((uri) {
+      var jsGit = JsForGit.forNewDirectory(uri);
+      Navigator.push(
+        context,
+        MaterialPageRoute<String>(
+            builder: (BuildContext context) =>
+                RepositoryView(name, uri, jsGit)),
+      ).then((result) => _refreshRepositories());
+    });
+  }
+
+  void _deleteRepository(String name, BuildContext context) {
+    _getRepositoryBaseDir()
+        .then((uri) => uri.replace(path: uri.path + name + '/'))
+        .then((uri) => Directory.fromUri(uri).delete(recursive: true))
+        .then((result) {
+      _refreshRepositories();
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('Repository deleted')));
+    });
+  }
+
   // I should create a proper model for storing the list of repositories that
   // can then refresh different views, but I'm too lazy to implement that right now
   void _refreshRepositories() {
@@ -196,22 +221,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                     path.basename(snapshot.data[index].path);
                                 return ListTile(
                                     title: Text(name),
+                                    trailing: PopupMenuButton(
+                                        onSelected: (fn) => fn(),
+                                        itemBuilder: (BuildContext context) =>
+                                            <PopupMenuEntry>[
+                                              PopupMenuItem(
+                                                  value: () =>
+                                                      _deleteRepository(
+                                                          name, context),
+                                                  child: Text('Delete'))
+                                            ]),
                                     onTap: () {
-                                      _getRepositoryBaseDir()
-                                          .then((uri) => uri.replace(
-                                              path: uri.path + name + '/'))
-                                          .then((uri) {
-                                        var jsGit =
-                                            JsForGit.forNewDirectory(uri);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute<String>(
-                                              builder: (BuildContext context) =>
-                                                  RepositoryView(
-                                                      name, uri, jsGit)),
-                                        ).then(
-                                            (result) => _refreshRepositories());
-                                      });
+                                      _showRepository(name, context);
                                     });
                               }));
                     } else {
