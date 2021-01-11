@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'PlomGit',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'PlomGit Repositories'),
     );
   }
 }
@@ -98,6 +98,38 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _newRepositoryPressed(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return SimpleDialog(title: Text('New repository'), children: <Widget>[
+            SimpleDialogOption(
+                child: Text('Create local repository'),
+                onPressed: () {
+                  Navigator.pop(dialogContext, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<String>(
+                        builder: (BuildContext context) =>
+                            RepositoryLocationDialog(),
+                      ),
+                    ).then((result) {
+                      if (result == null) return;
+                      _createLocalRepository(context, result);
+                    });
+                  });
+                }),
+            SimpleDialogOption(
+                child: Text('Clone repository'),
+                onPressed: () {
+                  Navigator.pop(dialogContext, () {});
+                })
+          ]);
+        }).then((fn) {
+      if (fn != null) fn();
+    });
+  }
+
   _pressed(BuildContext context) {
     var jsGit = JsForGit(null);
     jsGit
@@ -125,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return repositoryPath;
   }
 
-  _createLocalRepository(BuildContext context, String name) {
+  void _createLocalRepository(BuildContext context, String name) {
     var repositoryPath = _getRepositoryBaseDir();
     repositoryPath
         .then((uri) => uri.replace(path: uri.path + '/' + name + '/'))
@@ -270,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () => _newRepositoryPressed(context),
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
