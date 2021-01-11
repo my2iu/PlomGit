@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
+import 'package:tuple/tuple.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -122,7 +123,20 @@ class _MyHomePageState extends State<MyHomePage> {
             SimpleDialogOption(
                 child: Text('Clone repository'),
                 onPressed: () {
-                  Navigator.pop(dialogContext, () {});
+                  Navigator.pop(dialogContext, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<Tuple2<String, String>>(
+                        builder: (BuildContext context) =>
+                            RepositoryLocationAndRemoteDialog(),
+                      ),
+                    ).then((result) {
+                      if (result == null) return;
+                      String url = result.item1;
+                      String name = result.item2;
+                      _cloneRepository(context, name, url);
+                    });
+                  });
                 })
           ]);
         }).then((fn) {
@@ -155,6 +169,24 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
     return repositoryPath;
+  }
+
+  void _cloneRepository(BuildContext context, String name, String url) {
+    var repositoryPath = _getRepositoryBaseDir();
+    repositoryPath
+        .then((uri) => uri.replace(path: uri.path + '/' + name + '/'))
+        .then((pathUri) {
+      var jsGit = JsForGit.forNewDirectory(pathUri);
+      // jsGit.init(name).then((val) {
+      //   Navigator.push(
+      //       context,
+      //       MaterialPageRoute<String>(
+      //         builder: (BuildContext context) =>
+      //             RepositoryView(name, pathUri, jsGit),
+      //       )).then((result) => _refreshRepositories());
+      // }).catchError((error) => Scaffold.of(context)
+      //     .showSnackBar(SnackBar(content: Text('Error: ' + error))));
+    });
   }
 
   void _createLocalRepository(BuildContext context, String name) {
@@ -206,6 +238,33 @@ class _MyHomePageState extends State<MyHomePage> {
     _setCounter(0);
   }
 
+  Widget _buildRepositoryList(BuildContext context, AsyncSnapshot snapshot) {
+    if (snapshot.hasData) {
+      return Expanded(
+          child: ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (itemBuilderContext, index) {
+                var name = path.basename(snapshot.data[index].path);
+                return ListTile(
+                    title: Text(name),
+                    trailing: buildRepositoryOptionsPopupButton(name),
+                    onTap: () => _showRepository(name, context));
+              }));
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  PopupMenuButton buildRepositoryOptionsPopupButton(String name) {
+    return PopupMenuButton(
+        onSelected: (fn) => fn(),
+        itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+              PopupMenuItem(
+                  value: () => _deleteRepository(name, context),
+                  child: Text('Delete'))
+            ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -244,32 +303,7 @@ class _MyHomePageState extends State<MyHomePage> {
               FutureBuilder(
                   future: dirContents,
                   builder: (futureContext, snapshot) {
-                    if (snapshot.hasData) {
-                      return Expanded(
-                          child: ListView.builder(
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (itemBuilderContext, index) {
-                                var name =
-                                    path.basename(snapshot.data[index].path);
-                                return ListTile(
-                                    title: Text(name),
-                                    trailing: PopupMenuButton(
-                                        onSelected: (fn) => fn(),
-                                        itemBuilder: (BuildContext context) =>
-                                            <PopupMenuEntry>[
-                                              PopupMenuItem(
-                                                  value: () =>
-                                                      _deleteRepository(
-                                                          name, context),
-                                                  child: Text('Delete'))
-                                            ]),
-                                    onTap: () {
-                                      _showRepository(name, context);
-                                    });
-                              }));
-                    } else {
-                      return SizedBox.shrink();
-                    }
+                    return _buildRepositoryList(futureContext, snapshot);
                   }),
               Text(
                 'You have pushed the button this many times:',
@@ -341,6 +375,60 @@ class _RepositoryLocationState extends State<RepositoryLocationDialog> {
                       Navigator.pop(context, repositoryName);
                     },
                     child: Text('Create')),
+              ]));
+        }));
+  }
+}
+
+class RepositoryLocationAndRemoteDialog extends StatefulWidget {
+  @override
+  _RepositoryLocationAndRemoteState createState() =>
+      _RepositoryLocationAndRemoteState();
+}
+
+class _RepositoryLocationAndRemoteState
+    extends State<RepositoryLocationAndRemoteDialog> {
+  String repositoryName = "Test";
+  String url = "https://github.com/my2iu/PlomGit.git";
+  final _formKey = GlobalKey<FormState>();
+
+  _setName(String name) {
+    setState(() {
+      repositoryName = name;
+    });
+  }
+
+  _setUrl(String newUrl) {
+    setState(() {
+      url = newUrl;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Repository Configuration'),
+        ),
+        body: Builder(builder: (BuildContext context) {
+          return Form(
+              key: _formKey,
+              child: Column(children: [
+                TextFormField(
+                  initialValue: repositoryName,
+                  decoration: InputDecoration(labelText: 'Repository name'),
+                  onChanged: (text) => _setName(text),
+                ),
+                TextFormField(
+                  initialValue: url,
+                  decoration: InputDecoration(labelText: 'Remote url'),
+                  onChanged: (text) => _setUrl(text),
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, Tuple2(url, repositoryName));
+                    },
+                    child: Text('Clone')),
               ]));
         }));
   }
