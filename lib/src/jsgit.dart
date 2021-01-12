@@ -5,6 +5,7 @@ import 'package:flutter_jscore/binding/js_context_ref.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import 'dart:io';
 
 class JsForGit {
@@ -286,14 +287,50 @@ class JsForGit {
         var callback = JSValue(jsContext, arguments[2]);
         break;
       case 'readdir':
-        var path = JSValue(jsContext, arguments[1]);
+        var dirpath = JSValue(jsContext, arguments[1]).string;
         var options = JSValue(jsContext, arguments[2]);
         var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = options;
           options = null;
         }
-        break;
+        if (options != null && !options.isNull && !options.isUndefined) {
+          _callFsCallbackWithException(
+              callback, "Cannot handle options in readdir", "");
+          return nullptr;
+        }
+
+        fsLogger.fine('readdir ' + dirpath);
+
+        Directory(dirpath).stat().then((entity) {
+          if (!(entity is Directory)) {
+            // Make sure that the path refers to a directory since isomorphic-git
+            // seems to specifically check for this
+            _callFsCallbackWithException(callback,
+                "readdir called on a path that isn't a directory", "ENOTDIR");
+            return;
+          }
+          (entity as Directory)
+              .list()
+              .map((entry) => path.basename(entry.path))
+              .toList()
+              .then((list) {
+            var entryArray = JSObject.makeArray(
+                jsContext,
+                JSValuePointer.array(list
+                    .map((nameStr) => JSValue.makeString(jsContext, nameStr))
+                    .toList()));
+            var exception = JSValuePointer();
+            callback.toObject().callAsFunction(
+                JSObject(jsContext, nullptr),
+                JSValuePointer.array(
+                    [JSValue.makeNull(jsContext), entryArray.toValue()]),
+                exception: exception);
+          }).catchError((err) {
+            _callFsCallbackWithException(callback, "Error during readdir", "");
+          });
+        });
+        return nullptr;
       case 'mkdir':
         var path = JSValue(jsContext, arguments[1]).string;
         var mode = JSValue(jsContext, arguments[2]);
@@ -427,18 +464,20 @@ class JsForGit {
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
     var url = JSValue(jsContext, arguments[0]).string;
     var method = JSValue(jsContext, arguments[1]).string;
-    var headers = JSValue(jsContext, arguments[2]);
+    var headers = JSValue(jsContext, arguments[2]).toObject();
     var body = JSValue(jsContext, arguments[3]);
     var resolveCallback = JSValue(jsContext, arguments[4]);
     var rejectCallback = JSValue(jsContext, arguments[5]);
-    var headerNames = headers.toObject().copyPropertyNames();
+    var headerNames = headers.copyPropertyNames();
 
     httpLogger.fine('fetch ' + url);
 
+    Map<String, String> requestHeaders;
     if (headerNames.count != 0) {
-      _callHttpFetchCallbackWithException(
-          rejectCallback, "Headers are not supported in fetch");
-      return nullptr;
+      for (var i = 0; i < headerNames.count; i++) {
+        var key = headerNames.propertyNameArrayGetNameAtIndex(i);
+        requestHeaders[key] = headers.getProperty(key).string;
+      }
     } else if (!body.isNull && !body.isUndefined) {
       _callHttpFetchCallbackWithException(
           rejectCallback, "Body is not supported in fetch");
@@ -448,7 +487,7 @@ class JsForGit {
           rejectCallback, "Only GET fetch requests are supported");
       return nullptr;
     }
-    http.get(url).then((response) {
+    http.get(url, headers: requestHeaders).then((response) {
       var responseJs = JSObject.make(jsContext, JSClass(nullptr));
       responseJs.setProperty("url", JSValue.makeString(jsContext, url),
           JSPropertyAttributes.kJSPropertyAttributeNone);
