@@ -76,6 +76,12 @@ class JsForGit {
                 jsContext, 'signalError', Pointer.fromFunction(_jsSignalError))
             .toValue(),
         JSPropertyAttributes.kJSPropertyAttributeNone);
+    flutterNamespace.setProperty(
+        'log',
+        JSObject.makeFunctionWithCallback(
+                jsContext, 'log', Pointer.fromFunction(_jsLog))
+            .toValue(),
+        JSPropertyAttributes.kJSPropertyAttributeNone);
 
     // Load in the JS code for git
     synchronizer =
@@ -219,10 +225,10 @@ class JsForGit {
             JSObject jsData = JSObject.makeTypedArray(jsContext,
                 JSTypedArrayType.kJSTypedArrayTypeUint8Array, bytes.length,
                 exception: exception);
-            Pointer<Int8> intPointer =
-                Pointer.fromAddress(jsData.arrayBufferBytes().pointer.address);
+            Pointer<Uint8> intPointer =
+                Pointer.fromAddress(jsData.typedArrayBytes().pointer.address);
             intPointer
-                .asTypedList(jsData.arrayBufferBytes().length)
+                .asTypedList(jsData.typedArrayBytes().length)
                 .setAll(0, bytes);
             callback.toObject().callAsFunction(
                 JSObject(jsContext, nullptr),
@@ -442,16 +448,51 @@ class JsForGit {
           rejectCallback, "Only GET fetch requests are supported");
       return nullptr;
     }
-    // http.get(url).then((response) {}).catchError((err) {
-    //   _callHttpFetchCallbackWithException(rejectCallback, "Error during fetch");
-    // });
-    _callHttpFetchCallbackWithException(rejectCallback, "Fetch not supported");
-    // var exception = JSValuePointer();
-    // rejectCallback.toObject().callAsFunction(
-    //     JSObject(jsContext, nullptr),
-    //     JSValuePointer.array(
-    //         [JSValue.makeString(jsContext, "Fetch not supported")]),
-    //     exception: exception);
+    http.get(url).then((response) {
+      var responseJs = JSObject.make(jsContext, JSClass(nullptr));
+      responseJs.setProperty("url", JSValue.makeString(jsContext, url),
+          JSPropertyAttributes.kJSPropertyAttributeNone);
+      responseJs.setProperty("method", JSValue.makeString(jsContext, method),
+          JSPropertyAttributes.kJSPropertyAttributeNone);
+      responseJs.setProperty(
+          "status",
+          JSValue.makeNumber(jsContext, response.statusCode.toDouble()),
+          JSPropertyAttributes.kJSPropertyAttributeNone);
+      responseJs.setProperty(
+          "statusText",
+          JSValue.makeString(jsContext, response.statusCode.toString()),
+          JSPropertyAttributes.kJSPropertyAttributeNone);
+
+      var headersJs = JSObject.make(jsContext, JSClass(nullptr));
+      for (var entry in response.headers.entries) {
+        headersJs.setProperty(
+            entry.key,
+            JSValue.makeString(jsContext, entry.value),
+            JSPropertyAttributes.kJSPropertyAttributeNone);
+      }
+      responseJs.setProperty("headers", headersJs.toValue(),
+          JSPropertyAttributes.kJSPropertyAttributeNone);
+
+      JSObject dataJs = JSObject.makeTypedArray(
+          jsContext,
+          JSTypedArrayType.kJSTypedArrayTypeUint8Array,
+          response.bodyBytes.length);
+      var intPointer =
+          Pointer<Uint8>.fromAddress(dataJs.typedArrayBytes().pointer.address);
+      intPointer
+          .asTypedList(dataJs.typedArrayBytes().length)
+          .setAll(0, response.bodyBytes);
+      responseJs.setProperty("body", dataJs.toValue(),
+          JSPropertyAttributes.kJSPropertyAttributeNone);
+
+      var exception = JSValuePointer();
+      resolveCallback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+          JSValuePointer.array([responseJs.toValue()]),
+          exception: exception);
+    }).catchError((err) {
+      _callHttpFetchCallbackWithException(
+          rejectCallback, "Error during fetch " + err.toString());
+    });
     return nullptr;
   }
 }
@@ -482,4 +523,11 @@ Pointer _jsHttpFetch(Pointer ctx, Pointer function, Pointer thisObject,
   JsForGit js = JsForGit.ctxToJsForGit[jSContextGetGlobalContext(ctx)];
   return js._httpFetch(
       function, thisObject, argumentCount, arguments, exception);
+}
+
+Pointer _jsLog(Pointer ctx, Pointer function, Pointer thisObject,
+    int argumentCount, Pointer<Pointer> arguments, Pointer<Pointer> exception) {
+  JsForGit js = JsForGit.ctxToJsForGit[jSContextGetGlobalContext(ctx)];
+  print(JSValue(js.jsContext, arguments[0]).string);
+  return nullptr;
 }

@@ -141,25 +141,20 @@ function fromValue(value) {
     if (body) {
       body = await collect(body);
     }
-    await fetchPromisify(url, method, headers, body);
-    throw new Error('fetch not implemented ' + url);
-    const res = await fetch(url, { method, headers, body });
-    const iter =
-      res.body && res.body.getReader
-        ? fromStream(res.body)
-        : [new Uint8Array(await res.arrayBuffer())];
-    // convert Header object to ordinary JSON
-    headers = {};
-    for (const [key, value] of res.headers.entries()) {
-      headers[key] = value;
-    }
+    const res = await fetchPromisify(url, method, headers, body);
+    // throw new Error('fetch not implemented ' + url);
+    // const res = await fetch(url, { method, headers, body });
+    // const iter =
+    //   res.body && res.body.getReader
+    //     ? fromStream(res.body)
+    //     : [new Uint8Array(await res.arrayBuffer())];
     return {
       url: res.url,
       method: res.method,
       statusCode: res.status,
       statusMessage: res.statusText,
-      body: iter,
-      headers: headers,
+      body: [res.body.buffer],
+      headers: res.headers,
     }
   }
 
@@ -171,8 +166,5 @@ function fromValue(value) {
   }
 
   window.http = { request };
-}
-
-
-)();
+})();
 true;
