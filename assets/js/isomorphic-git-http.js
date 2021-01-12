@@ -141,7 +141,7 @@ function fromValue(value) {
     if (body) {
       body = await collect(body);
     }
-    throw url;
+    throw new Error('fetch not implemented ' + url);
     const res = await fetch(url, { method, headers, body });
     const iter =
       res.body && res.body.getReader

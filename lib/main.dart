@@ -171,11 +171,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return repositoryPath;
   }
 
-  void _cloneRepository(BuildContext context, String name, String url) {
+  Future<Uri> _getRepositoryDirForName(String name) {
     var repositoryPath = _getRepositoryBaseDir();
-    repositoryPath
-        .then((uri) => uri.replace(path: uri.path + '/' + name + '/'))
-        .then((pathUri) {
+    return repositoryPath
+        .then((uri) => uri.replace(path: uri.path + name + '/'));
+  }
+
+  void _cloneRepository(BuildContext context, String name, String url) {
+    _getRepositoryDirForName(name).then((pathUri) {
       var jsGit = JsForGit.forNewDirectory(pathUri);
       jsGit.clone(name, pathUri.toString()).then((val) {
         Navigator.push(
@@ -193,10 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _createLocalRepository(BuildContext context, String name) {
-    var repositoryPath = _getRepositoryBaseDir();
-    repositoryPath
-        .then((uri) => uri.replace(path: uri.path + '/' + name + '/'))
-        .then((pathUri) {
+    _getRepositoryDirForName(name).then((pathUri) {
       var jsGit = JsForGit.forNewDirectory(pathUri);
       jsGit.init(name).then((val) {
         Navigator.push(
@@ -214,9 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showRepository(String name, BuildContext context) {
-    _getRepositoryBaseDir()
-        .then((uri) => uri.replace(path: uri.path + name + '/'))
-        .then((uri) {
+    _getRepositoryDirForName(name).then((uri) {
       var jsGit = JsForGit.forNewDirectory(uri);
       Navigator.push(
         context,
@@ -228,8 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _deleteRepository(String name, BuildContext context) {
-    _getRepositoryBaseDir()
-        .then((uri) => uri.replace(path: uri.path + name + '/'))
+    _getRepositoryDirForName(name)
         .then((uri) => Directory.fromUri(uri).delete(recursive: true))
         .then((result) {
       _refreshRepositories();

@@ -181,14 +181,59 @@ class JsForGit {
     var operation = JSValue(jsContext, arguments[0]).string;
     switch (operation) {
       case 'readFile':
-        var path = JSValue(jsContext, arguments[1]);
+        var path = JSValue(jsContext, arguments[1]).string;
         var options = JSValue(jsContext, arguments[2]);
         var callback = JSValue(jsContext, arguments[3]);
         if (callback.isNull || callback.isUndefined) {
           callback = options;
           options = null;
         }
-        break;
+        bool readString = false;
+        if (options != null) {
+          if (options.isString) {
+            readString = true;
+          } else if (options.isObject) {
+            var encoding = options.toObject().getProperty("encoding");
+            if (!encoding.isNull && !encoding.isUndefined) readString = true;
+          }
+        }
+        File f = File.fromUri(
+            repositoryUri.replace(path: repositoryUri.path + path));
+        fsLogger.fine('readFile ' + path);
+        var reader;
+        if (readString) {
+          reader = f.readAsString().then((str) {
+            var exception = JSValuePointer();
+            callback.toObject().callAsFunction(
+                JSObject(jsContext, nullptr),
+                JSValuePointer.array([
+                  JSValue.makeNull(jsContext),
+                  JSValue.makeString(jsContext, str)
+                ]),
+                exception: exception);
+          });
+        } else {
+          reader = f.readAsBytes().then((bytes) {
+            var exception = JSValuePointer();
+            JSObject jsData = JSObject.makeTypedArray(jsContext,
+                JSTypedArrayType.kJSTypedArrayTypeUint8Array, bytes.length,
+                exception: exception);
+            Pointer<Int8> intPointer =
+                Pointer.fromAddress(jsData.arrayBufferBytes().pointer.address);
+            intPointer
+                .asTypedList(jsData.arrayBufferBytes().length)
+                .setAll(0, bytes);
+            callback.toObject().callAsFunction(
+                JSObject(jsContext, nullptr),
+                JSValuePointer.array(
+                    [JSValue.makeNull(jsContext), jsData.toValue()]),
+                exception: exception);
+          });
+        }
+        reader.catchError((err) {
+          _callFsCallbackWithException(callback, "Error when reading file", "");
+        });
+        return nullptr;
       case 'writeFile':
         var file = JSValue(jsContext, arguments[1]).string;
         var data = JSValue(jsContext, arguments[2]);
