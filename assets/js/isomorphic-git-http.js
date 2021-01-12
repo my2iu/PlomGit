@@ -141,6 +141,7 @@ function fromValue(value) {
     if (body) {
       body = await collect(body);
     }
+    await fetchPromisify(url, method, headers, body);
     throw new Error('fetch not implemented ' + url);
     const res = await fetch(url, { method, headers, body });
     const iter =
@@ -161,6 +162,17 @@ function fromValue(value) {
       headers: headers,
     }
   }
+
+  function fetchPromisify(url, method, headers, body) {
+    // Native version uses callbacks, so we need to convert that it to use promises
+    return new Promise((resolve, reject) => {
+      window.flutter.httpFetch(url, method, headers, body, resolve, reject);
+    });
+  }
+
   window.http = { request };
-})();
+}
+
+
+)();
 true;

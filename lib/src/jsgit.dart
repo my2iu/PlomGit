@@ -4,6 +4,7 @@ import 'package:flutter_jscore/flutter_jscore.dart';
 import 'package:flutter_jscore/binding/js_context_ref.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:logging/logging.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class JsForGit {
@@ -401,6 +402,58 @@ class JsForGit {
     exception[0] = _createFsError("Not supported", "").pointer;
     return nullptr;
   }
+
+  final httpLogger = new Logger("plomgit.http");
+
+  void _callHttpFetchCallbackWithException(JSValue callback, String msg) {
+    var exception = JSValuePointer();
+    final err = jsContext.globalObject
+        .getProperty('Error')
+        .toObject()
+        .callAsConstructor(
+            JSValuePointer.array([JSValue.makeString(jsContext, msg)]));
+    callback.toObject().callAsFunction(
+        JSObject(jsContext, nullptr), JSValuePointer.array([err.toValue()]),
+        exception: exception);
+  }
+
+  Pointer _httpFetch(Pointer function, Pointer thisObject, int argumentCount,
+      Pointer<Pointer> arguments, Pointer<Pointer> exception) {
+    var url = JSValue(jsContext, arguments[0]).string;
+    var method = JSValue(jsContext, arguments[1]).string;
+    var headers = JSValue(jsContext, arguments[2]);
+    var body = JSValue(jsContext, arguments[3]);
+    var resolveCallback = JSValue(jsContext, arguments[4]);
+    var rejectCallback = JSValue(jsContext, arguments[5]);
+    var headerNames = headers.toObject().copyPropertyNames();
+
+    httpLogger.fine('fetch ' + url);
+
+    if (headerNames.count != 0) {
+      _callHttpFetchCallbackWithException(
+          rejectCallback, "Headers are not supported in fetch");
+      return nullptr;
+    } else if (!body.isNull && !body.isUndefined) {
+      _callHttpFetchCallbackWithException(
+          rejectCallback, "Body is not supported in fetch");
+      return nullptr;
+    } else if (method != "GET") {
+      _callHttpFetchCallbackWithException(
+          rejectCallback, "Only GET fetch requests are supported");
+      return nullptr;
+    }
+    // http.get(url).then((response) {}).catchError((err) {
+    //   _callHttpFetchCallbackWithException(rejectCallback, "Error during fetch");
+    // });
+    _callHttpFetchCallbackWithException(rejectCallback, "Fetch not supported");
+    // var exception = JSValuePointer();
+    // rejectCallback.toObject().callAsFunction(
+    //     JSObject(jsContext, nullptr),
+    //     JSValuePointer.array(
+    //         [JSValue.makeString(jsContext, "Fetch not supported")]),
+    //     exception: exception);
+    return nullptr;
+  }
 }
 
 Pointer _jsSignalCompletion(Pointer ctx, Pointer function, Pointer thisObject,
@@ -427,5 +480,6 @@ Pointer _jsFsOperation(Pointer ctx, Pointer function, Pointer thisObject,
 Pointer _jsHttpFetch(Pointer ctx, Pointer function, Pointer thisObject,
     int argumentCount, Pointer<Pointer> arguments, Pointer<Pointer> exception) {
   JsForGit js = JsForGit.ctxToJsForGit[jSContextGetGlobalContext(ctx)];
-  return nullptr;
+  return js._httpFetch(
+      function, thisObject, argumentCount, arguments, exception);
 }

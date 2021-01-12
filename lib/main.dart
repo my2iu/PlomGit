@@ -13,6 +13,7 @@ import 'package:tuple/tuple.dart';
 void main() {
   hierarchicalLoggingEnabled = true;
   Logger("plomgit.fs").level = Level.ALL;
+  Logger("plomgit.http").level = Level.ALL;
   Logger.root.onRecord.listen((record) {
     developer.log('${record.loggerName}: ${record.message}',
         level: record.level.value, name: record.loggerName);
@@ -180,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _cloneRepository(BuildContext context, String name, String url) {
     _getRepositoryDirForName(name).then((pathUri) {
       var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit.clone(name, pathUri.toString()).then((val) {
+      jsGit.clone(name, url).then((val) {
         Navigator.push(
             context,
             MaterialPageRoute<String>(
