@@ -214,6 +214,7 @@ class JsForGit {
           if (readString) {
             reader = f.readAsString().then((str) {
               var exception = JSValuePointer();
+              fsLogger.fine('readFile string exiting');
               callback.toObject().callAsFunction(
                   JSObject(jsContext, nullptr),
                   JSValuePointer.array([
@@ -230,9 +231,8 @@ class JsForGit {
                   exception: exception);
               Pointer<Uint8> intPointer =
                   Pointer.fromAddress(jsData.typedArrayBytes().pointer.address);
-              intPointer
-                  .asTypedList(jsData.typedArrayBytes().length)
-                  .setAll(0, bytes);
+              intPointer.asTypedList(bytes.length).setAll(0, bytes);
+              fsLogger.fine('readFile arraybuffer exiting');
               callback.toObject().callAsFunction(
                   JSObject(jsContext, nullptr),
                   JSValuePointer.array(
@@ -241,6 +241,7 @@ class JsForGit {
             });
           }
           reader.catchError((err) {
+            fsLogger.fine('readFile error exiting ' + err.toString());
             _callFsCallbackWithException(
                 callback, "Error when reading file", "");
           });
@@ -295,12 +296,15 @@ class JsForGit {
 
           // isomorphic-git expects us to return ENOENT if we delete a file that
           // doesn't exist, so we need to specifically test for that
-          File(path).exists().then((exists) {
+          File f = File.fromUri(
+              repositoryUri.replace(path: repositoryUri.path + path));
+
+          f.exists().then((exists) {
             if (!exists) {
               _callFsCallbackWithException(
                   callback, 'File not found', 'ENOENT');
             } else {
-              File(path).delete().then((f) {
+              f.delete().then((f) {
                 var exception = JSValuePointer();
                 callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
                     JSValuePointer.array([JSValue.makeNull(jsContext)]),
@@ -331,28 +335,30 @@ class JsForGit {
 
           fsLogger.fine('readdir ' + dirpath);
 
-          FileSystemEntity.type(dirpath).then((type) {
-            if (type == FileSystemEntityType.notFound) {
+          Uri uri = repositoryUri.replace(path: repositoryUri.path + dirpath);
+
+          File.fromUri(uri).stat().then((filestat) {
+            if (filestat.type == FileSystemEntityType.notFound) {
               _callFsCallbackWithException(callback,
                   "readdir called on non-existent directory", "ENOENT");
               return;
-            } else if (type != FileSystemEntityType.directory) {
+            } else if (filestat.type != FileSystemEntityType.directory) {
               // Make sure that the path refers to a directory since isomorphic-git
               // seems to specifically check for this
               _callFsCallbackWithException(callback,
                   "readdir called on a path that isn't a directory", "ENOTDIR");
               return;
             }
-            Directory(dirpath)
+            Directory.fromUri(uri)
                 .list()
                 .map((entry) => path.basename(entry.path))
                 .toList()
                 .then((list) {
-              var entryArray =
-                  JSObject.makeArray(jsContext, JSValuePointer.array([]));
-              // list
-              //     .map((nameStr) => JSValue.makeString(jsContext, nameStr))
-              //     .toList()));
+              var entryArray = JSObject.makeArray(
+                  jsContext,
+                  JSValuePointer.array(list
+                      .map((nameStr) => JSValue.makeString(jsContext, nameStr))
+                      .toList()));
               var exception = JSValuePointer();
               callback.toObject().callAsFunction(
                   JSObject(jsContext, nullptr),
