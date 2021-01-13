@@ -270,7 +270,8 @@ class JsForGit {
           var len = typedArrayObj.typedArrayByteLength();
           Pointer<Int8> intPointer =
               Pointer.fromAddress(backingStore.pointer.address);
-          var dataList = intPointer.asTypedList(offset + len).sublist(offset);
+          var dataList =
+              List.from(intPointer.asTypedList(offset + len).sublist(offset));
           writer = f.writeAsBytes(dataList);
         }
         writer.then((f) {
@@ -462,76 +463,98 @@ class JsForGit {
 
   Pointer _httpFetch(Pointer function, Pointer thisObject, int argumentCount,
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
-    var url = JSValue(jsContext, arguments[0]).string;
-    var method = JSValue(jsContext, arguments[1]).string;
-    var headers = JSValue(jsContext, arguments[2]).toObject();
-    var body = JSValue(jsContext, arguments[3]);
-    var resolveCallback = JSValue(jsContext, arguments[4]);
-    var rejectCallback = JSValue(jsContext, arguments[5]);
-    var headerNames = headers.copyPropertyNames();
+    try {
+      var url = JSValue(jsContext, arguments[0]).string;
+      var method = JSValue(jsContext, arguments[1]).string;
+      var headers = JSValue(jsContext, arguments[2]).toObject();
+      var body = JSValue(jsContext, arguments[3]);
+      var resolveCallback = JSValue(jsContext, arguments[4]);
+      var rejectCallback = JSValue(jsContext, arguments[5]);
 
-    httpLogger.fine('fetch ' + url);
+      httpLogger.fine('fetch ' + method + ' ' + url);
 
-    Map<String, String> requestHeaders;
-    if (headerNames.count != 0) {
-      for (var i = 0; i < headerNames.count; i++) {
-        var key = headerNames.propertyNameArrayGetNameAtIndex(i);
-        requestHeaders[key] = headers.getProperty(key).string;
+      Map<String, String> requestHeaders;
+      var headerNames = headers.copyPropertyNames();
+      if (headerNames.count != 0) {
+        requestHeaders = Map();
+        for (var i = 0; i < headerNames.count; i++) {
+          var key = headerNames.propertyNameArrayGetNameAtIndex(i);
+          requestHeaders[key] = headers.getProperty(key).string;
+        }
       }
-    } else if (!body.isNull && !body.isUndefined) {
-      _callHttpFetchCallbackWithException(
-          rejectCallback, "Body is not supported in fetch");
-      return nullptr;
-    } else if (method != "GET") {
-      _callHttpFetchCallbackWithException(
-          rejectCallback, "Only GET fetch requests are supported");
-      return nullptr;
-    }
-    http.get(url, headers: requestHeaders).then((response) {
-      var responseJs = JSObject.make(jsContext, JSClass(nullptr));
-      responseJs.setProperty("url", JSValue.makeString(jsContext, url),
-          JSPropertyAttributes.kJSPropertyAttributeNone);
-      responseJs.setProperty("method", JSValue.makeString(jsContext, method),
-          JSPropertyAttributes.kJSPropertyAttributeNone);
-      responseJs.setProperty(
-          "status",
-          JSValue.makeNumber(jsContext, response.statusCode.toDouble()),
-          JSPropertyAttributes.kJSPropertyAttributeNone);
-      responseJs.setProperty(
-          "statusText",
-          JSValue.makeString(jsContext, response.statusCode.toString()),
-          JSPropertyAttributes.kJSPropertyAttributeNone);
-
-      var headersJs = JSObject.make(jsContext, JSClass(nullptr));
-      for (var entry in response.headers.entries) {
-        headersJs.setProperty(
-            entry.key,
-            JSValue.makeString(jsContext, entry.value),
+      var request;
+      if (method == "GET") {
+        if (!body.isNull && !body.isUndefined) {
+          _callHttpFetchCallbackWithException(
+              rejectCallback, "Not expecting a body with GET fetch");
+          return nullptr;
+        }
+        request = http.get(url, headers: requestHeaders);
+      } else if (method == "POST") {
+        var bodyList;
+        if (!body.isNull && !body.isUndefined) {
+          var bytes = body.toObject().typedArrayBytes();
+          var offset = body.toObject().typedArrayByteOffset();
+          var len = body.toObject().typedArrayByteLength();
+          Pointer<Uint8> intPointer =
+              Pointer.fromAddress(bytes.pointer.address);
+          bodyList =
+              List.from(intPointer.asTypedList(offset + len).sublist(offset));
+        }
+        request = http.post(url, headers: requestHeaders, body: bodyList);
+      } else {
+        _callHttpFetchCallbackWithException(rejectCallback,
+            "Fetch called with unsupported method type " + method);
+        return nullptr;
+      }
+      request.then((response) {
+        var responseJs = JSObject.make(jsContext, JSClass(nullptr));
+        responseJs.setProperty("url", JSValue.makeString(jsContext, url),
             JSPropertyAttributes.kJSPropertyAttributeNone);
-      }
-      responseJs.setProperty("headers", headersJs.toValue(),
-          JSPropertyAttributes.kJSPropertyAttributeNone);
+        responseJs.setProperty("method", JSValue.makeString(jsContext, method),
+            JSPropertyAttributes.kJSPropertyAttributeNone);
+        responseJs.setProperty(
+            "status",
+            JSValue.makeNumber(jsContext, response.statusCode.toDouble()),
+            JSPropertyAttributes.kJSPropertyAttributeNone);
+        responseJs.setProperty(
+            "statusText",
+            JSValue.makeString(jsContext, response.statusCode.toString()),
+            JSPropertyAttributes.kJSPropertyAttributeNone);
 
-      JSObject dataJs = JSObject.makeTypedArray(
-          jsContext,
-          JSTypedArrayType.kJSTypedArrayTypeUint8Array,
-          response.bodyBytes.length);
-      var intPointer =
-          Pointer<Uint8>.fromAddress(dataJs.typedArrayBytes().pointer.address);
-      intPointer
-          .asTypedList(dataJs.typedArrayBytes().length)
-          .setAll(0, response.bodyBytes);
-      responseJs.setProperty("body", dataJs.toValue(),
-          JSPropertyAttributes.kJSPropertyAttributeNone);
+        var headersJs = JSObject.make(jsContext, JSClass(nullptr));
+        for (var entry in response.headers.entries) {
+          headersJs.setProperty(
+              entry.key,
+              JSValue.makeString(jsContext, entry.value),
+              JSPropertyAttributes.kJSPropertyAttributeNone);
+        }
+        responseJs.setProperty("headers", headersJs.toValue(),
+            JSPropertyAttributes.kJSPropertyAttributeNone);
 
-      var exception = JSValuePointer();
-      resolveCallback.toObject().callAsFunction(JSObject(jsContext, nullptr),
-          JSValuePointer.array([responseJs.toValue()]),
-          exception: exception);
-    }).catchError((err) {
-      _callHttpFetchCallbackWithException(
-          rejectCallback, "Error during fetch " + err.toString());
-    });
+        JSObject dataJs = JSObject.makeTypedArray(
+            jsContext,
+            JSTypedArrayType.kJSTypedArrayTypeUint8Array,
+            response.bodyBytes.length);
+        var intPointer = Pointer<Uint8>.fromAddress(
+            dataJs.typedArrayBytes().pointer.address);
+        intPointer
+            .asTypedList(dataJs.typedArrayBytes().length)
+            .setAll(0, response.bodyBytes);
+        responseJs.setProperty("body", dataJs.toValue(),
+            JSPropertyAttributes.kJSPropertyAttributeNone);
+
+        var exception = JSValuePointer();
+        resolveCallback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+            JSValuePointer.array([responseJs.toValue()]),
+            exception: exception);
+      }).catchError((err) {
+        _callHttpFetchCallbackWithException(
+            rejectCallback, "Error during fetch " + err.toString());
+      });
+    } catch (err) {
+      exception[0] = _createFsError("Error during fetch code", "").pointer;
+    }
     return nullptr;
   }
 }
