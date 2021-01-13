@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'dart:typed_data';
 import 'dart:io';
 
 class JsForGit {
@@ -187,263 +188,333 @@ class JsForGit {
   Pointer _fsOperation(Pointer function, Pointer thisObject, int argumentCount,
       Pointer<Pointer> arguments, Pointer<Pointer> exception) {
     var operation = JSValue(jsContext, arguments[0]).string;
-    switch (operation) {
-      case 'readFile':
-        var path = JSValue(jsContext, arguments[1]).string;
-        var options = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        bool readString = false;
-        if (options != null) {
-          if (options.isString) {
-            readString = true;
-          } else if (options.isObject) {
-            var encoding = options.toObject().getProperty("encoding");
-            if (!encoding.isNull && !encoding.isUndefined) readString = true;
+    try {
+      switch (operation) {
+        case 'readFile':
+          var path = JSValue(jsContext, arguments[1]).string;
+          var options = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = options;
+            options = null;
           }
-        }
-        File f = File.fromUri(
-            repositoryUri.replace(path: repositoryUri.path + path));
-        fsLogger.fine('readFile ' + path);
-        var reader;
-        if (readString) {
-          reader = f.readAsString().then((str) {
-            var exception = JSValuePointer();
-            callback.toObject().callAsFunction(
-                JSObject(jsContext, nullptr),
-                JSValuePointer.array([
-                  JSValue.makeNull(jsContext),
-                  JSValue.makeString(jsContext, str)
-                ]),
-                exception: exception);
-          });
-        } else {
-          reader = f.readAsBytes().then((bytes) {
-            var exception = JSValuePointer();
-            JSObject jsData = JSObject.makeTypedArray(jsContext,
-                JSTypedArrayType.kJSTypedArrayTypeUint8Array, bytes.length,
-                exception: exception);
-            Pointer<Uint8> intPointer =
-                Pointer.fromAddress(jsData.typedArrayBytes().pointer.address);
-            intPointer
-                .asTypedList(jsData.typedArrayBytes().length)
-                .setAll(0, bytes);
-            callback.toObject().callAsFunction(
-                JSObject(jsContext, nullptr),
-                JSValuePointer.array(
-                    [JSValue.makeNull(jsContext), jsData.toValue()]),
-                exception: exception);
-          });
-        }
-        reader.catchError((err) {
-          _callFsCallbackWithException(callback, "Error when reading file", "");
-        });
-        return nullptr;
-      case 'writeFile':
-        var file = JSValue(jsContext, arguments[1]).string;
-        var data = JSValue(jsContext, arguments[2]);
-        var options = JSValue(jsContext, arguments[3]);
-        var callback = JSValue(jsContext, arguments[4]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        File f = File.fromUri(
-            repositoryUri.replace(path: repositoryUri.path + file));
-        fsLogger.fine('writeFile ' + file);
-        Future<File> writer;
-        if (data.isString) {
-          writer = f.writeAsString(data.string);
-        } else {
-          var typedArrayType = data.getTypedArrayType();
-          if (typedArrayType == JSTypedArrayType.kJSTypedArrayTypeNone) {
-            _callFsCallbackWithException(callback,
-                "Unsupported value written to file", "ERR_INVALID_ARG_VALUE");
-            return nullptr;
+          bool readString = false;
+          if (options != null) {
+            if (options.isString) {
+              readString = true;
+            } else if (options.isObject) {
+              var encoding = options.toObject().getProperty("encoding");
+              if (!encoding.isNull && !encoding.isUndefined) readString = true;
+            }
           }
-          JSObject typedArrayObj = data.toObject();
-          Bytes backingStore = typedArrayObj.typedArrayBytes();
-          var offset = typedArrayObj.typedArrayByteOffset();
-          var len = typedArrayObj.typedArrayByteLength();
-          Pointer<Int8> intPointer =
-              Pointer.fromAddress(backingStore.pointer.address);
-          var dataList =
-              List.from(intPointer.asTypedList(offset + len).sublist(offset));
-          writer = f.writeAsBytes(dataList);
-        }
-        writer.then((f) {
-          var exception = JSValuePointer();
-          callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
-              JSValuePointer.array([JSValue.makeNull(jsContext)]),
-              exception: exception);
-        }).catchError((err) {
-          _callFsCallbackWithException(callback, "Error when writing file", "");
-        });
-        return nullptr;
-      case 'unlink':
-        var path = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
-        break;
-      case 'readdir':
-        var dirpath = JSValue(jsContext, arguments[1]).string;
-        var options = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        if (options != null && !options.isNull && !options.isUndefined) {
-          _callFsCallbackWithException(
-              callback, "Cannot handle options in readdir", "");
+          File f = File.fromUri(
+              repositoryUri.replace(path: repositoryUri.path + path));
+          fsLogger.fine('readFile ' + path);
+          var reader;
+          if (readString) {
+            reader = f.readAsString().then((str) {
+              var exception = JSValuePointer();
+              callback.toObject().callAsFunction(
+                  JSObject(jsContext, nullptr),
+                  JSValuePointer.array([
+                    JSValue.makeNull(jsContext),
+                    JSValue.makeString(jsContext, str)
+                  ]),
+                  exception: exception);
+            });
+          } else {
+            reader = f.readAsBytes().then((bytes) {
+              var exception = JSValuePointer();
+              JSObject jsData = JSObject.makeTypedArray(jsContext,
+                  JSTypedArrayType.kJSTypedArrayTypeUint8Array, bytes.length,
+                  exception: exception);
+              Pointer<Uint8> intPointer =
+                  Pointer.fromAddress(jsData.typedArrayBytes().pointer.address);
+              intPointer
+                  .asTypedList(jsData.typedArrayBytes().length)
+                  .setAll(0, bytes);
+              callback.toObject().callAsFunction(
+                  JSObject(jsContext, nullptr),
+                  JSValuePointer.array(
+                      [JSValue.makeNull(jsContext), jsData.toValue()]),
+                  exception: exception);
+            });
+          }
+          reader.catchError((err) {
+            _callFsCallbackWithException(
+                callback, "Error when reading file", "");
+          });
           return nullptr;
-        }
-
-        fsLogger.fine('readdir ' + dirpath);
-
-        Directory(dirpath).stat().then((entity) {
-          if (!(entity is Directory)) {
-            // Make sure that the path refers to a directory since isomorphic-git
-            // seems to specifically check for this
-            _callFsCallbackWithException(callback,
-                "readdir called on a path that isn't a directory", "ENOTDIR");
-            return;
+        case 'writeFile':
+          var file = JSValue(jsContext, arguments[1]).string;
+          var data = JSValue(jsContext, arguments[2]);
+          var options = JSValue(jsContext, arguments[3]);
+          var callback = JSValue(jsContext, arguments[4]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = options;
+            options = null;
           }
-          (entity as Directory)
-              .list()
-              .map((entry) => path.basename(entry.path))
-              .toList()
-              .then((list) {
-            var entryArray = JSObject.makeArray(
-                jsContext,
-                JSValuePointer.array(list
-                    .map((nameStr) => JSValue.makeString(jsContext, nameStr))
-                    .toList()));
+          File f = File.fromUri(
+              repositoryUri.replace(path: repositoryUri.path + file));
+          fsLogger.fine('writeFile ' + file);
+          Future<File> writer;
+          if (data.isString) {
+            writer = f.writeAsString(data.string);
+          } else {
+            var typedArrayType = data.getTypedArrayType();
+            if (typedArrayType == JSTypedArrayType.kJSTypedArrayTypeNone) {
+              _callFsCallbackWithException(callback,
+                  "Unsupported value written to file", "ERR_INVALID_ARG_VALUE");
+              return nullptr;
+            }
+            JSObject typedArrayObj = data.toObject();
+            Bytes backingStore = typedArrayObj.typedArrayBytes();
+            var offset = typedArrayObj.typedArrayByteOffset();
+            var len = typedArrayObj.typedArrayByteLength();
+            Pointer<Uint8> intPointer =
+                Pointer.fromAddress(backingStore.pointer.address);
+            var dataList = Uint8List.fromList(
+                intPointer.asTypedList(offset + len).sublist(offset));
+            writer = f.writeAsBytes(dataList);
+          }
+          writer.then((f) {
             var exception = JSValuePointer();
-            callback.toObject().callAsFunction(
-                JSObject(jsContext, nullptr),
-                JSValuePointer.array(
-                    [JSValue.makeNull(jsContext), entryArray.toValue()]),
+            callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+                JSValuePointer.array([JSValue.makeNull(jsContext)]),
                 exception: exception);
           }).catchError((err) {
-            _callFsCallbackWithException(callback, "Error during readdir", "");
+            _callFsCallbackWithException(
+                callback, "Error when writing file", "");
           });
-        });
-        return nullptr;
-      case 'mkdir':
-        var path = JSValue(jsContext, arguments[1]).string;
-        var mode = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = mode;
-          mode = null;
-        }
-        fsLogger.fine('mkdir ' + path);
-        Directory.fromUri(
-                repositoryUri.replace(path: repositoryUri.path + path))
-            .create()
-            .then((dir) {
-          // Note: in Flutter, creation will succeed if directory already exists
-          var exception = JSValuePointer();
-          callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
-              JSValuePointer.array([JSValue.makeNull(jsContext)]),
-              exception: exception);
-        }).catchError((err) {
-          // We can't tell the type of exception, so we'll just assume that
-          // it's an exception for can't find parent directory
-          _callFsCallbackWithException(
-              callback,
-              "Directory creation failed, possibly due to missing parent directory",
-              "ENOENT");
-        });
-        return nullptr;
-      case 'rmdir':
-        var path = JSValue(jsContext, arguments[1]);
-        var callback = JSValue(jsContext, arguments[2]);
-        break;
-      case 'stat':
-        var path = JSValue(jsContext, arguments[1]).string;
-        var options = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        File f = File.fromUri(
-            repositoryUri.replace(path: repositoryUri.path + path));
-        fsLogger.fine('stat ' + path);
-        f.stat().then((filestat) {
-          if (filestat.type == FileSystemEntityType.notFound) {
-            _callFsCallbackWithException(callback, 'File not found', 'ENOENT');
-          } else {
-            var exception = JSValuePointer();
-            var jsFileStat = jsContext.globalObject
-                .getProperty('fs')
-                .toObject()
-                .getProperty('createFileStat')
-                .toObject()
-                .callAsFunction(
-                    JSObject(jsContext, nullptr),
-                    JSValuePointer.array([
-                      JSValue.makeBoolean(jsContext,
-                          filestat.type == FileSystemEntityType.directory),
-                      JSValue.makeNumber(jsContext, filestat.size.toDouble()),
-                      JSValue.makeNumber(jsContext,
-                          filestat.modified.millisecondsSinceEpoch.toDouble())
-                    ]),
+          return nullptr;
+        case 'unlink':
+          var path = JSValue(jsContext, arguments[1]).string;
+          var callback = JSValue(jsContext, arguments[2]);
+
+          fsLogger.fine('unlink ' + path);
+
+          // isomorphic-git expects us to return ENOENT if we delete a file that
+          // doesn't exist, so we need to specifically test for that
+          File(path).stat().then((filestat) {
+            if (filestat.type == FileSystemEntityType.notFound) {
+              _callFsCallbackWithException(
+                  callback, 'File not found', 'ENOENT');
+            } else {
+              File(path).delete().then((f) {
+                var exception = JSValuePointer();
+                callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+                    JSValuePointer.array([JSValue.makeNull(jsContext)]),
                     exception: exception);
-            callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
-                JSValuePointer.array([JSValue.makeNull(jsContext), jsFileStat]),
-                exception: exception);
+              }).catchError((err) {
+                _callFsCallbackWithException(
+                    callback, "File could not be deleted", "");
+              });
+            }
+          }).catchError((err) {
+            _callFsCallbackWithException(
+                callback, "File information could be gathered", "");
+          });
+          return nullptr;
+        case 'readdir':
+          var dirpath = JSValue(jsContext, arguments[1]).string;
+          var options = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = options;
+            options = null;
           }
-        });
-        return nullptr;
-      case 'lstat':
-        var path = JSValue(jsContext, arguments[1]);
-        var options = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        break;
-      case 'readlink':
-        var path = JSValue(jsContext, arguments[1]);
-        var options = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = options;
-          options = null;
-        }
-        // Not implemented
-        break;
-      case 'symlink':
-        var target = JSValue(jsContext, arguments[1]);
-        var path = JSValue(jsContext, arguments[2]);
-        var type = JSValue(jsContext, arguments[3]);
-        var callback = JSValue(jsContext, arguments[4]);
-        if (callback.isNull || callback.isUndefined) {
-          callback = type;
-          type = null;
-        }
-        // Not implemented
-        break;
-      case 'chmod':
-        var path = JSValue(jsContext, arguments[1]);
-        var mode = JSValue(jsContext, arguments[2]);
-        var callback = JSValue(jsContext, arguments[3]);
-        // Not used
-        break;
-      default:
-        break;
+          if (options != null && !options.isNull && !options.isUndefined) {
+            _callFsCallbackWithException(
+                callback, "Cannot handle options in readdir", "");
+            return nullptr;
+          }
+
+          fsLogger.fine('readdir ' + dirpath);
+
+          Directory(dirpath).stat().then((entity) {
+            if (!(entity is Directory)) {
+              // Make sure that the path refers to a directory since isomorphic-git
+              // seems to specifically check for this
+              _callFsCallbackWithException(callback,
+                  "readdir called on a path that isn't a directory", "ENOTDIR");
+              return;
+            }
+            (entity as Directory)
+                .list()
+                .map((entry) => path.basename(entry.path))
+                .toList()
+                .then((list) {
+              var entryArray = JSObject.makeArray(
+                  jsContext,
+                  JSValuePointer.array(list
+                      .map((nameStr) => JSValue.makeString(jsContext, nameStr))
+                      .toList()));
+              var exception = JSValuePointer();
+              callback.toObject().callAsFunction(
+                  JSObject(jsContext, nullptr),
+                  JSValuePointer.array(
+                      [JSValue.makeNull(jsContext), entryArray.toValue()]),
+                  exception: exception);
+            }).catchError((err) {
+              _callFsCallbackWithException(
+                  callback, "Error during readdir", "");
+            });
+          });
+          return nullptr;
+        case 'mkdir':
+          var path = JSValue(jsContext, arguments[1]).string;
+          var mode = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = mode;
+            mode = null;
+          }
+          fsLogger.fine('mkdir ' + path);
+          Directory.fromUri(
+                  repositoryUri.replace(path: repositoryUri.path + path))
+              .create()
+              .then((dir) {
+            // Note: in Flutter, creation will succeed if directory already exists
+            var exception = JSValuePointer();
+            callback.toObject().callAsFunction(JSObject(jsContext, nullptr),
+                JSValuePointer.array([JSValue.makeNull(jsContext)]),
+                exception: exception);
+          }).catchError((err) {
+            // We can't tell the type of exception, so we'll just assume that
+            // it's an exception for can't find parent directory
+            _callFsCallbackWithException(
+                callback,
+                "Directory creation failed, possibly due to missing parent directory",
+                "ENOENT");
+          });
+          return nullptr;
+        case 'rmdir':
+          var path = JSValue(jsContext, arguments[1]);
+          var callback = JSValue(jsContext, arguments[2]);
+          break;
+        case 'stat':
+          var path = JSValue(jsContext, arguments[1]).string;
+          var options = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = options;
+            options = null;
+          }
+          File f = File.fromUri(
+              repositoryUri.replace(path: repositoryUri.path + path));
+          fsLogger.fine('stat ' + path);
+          // Treating stat and lstat identically for now
+          f.stat().then((filestat) {
+            if (filestat.type == FileSystemEntityType.notFound) {
+              _callFsCallbackWithException(
+                  callback, 'File not found', 'ENOENT');
+            } else {
+              var exception = JSValuePointer();
+              var jsFileStat = jsContext.globalObject
+                  .getProperty('fs')
+                  .toObject()
+                  .getProperty('createFileStat')
+                  .toObject()
+                  .callAsFunction(
+                      JSObject(jsContext, nullptr),
+                      JSValuePointer.array([
+                        JSValue.makeBoolean(jsContext,
+                            filestat.type == FileSystemEntityType.directory),
+                        JSValue.makeNumber(jsContext, filestat.size.toDouble()),
+                        JSValue.makeNumber(jsContext,
+                            filestat.modified.millisecondsSinceEpoch.toDouble())
+                      ]),
+                      exception: exception);
+              callback.toObject().callAsFunction(
+                  JSObject(jsContext, nullptr),
+                  JSValuePointer.array(
+                      [JSValue.makeNull(jsContext), jsFileStat]),
+                  exception: exception);
+            }
+          });
+          return nullptr;
+        case 'lstat':
+          var path = JSValue(jsContext, arguments[1]).string;
+          var options = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = options;
+            options = null;
+          }
+
+          File f = File.fromUri(
+              repositoryUri.replace(path: repositoryUri.path + path));
+          fsLogger.fine('lstat ' + path);
+          // Treating stat and lstat identically for now
+          f.stat().then((filestat) {
+            if (filestat.type == FileSystemEntityType.notFound) {
+              _callFsCallbackWithException(
+                  callback, 'File not found', 'ENOENT');
+            } else {
+              var exception = JSValuePointer();
+              var jsFileStat = jsContext.globalObject
+                  .getProperty('fs')
+                  .toObject()
+                  .getProperty('createFileStat')
+                  .toObject()
+                  .callAsFunction(
+                      JSObject(jsContext, nullptr),
+                      JSValuePointer.array([
+                        JSValue.makeBoolean(jsContext,
+                            filestat.type == FileSystemEntityType.directory),
+                        JSValue.makeNumber(jsContext, filestat.size.toDouble()),
+                        JSValue.makeNumber(jsContext,
+                            filestat.modified.millisecondsSinceEpoch.toDouble())
+                      ]),
+                      exception: exception);
+              callback.toObject().callAsFunction(
+                  JSObject(jsContext, nullptr),
+                  JSValuePointer.array(
+                      [JSValue.makeNull(jsContext), jsFileStat]),
+                  exception: exception);
+            }
+          });
+          return nullptr;
+        case 'readlink':
+          var path = JSValue(jsContext, arguments[1]);
+          var options = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = options;
+            options = null;
+          }
+          // Not implemented
+          break;
+        case 'symlink':
+          var target = JSValue(jsContext, arguments[1]);
+          var path = JSValue(jsContext, arguments[2]);
+          var type = JSValue(jsContext, arguments[3]);
+          var callback = JSValue(jsContext, arguments[4]);
+          if (callback.isNull || callback.isUndefined) {
+            callback = type;
+            type = null;
+          }
+          // Not implemented
+          break;
+        case 'chmod':
+          var path = JSValue(jsContext, arguments[1]);
+          var mode = JSValue(jsContext, arguments[2]);
+          var callback = JSValue(jsContext, arguments[3]);
+          // Not used
+          break;
+        default:
+          break;
+      }
+      // Throw an exception for all operations that we don't handle. Isomorphic-git
+      // requires that we throw an actual Error object and not an arbitrary object
+      // like a string.
+      print('fsOperation ' + operation);
+      exception[0] = _createFsError("Not supported", "").pointer;
+    } catch (err) {
+      exception[0] =
+          _createFsError("Error during fs marshalling " + err.toString(), "")
+              .pointer;
     }
-    // Throw an exception for all operations that we don't handle. Isomorphic-git
-    // requires that we throw an actual Error object and not an arbitrary object
-    // like a string.
-    print('fsOperation ' + operation);
-    exception[0] = _createFsError("Not supported", "").pointer;
     return nullptr;
   }
 
@@ -498,8 +569,8 @@ class JsForGit {
           var len = body.toObject().typedArrayByteLength();
           Pointer<Uint8> intPointer =
               Pointer.fromAddress(bytes.pointer.address);
-          bodyList =
-              List.from(intPointer.asTypedList(offset + len).sublist(offset));
+          bodyList = Uint8List.fromList(
+              intPointer.asTypedList(offset + len).sublist(offset));
         }
         request = http.post(url, headers: requestHeaders, body: bodyList);
       } else {
@@ -553,7 +624,9 @@ class JsForGit {
             rejectCallback, "Error during fetch " + err.toString());
       });
     } catch (err) {
-      exception[0] = _createFsError("Error during fetch code", "").pointer;
+      exception[0] =
+          _createFsError("Error during fetch code " + err.toString(), "")
+              .pointer;
     }
     return nullptr;
   }
