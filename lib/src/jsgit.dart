@@ -295,8 +295,8 @@ class JsForGit {
 
           // isomorphic-git expects us to return ENOENT if we delete a file that
           // doesn't exist, so we need to specifically test for that
-          File(path).stat().then((filestat) {
-            if (filestat.type == FileSystemEntityType.notFound) {
+          File(path).exists().then((exists) {
+            if (!exists) {
               _callFsCallbackWithException(
                   callback, 'File not found', 'ENOENT');
             } else {
@@ -331,24 +331,28 @@ class JsForGit {
 
           fsLogger.fine('readdir ' + dirpath);
 
-          Directory(dirpath).stat().then((entity) {
-            if (!(entity is Directory)) {
+          FileSystemEntity.type(dirpath).then((type) {
+            if (type == FileSystemEntityType.notFound) {
+              _callFsCallbackWithException(callback,
+                  "readdir called on non-existent directory", "ENOENT");
+              return;
+            } else if (type != FileSystemEntityType.directory) {
               // Make sure that the path refers to a directory since isomorphic-git
               // seems to specifically check for this
               _callFsCallbackWithException(callback,
                   "readdir called on a path that isn't a directory", "ENOTDIR");
               return;
             }
-            (entity as Directory)
+            Directory(dirpath)
                 .list()
                 .map((entry) => path.basename(entry.path))
                 .toList()
                 .then((list) {
-              var entryArray = JSObject.makeArray(
-                  jsContext,
-                  JSValuePointer.array(list
-                      .map((nameStr) => JSValue.makeString(jsContext, nameStr))
-                      .toList()));
+              var entryArray =
+                  JSObject.makeArray(jsContext, JSValuePointer.array([]));
+              // list
+              //     .map((nameStr) => JSValue.makeString(jsContext, nameStr))
+              //     .toList()));
               var exception = JSValuePointer();
               callback.toObject().callAsFunction(
                   JSObject(jsContext, nullptr),
@@ -359,6 +363,9 @@ class JsForGit {
               _callFsCallbackWithException(
                   callback, "Error during readdir", "");
             });
+          }).catchError((err) {
+            _callFsCallbackWithException(
+                callback, "Error during stat inside readdir", "");
           });
           return nullptr;
         case 'mkdir':
