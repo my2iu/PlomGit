@@ -140,6 +140,57 @@ class JsForGit {
     return synchronizer;
   }
 
+  Future<dynamic> addRemoteTest(String url) {
+    synchronizer = synchronizer.whenComplete(() {
+      completer = new Completer<dynamic>();
+      var fun = jsContext.evaluate("(function(url) {" +
+          "git.addRemote({fs:fs, dir:'', remote: 'origin', url: url})" +
+          ".then(function(val) {flutter.signalCompletion(val);})" +
+          ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
+          "})");
+      var exception = JSValuePointer();
+      fun.toObject().callAsFunction(JSObject(jsContext, nullptr),
+          JSValuePointer.array([JSValue.makeString(jsContext, url)]),
+          exception: exception);
+      return completer.future;
+    });
+    return synchronizer;
+  }
+
+  Future<dynamic> fetchTest() {
+    synchronizer = synchronizer.whenComplete(() {
+      completer = new Completer<dynamic>();
+      var fun = jsContext.evaluate("(function() {" +
+          "git.fetch({fs:fs, http:http, dir:'', remote: 'origin'})" +
+          ".then(function(val) {flutter.signalCompletion(val);})" +
+          ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
+          "})");
+      var exception = JSValuePointer();
+      fun.toObject().callAsFunction(
+          JSObject(jsContext, nullptr), JSValuePointer.array([]),
+          exception: exception);
+      return completer.future;
+    });
+    return synchronizer;
+  }
+
+  Future<dynamic> checkoutTest() {
+    synchronizer = synchronizer.whenComplete(() {
+      completer = new Completer<dynamic>();
+      var fun = jsContext.evaluate("(function() {" +
+          "git.checkout({fs:fs, dir:'', ref:'main', dryRun: true, noCheckout:true, noUpdateHead:true})" +
+          ".then(function(val) {flutter.signalCompletion(val);})" +
+          ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
+          "})");
+      var exception = JSValuePointer();
+      fun.toObject().callAsFunction(
+          JSObject(jsContext, nullptr), JSValuePointer.array([]),
+          exception: exception);
+      return completer.future;
+    });
+    return synchronizer;
+  }
+
   Pointer _signalCompletion(
       Pointer function,
       Pointer thisObject,
@@ -241,7 +292,12 @@ class JsForGit {
             });
           }
           reader.catchError((err) {
-            fsLogger.fine('readFile error exiting ' + err.toString());
+            var pathString = f.path;
+            fsLogger.fine('readFile error exiting ' +
+                pathString.substring(
+                    (pathString.length - 20).clamp(0, pathString.length)) +
+                ' ' +
+                err.toString());
             _callFsCallbackWithException(
                 callback, "Error when reading file", "");
           });
@@ -366,10 +422,12 @@ class JsForGit {
                       [JSValue.makeNull(jsContext), entryArray.toValue()]),
                   exception: exception);
             }).catchError((err) {
+              fsLogger.fine('Error during readdir ' + err.toString());
               _callFsCallbackWithException(
                   callback, "Error during readdir", "");
             });
           }).catchError((err) {
+            fsLogger.fine('Error during readdir stat ' + err.toString());
             _callFsCallbackWithException(
                 callback, "Error during stat inside readdir", "");
           });

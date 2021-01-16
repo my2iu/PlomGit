@@ -236,6 +236,73 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _addRemote(String name, BuildContext context) {
+    var url = 'https://github.com/my2iu/PlomGit.git';
+    _getRepositoryDirForName(name).then((pathUri) {
+      var jsGit = JsForGit.forNewDirectory(pathUri);
+      jsGit.addRemoteTest(url).then((val) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+              builder: (BuildContext context) =>
+                  RepositoryView(name, pathUri, jsGit),
+            )).then((result) {
+          _refreshRepositories();
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Add Remote Done')));
+        });
+      }).catchError((error) {
+        _refreshRepositories();
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+      });
+    });
+  }
+
+  void _fetch(String name, BuildContext context) {
+    _getRepositoryDirForName(name).then((pathUri) {
+      var jsGit = JsForGit.forNewDirectory(pathUri);
+      jsGit.fetchTest().then((val) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+              builder: (BuildContext context) =>
+                  RepositoryView(name, pathUri, jsGit),
+            )).then((result) {
+          _refreshRepositories();
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Fetch Done')));
+        });
+      }).catchError((error) {
+        _refreshRepositories();
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+      });
+    });
+  }
+
+  void _checkout(String name, BuildContext context) {
+    _getRepositoryDirForName(name).then((pathUri) {
+      var jsGit = JsForGit.forNewDirectory(pathUri);
+      jsGit.checkoutTest().then((val) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+              builder: (BuildContext context) =>
+                  RepositoryView(name, pathUri, jsGit),
+            )).then((result) {
+          _refreshRepositories();
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Checkout Done')));
+        });
+      }).catchError((error) {
+        _refreshRepositories();
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+      });
+    });
+  }
+
   // I should create a proper model for storing the list of repositories that
   // can then refresh different views, but I'm too lazy to implement that right now
   void _refreshRepositories() {
@@ -265,7 +332,16 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (BuildContext context) => <PopupMenuEntry>[
               PopupMenuItem(
                   value: () => _deleteRepository(name, context),
-                  child: Text('Delete'))
+                  child: Text('Delete')),
+              PopupMenuItem(
+                  value: () => _addRemote(name, context),
+                  child: Text('Test add remote')),
+              PopupMenuItem(
+                  value: () => _fetch(name, context),
+                  child: Text('Test fetch')),
+              PopupMenuItem(
+                  value: () => _checkout(name, context),
+                  child: Text('Test checkout')),
             ]);
   }
 
