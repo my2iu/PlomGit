@@ -50,4 +50,59 @@ fs = {
         };
     }
 };
+// I'm having problems with isomorphic-git's use of Promise.all when
+// it calls simultaneously into 
+async function sequentialPromiseAll(arr) {
+    var result = [];
+    var it = arr[Symbol.iterator]();
+    for (var next = it.next(); !next.done; next = it.next()) {
+        flutter.log('in');
+        result.push(await next.value);
+        flutter.log('out');
+    }
+    return result;
+}
+
+function promisify(fn) {
+    return function(...args) {
+        return new Promise(function(resolve, reject) {
+            args.push(function(err, val) {
+                if (err) reject(err);
+                else resolve(val);
+            });
+            Reflect.apply(fn, this, args);
+        });
+    }
+}
+async function tester()
+{
+    flutter.log('start');
+    var testfn = promisify(fs.readFile);
+    var writefn = promisify(fs.writeFile);
+    var readfn = promisify(fs.readFile);
+    // var arr = new Uint8Array(5000000);
+    // await writefn('bigfile2', arr);
+    // await readfn('bigfile2');
+    var files = ['a', 'bigfile', 'c', 'd', 'e', 'f', 'g', 'bigfile2', 'i', 'j','k', 'l'];
+    // for (var n = 0; n < files.length; n++) {
+    //     try {
+    //         var s = await fs.readdir(files[n]);
+    //     } catch (err) {
+    //     }
+    // }
+
+    sequentialPromiseAll(files.map(async function(val) {
+        try {
+         await testfn(val);
+        } catch (err) { return null}
+        return 1;
+    }));
+
+    // for (var n = 0; n < files.length; n++) {
+    //     try {
+    //         await testfn(files[n]);
+    //     } catch (err) {
+    //     }
+    // }
+}
 true;

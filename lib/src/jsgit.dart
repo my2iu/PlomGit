@@ -177,11 +177,20 @@ class JsForGit {
   Future<dynamic> checkoutTest() {
     synchronizer = synchronizer.whenComplete(() {
       completer = new Completer<dynamic>();
+
       var fun = jsContext.evaluate("(function() {" +
-          "git.checkout({fs:fs, dir:'', ref:'main', dryRun: true, noCheckout:true, noUpdateHead:true})" +
+          "  tester() " +
           ".then(function(val) {flutter.signalCompletion(val);})" +
           ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
           "})");
+
+      // var fun = jsContext.evaluate("(function() {" +
+      //     // "git.checkout({fs:fs, dir:'', ref:'main', dryRun: true, noCheckout:false, noUpdateHead:false})" +
+      //     "git.checkout({fs:fs, dir:'', ref:'main', dryRun: false, noCheckout:false, noUpdateHead:false})" +
+      //     ".then(function(val) {flutter.signalCompletion(val);})" +
+      //     ".catch(function(err) { if (err instanceof Error) flutter.signalError(err.message); else flutter.signalError(err);});" +
+      //     "})");
+
       var exception = JSValuePointer();
       fun.toObject().callAsFunction(
           JSObject(jsContext, nullptr), JSValuePointer.array([]),
