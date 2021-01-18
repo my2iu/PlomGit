@@ -32,6 +32,9 @@ dependencies:
   logging: ^0.11.4
   tuple: ^1.0.3
 
+  libgit2:
+    path: libgit2/
+
   flutter_jscore: ^0.1.1
 
   # I wanted universal_platform to allow me to distinguish between Android

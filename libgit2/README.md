@@ -1,15 +1,8 @@
 # libgit2
 
-A new flutter plugin project.
+Flutter plugin package for libgit2.
 
-## Getting Started
+## To build 
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Unzip the libgit2 1.1.0 source release into the ios/libgit2-1.1.0 folder.
 

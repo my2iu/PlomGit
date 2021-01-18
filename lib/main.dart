@@ -9,6 +9,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
 import 'package:tuple/tuple.dart';
+import 'package:libgit2/libgit2.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -146,7 +147,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _pressed(BuildContext context) {
-    var jsGit = JsForGit(null);
+    Libgit2.platformVersion
+        .then((val) => print(val))
+        .catchError((err) => print(err.toString()));
+    print(Libgit2.queryFeatures());
+    // var jsGit = JsForGit(null);
     // jsGit
     //     .clone()
     //     .then((val) => Scaffold.of(context)
