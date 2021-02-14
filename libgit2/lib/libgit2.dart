@@ -3,6 +3,14 @@ import 'dart:io';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:ffi/ffi.dart';
+
+class git_error extends Struct {
+  Pointer<Utf8> message;
+
+  @IntPtr()
+  int klass;
+}
 
 class Libgit2 {
   // I don't really need this MethodChannel stuff since I don't need
@@ -20,6 +28,23 @@ class Libgit2 {
       : DynamicLibrary.process();
 
   static final int Function() queryFeatures = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_features")
+      .lookup<NativeFunction<IntPtr Function()>>("git_libgit2_features")
       .asFunction();
+
+  static final int Function() init = nativeGit2
+      .lookup<NativeFunction<IntPtr Function()>>("git_libgit2_init")
+      .asFunction();
+
+  static final int Function() shutdown = nativeGit2
+      .lookup<NativeFunction<IntPtr Function()>>("git_libgit2_shutdown")
+      .asFunction();
+
+  static final Pointer<git_error> Function() errorLast = nativeGit2
+      .lookup<NativeFunction<Pointer<git_error> Function()>>("git_error_last")
+      .asFunction();
+
+  static initTest() {
+    print(Libgit2.init());
+    print(Libgit2.errorLast()); 
+  }
 }

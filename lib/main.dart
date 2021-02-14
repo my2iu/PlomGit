@@ -150,6 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Libgit2.platformVersion
         .then((val) => print(val))
         .catchError((err) => print(err.toString()));
+    Libgit2.initTest();
     print(Libgit2.queryFeatures());
     // var jsGit = JsForGit(null);
     // jsGit
