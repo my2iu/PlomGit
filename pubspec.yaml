@@ -37,6 +37,8 @@ dependencies:
 
   flutter_jscore: ^0.1.1
 
+  stream_channel: ^2.0.0
+
   # I wanted universal_platform to allow me to distinguish between Android
   # and other platforms without using Platform (which causes problems with
   # compiling for the web), but I ended up needing other things from Platform

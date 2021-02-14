@@ -3,19 +3,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
+import 'package:PlomGit/src/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:logging/logging.dart';
+import 'package:logging/logging.dart' as log;
 import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
 import 'package:tuple/tuple.dart';
 import 'package:libgit2/libgit2.dart';
 
 void main() {
-  hierarchicalLoggingEnabled = true;
-  Logger("plomgit.fs").level = Level.ALL;
-  Logger("plomgit.http").level = Level.ALL;
-  Logger.root.onRecord.listen((record) {
+  log.hierarchicalLoggingEnabled = true;
+  log.Logger("plomgit.fs").level = log.Level.ALL;
+  log.Logger("plomgit.http").level = log.Level.ALL;
+  log.Logger("plomgit.gitisolate").level = log.Level.ALL;
+  log.Logger.root.onRecord.listen((record) {
     developer.log('${record.loggerName}: ${record.message}',
         level: record.level.value, name: record.loggerName);
   });
@@ -152,6 +154,9 @@ class _MyHomePageState extends State<MyHomePage> {
         .catchError((err) => print(err.toString()));
     Libgit2.initTest();
     print(Libgit2.queryFeatures());
+    GitIsolate.instance.queryFeatures().then((result) {
+      print("isolate result " + result.toString());
+    });
     // var jsGit = JsForGit(null);
     // jsGit
     //     .clone()
