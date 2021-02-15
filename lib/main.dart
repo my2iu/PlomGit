@@ -186,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _cloneRepository(BuildContext context, String name, String url) {
     _getRepositoryDirForName(name).then((pathUri) {
-      GitIsolate.instance.clone(pathUri.toFilePath(), url).then((val) {
+      GitIsolate.instance.clone(url, pathUri.toFilePath()).then((val) {
         Navigator.push(
             context,
             MaterialPageRoute<String>(
@@ -195,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }).catchError((error) {
         _refreshRepositories();
         Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+            .showSnackBar(SnackBar(content: Text('Error: $error')));
       });
     });
   }

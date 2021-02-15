@@ -28,15 +28,15 @@ class Libgit2 {
       : DynamicLibrary.process();
 
   static final int Function() queryFeatures = nativeGit2
-      .lookup<NativeFunction<IntPtr Function()>>("git_libgit2_features")
+      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_features")
       .asFunction();
 
   static final int Function() init = nativeGit2
-      .lookup<NativeFunction<IntPtr Function()>>("git_libgit2_init")
+      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_init")
       .asFunction();
 
   static final int Function() shutdown = nativeGit2
-      .lookup<NativeFunction<IntPtr Function()>>("git_libgit2_shutdown")
+      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_shutdown")
       .asFunction();
 
   static final Pointer<git_error> Function() errorLast = nativeGit2
@@ -47,8 +47,8 @@ class Libgit2 {
       _repositoryInit = nativeGit2
           .lookup<
               NativeFunction<
-                  IntPtr Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
-                      IntPtr)>>("git_repository_init")
+                  Int32 Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
+                      Uint32)>>("git_repository_init")
           .asFunction();
 
   static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
@@ -56,7 +56,7 @@ class Libgit2 {
       nativeGit2
           .lookup<
               NativeFunction<
-                  IntPtr Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
+                  Int32 Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
                       Pointer<Utf8>, Pointer<NativeType>)>>("git_clone")
           .asFunction();
 
@@ -82,7 +82,7 @@ class Libgit2 {
     var dirPtr = Utf8.toUtf8(dir);
     var urlPtr = Utf8.toUtf8(url);
     try {
-      _checkErrors(_clone(repository, urlPtr, dirPtr, Pointer.fromAddress(0)));
+      _checkErrors(_clone(repository, urlPtr, dirPtr, nullptr));
     } finally {
       free(dirPtr);
       free(urlPtr);
@@ -100,9 +100,14 @@ class Libgit2Exception implements Exception {
 
   Libgit2Exception.fromErrorCode(this.errorCode) {
     var err = Libgit2.errorLast();
-    if (err.address != 0) {
+    if (err.address != nullptr) {
       message = Utf8.fromUtf8(err.ref.message);
       klass = err.ref.klass;
     }
+  }
+
+  String toString() {
+    if (message != null) return message + '($errorCode:$klass)';
+    return 'Libgit2Exception($errorCode)';
   }
 }
