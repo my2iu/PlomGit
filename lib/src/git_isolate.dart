@@ -72,6 +72,10 @@ class GitIsolate {
     return _sendRequest(RequestType.initRepository, [dir]);
   }
 
+  Future<dynamic> clone(String url, String dir) {
+    return _sendRequest(RequestType.clone, [url, dir]);
+  }
+
   // Makes a response to a request from the isolate back to the requester
   static void _isolateResponse(IsolateChannel channel, dynamic data) {
     channel.sink.add([0, data]);
@@ -99,6 +103,10 @@ class GitIsolate {
             Libgit2.initRepository(event[1]);
             _isolateResponse(channel, "");
             break;
+          case RequestType.clone:
+            Libgit2.clone(event[1], event[2]);
+            _isolateResponse(channel, "");
+            break;
         }
       } on Libgit2Exception catch (e) {
         // Automatically serialize libgit2 errors
@@ -114,4 +122,4 @@ class GitIsolate {
 }
 
 /// Identifies the type of request/operation being sent to the git isolate
-enum RequestType { queryFeatures, initRepository }
+enum RequestType { queryFeatures, initRepository, clone }

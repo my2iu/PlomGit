@@ -186,8 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _cloneRepository(BuildContext context, String name, String url) {
     _getRepositoryDirForName(name).then((pathUri) {
-      var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit.clone(name, url).then((val) {
+      GitIsolate.instance.clone(pathUri.toFilePath(), url).then((val) {
         Navigator.push(
             context,
             MaterialPageRoute<String>(

@@ -51,6 +51,15 @@ class Libgit2 {
                       IntPtr)>>("git_repository_init")
           .asFunction();
 
+  static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
+          Pointer<Utf8>, Pointer<NativeType>) _clone =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  IntPtr Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
+                      Pointer<Utf8>, Pointer<NativeType>)>>("git_clone")
+          .asFunction();
+
   /// Checks the return code for errors and if so, convert it to a thrown
   /// exception
   static int _checkErrors(int errorCode) {
@@ -61,8 +70,23 @@ class Libgit2 {
   static void initRepository(String dir) {
     Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
     var dirPtr = Utf8.toUtf8(dir);
-    _checkErrors(_repositoryInit(repository, dirPtr, 0));
-    free(dirPtr);
+    try {
+      _checkErrors(_repositoryInit(repository, dirPtr, 0));
+    } finally {
+      free(dirPtr);
+    }
+  }
+
+  static void clone(String url, String dir) {
+    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    var dirPtr = Utf8.toUtf8(dir);
+    var urlPtr = Utf8.toUtf8(url);
+    try {
+      _checkErrors(_clone(repository, urlPtr, dirPtr, Pointer.fromAddress(0)));
+    } finally {
+      free(dirPtr);
+      free(urlPtr);
+    }
   }
 }
 
