@@ -44,17 +44,41 @@ class Libgit2 {
       .asFunction();
 
   static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>, int)
-      _repository_init = nativeGit2
+      _repositoryInit = nativeGit2
           .lookup<
               NativeFunction<
                   IntPtr Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
                       IntPtr)>>("git_repository_init")
           .asFunction();
 
+  /// Checks the return code for errors and if so, convert it to a thrown
+  /// exception
+  static int _checkErrors(int errorCode) {
+    if (errorCode < 0) throw Libgit2Exception.fromErrorCode(errorCode);
+    return errorCode;
+  }
+
   static void initRepository(String dir) {
     Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
     var dirPtr = Utf8.toUtf8(dir);
-    var result = _repository_init(repository, dirPtr, 0);
+    _checkErrors(_repositoryInit(repository, dirPtr, 0));
     free(dirPtr);
+  }
+}
+
+/// Packages up Libgit2 error code and error message in a single class
+class Libgit2Exception implements Exception {
+  String message;
+  int errorCode;
+  int klass;
+
+  Libgit2Exception(this.errorCode, this.message, this.klass);
+
+  Libgit2Exception.fromErrorCode(this.errorCode) {
+    var err = Libgit2.errorLast();
+    if (err.address != 0) {
+      message = Utf8.fromUtf8(err.ref.message);
+      klass = err.ref.klass;
+    }
   }
 }

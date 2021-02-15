@@ -213,18 +213,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _createLocalRepository(BuildContext context, String name) {
     _getRepositoryDirForName(name).then((pathUri) {
-      var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit.init(name).then((val) {
-        Navigator.push(
-            context,
-            MaterialPageRoute<String>(
-              builder: (BuildContext context) =>
-                  RepositoryView(name, pathUri, jsGit),
-            )).then((result) => _refreshRepositories());
+      GitIsolate.instance.initRepository(pathUri.toFilePath()).then((val) {
+        _refreshRepositories();
+        // Navigator.push(
+        //     context,
+        //     MaterialPageRoute<String>(
+        //       builder: (BuildContext context) =>
+        //           RepositoryView(name, pathUri, jsGit),
+        //     )).then((result) => _refreshRepositories());
       }).catchError((error) {
         _refreshRepositories();
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
+        Scaffold.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ' + error.toString())));
       });
     });
   }

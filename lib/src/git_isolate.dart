@@ -36,26 +36,48 @@ class GitIsolate {
     // Listen for responses from the isolate
     _isoChannel.stream.listen((event) {
       _logger.finest("received response " + event.toString());
-      _taskQueue.removeFirst().complete(event);
+      if (event[0] == 0) {
+        _taskQueue.removeFirst().complete(event[1]);
+      } else if (event[0] == -1) {
+        _taskQueue.removeFirst().completeError(
+            Libgit2Exception(event[1][0], event[1][1], event[1][2]));
+      } else {
+        _taskQueue.removeFirst().completeError(event[1]);
+      }
     });
   }
 
-  Future<dynamic> queryFeatures() {
-    _logger.finer("queryFeatures request");
-    _isoChannel.sink.add([RequestType.queryFeatures.index]);
+  Future<dynamic> _sendRequest(RequestType request, [List params]) {
+    List req;
+    if (params != null) {
+      req = [request.index];
+      req.addAll(params);
+    } else {
+      req = [request.index];
+    }
+    _logger.finer("$request request");
+    _isoChannel.sink.add(req);
     Completer completer = new Completer();
     _taskQueue.add(completer);
     return completer.future;
+  }
+
+  // API of different git operations that can be performed
+  Future<dynamic> queryFeatures() {
+    return _sendRequest(RequestType.queryFeatures);
   }
 
   Future<dynamic> initRepository(String dir) {
-    _logger.finer("initRepository request");
-    _isoChannel.sink.add([RequestType.initRepository.index, dir]);
-    Completer completer = new Completer();
-    _taskQueue.add(completer);
-    return completer.future;
+    return _sendRequest(RequestType.initRepository, [dir]);
   }
 
+  // Makes a response to a request from the isolate back to the requester
+  static void _isolateResponse(IsolateChannel channel, dynamic data) {
+    channel.sink.add([0, data]);
+  }
+
+  // Code for the isolate. It waits for requests for git operations to arrive,
+  // performs them and then sends back the response.
   static void isolateMain(SendPort sendPort) {
     Libgit2.init();
 
@@ -66,15 +88,25 @@ class GitIsolate {
       // processed (which is normally the case since libgit2 is a synchronous
       // blocking api). Otherwise, a second event might get dispatched
       // asynchronously while the previous one is still being executed.
-      RequestType eventType = RequestType.values[event[0] as int];
-      switch (eventType) {
-        case RequestType.queryFeatures:
-          channel.sink.add(Libgit2.queryFeatures());
-          break;
-        case RequestType.initRepository:
-          Libgit2.initRepository(event[1]);
-          channel.sink.add("");
-          break;
+      try {
+        RequestType eventType = RequestType.values[event[0] as int];
+        switch (eventType) {
+          case RequestType.queryFeatures:
+            _isolateResponse(channel, Libgit2.queryFeatures());
+            break;
+          case RequestType.initRepository:
+            Libgit2.initRepository(event[1]);
+            _isolateResponse(channel, "");
+            break;
+        }
+      } on Libgit2Exception catch (e) {
+        // Automatically serialize libgit2 errors
+        channel.sink.add([
+          -1,
+          [e.errorCode, e.message, e.klass]
+        ]);
+      } catch (e) {
+        channel.sink.add([-2, e.toString()]);
       }
     });
   }
