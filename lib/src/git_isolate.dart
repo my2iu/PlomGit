@@ -47,6 +47,7 @@ class GitIsolate {
     });
   }
 
+  // Sends a request for a git operation to the git isolate
   Future<dynamic> _sendRequest(RequestType request, [List params]) {
     List req;
     if (params != null) {

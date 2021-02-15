@@ -1,14 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:path/path.dart' as path;
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
-  final JsForGit jsGit;
+  // final JsForGit jsGit;
   final Uri repositoryUri;
-  RepositoryView(this.repositoryName, this.repositoryUri, this.jsGit);
+  RepositoryView(this.repositoryName, this.repositoryUri);
   @override
   _RepositoryViewState createState() =>
       _RepositoryViewState(repositoryName, repositoryUri);

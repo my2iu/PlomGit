@@ -10,7 +10,6 @@ import 'package:logging/logging.dart' as log;
 import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
 import 'package:tuple/tuple.dart';
-import 'package:libgit2/libgit2.dart';
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
@@ -149,18 +148,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _pressed(BuildContext context) {
-    Libgit2.platformVersion
-        .then((val) => print(val))
-        .catchError((err) => print(err.toString()));
-    print(Libgit2.queryFeatures());
-    GitIsolate.instance.queryFeatures().then((result) {
-      print("isolate result " + result.toString());
-    });
-    _getRepositoryDirForName("libgit2test").then((pathUri) {
-      GitIsolate.instance.initRepository(pathUri.toFilePath()).then((val) {
-        _refreshRepositories();
-      });
-    });
+    // Libgit2.platformVersion
+    //     .then((val) => print(val))
+    //     .catchError((err) => print(err.toString()));
+
     // var jsGit = JsForGit(null);
     // jsGit
     //     .clone()
@@ -200,8 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.push(
             context,
             MaterialPageRoute<String>(
-              builder: (BuildContext context) =>
-                  RepositoryView(name, pathUri, jsGit),
+              builder: (BuildContext context) => RepositoryView(name, pathUri),
             )).then((result) => _refreshRepositories());
       }).catchError((error) {
         _refreshRepositories();
@@ -214,13 +204,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void _createLocalRepository(BuildContext context, String name) {
     _getRepositoryDirForName(name).then((pathUri) {
       GitIsolate.instance.initRepository(pathUri.toFilePath()).then((val) {
-        _refreshRepositories();
-        // Navigator.push(
-        //     context,
-        //     MaterialPageRoute<String>(
-        //       builder: (BuildContext context) =>
-        //           RepositoryView(name, pathUri, jsGit),
-        //     )).then((result) => _refreshRepositories());
+        // _refreshRepositories();
+        Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+              builder: (BuildContext context) => RepositoryView(name, pathUri),
+            )).then((result) => _refreshRepositories());
       }).catchError((error) {
         _refreshRepositories();
         Scaffold.of(context).showSnackBar(
@@ -235,8 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.push(
         context,
         MaterialPageRoute<String>(
-            builder: (BuildContext context) =>
-                RepositoryView(name, uri, jsGit)),
+            builder: (BuildContext context) => RepositoryView(name, uri)),
       ).then((result) => _refreshRepositories());
     });
   }
@@ -259,8 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.push(
             context,
             MaterialPageRoute<String>(
-              builder: (BuildContext context) =>
-                  RepositoryView(name, pathUri, jsGit),
+              builder: (BuildContext context) => RepositoryView(name, pathUri),
             )).then((result) {
           _refreshRepositories();
           Scaffold.of(context)
@@ -281,8 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.push(
             context,
             MaterialPageRoute<String>(
-              builder: (BuildContext context) =>
-                  RepositoryView(name, pathUri, jsGit),
+              builder: (BuildContext context) => RepositoryView(name, pathUri),
             )).then((result) {
           _refreshRepositories();
           Scaffold.of(context)
@@ -303,8 +289,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.push(
             context,
             MaterialPageRoute<String>(
-              builder: (BuildContext context) =>
-                  RepositoryView(name, pathUri, jsGit),
+              builder: (BuildContext context) => RepositoryView(name, pathUri),
             )).then((result) {
           _refreshRepositories();
           Scaffold.of(context)
