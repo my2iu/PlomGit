@@ -42,13 +42,23 @@ class GitIsolate {
 
   Future<dynamic> queryFeatures() {
     _logger.finer("queryFeatures request");
-    _isoChannel.sink.add(["queryFeatures"]);
+    _isoChannel.sink.add([RequestType.queryFeatures.index]);
+    Completer completer = new Completer();
+    _taskQueue.add(completer);
+    return completer.future;
+  }
+
+  Future<dynamic> initRepository(String dir) {
+    _logger.finer("initRepository request");
+    _isoChannel.sink.add([RequestType.initRepository.index, dir]);
     Completer completer = new Completer();
     _taskQueue.add(completer);
     return completer.future;
   }
 
   static void isolateMain(SendPort sendPort) {
+    Libgit2.init();
+
     IsolateChannel channel = IsolateChannel.connectSend(sendPort);
     channel.stream.listen((event) {
       // Since we don't compile libgit2 to be thread-safe, don't return
@@ -56,11 +66,19 @@ class GitIsolate {
       // processed (which is normally the case since libgit2 is a synchronous
       // blocking api). Otherwise, a second event might get dispatched
       // asynchronously while the previous one is still being executed.
-      String eventType = event[0];
+      RequestType eventType = RequestType.values[event[0] as int];
       switch (eventType) {
-        case "queryFeatures":
+        case RequestType.queryFeatures:
           channel.sink.add(Libgit2.queryFeatures());
+          break;
+        case RequestType.initRepository:
+          Libgit2.initRepository(event[1]);
+          channel.sink.add("");
+          break;
       }
     });
   }
 }
+
+/// Identifies the type of request/operation being sent to the git isolate
+enum RequestType { queryFeatures, initRepository }

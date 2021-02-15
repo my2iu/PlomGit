@@ -152,10 +152,14 @@ class _MyHomePageState extends State<MyHomePage> {
     Libgit2.platformVersion
         .then((val) => print(val))
         .catchError((err) => print(err.toString()));
-    Libgit2.initTest();
     print(Libgit2.queryFeatures());
     GitIsolate.instance.queryFeatures().then((result) {
       print("isolate result " + result.toString());
+    });
+    _getRepositoryDirForName("libgit2test").then((pathUri) {
+      GitIsolate.instance.initRepository(pathUri.toFilePath()).then((val) {
+        _refreshRepositories();
+      });
     });
     // var jsGit = JsForGit(null);
     // jsGit

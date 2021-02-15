@@ -43,8 +43,18 @@ class Libgit2 {
       .lookup<NativeFunction<Pointer<git_error> Function()>>("git_error_last")
       .asFunction();
 
-  static initTest() {
-    print(Libgit2.init());
-    print(Libgit2.errorLast()); 
+  static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>, int)
+      _repository_init = nativeGit2
+          .lookup<
+              NativeFunction<
+                  IntPtr Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
+                      IntPtr)>>("git_repository_init")
+          .asFunction();
+
+  static void initRepository(String dir) {
+    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    var dirPtr = Utf8.toUtf8(dir);
+    var result = _repository_init(repository, dirPtr, 0);
+    free(dirPtr);
   }
 }
