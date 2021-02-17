@@ -6,8 +6,10 @@ import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:PlomGit/src/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:libgit2/libgit2.dart' show Libgit2;
 import 'package:logging/logging.dart' as log;
 import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
 import 'package:tuple/tuple.dart';
 
@@ -21,6 +23,12 @@ void main() {
         level: record.level.value, name: record.loggerName);
   });
   runApp(MyApp());
+}
+
+class Libgit2Initializer {
+  Libgit2Initializer() {
+    Libgit2.initializeC().then((result) {});
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -45,7 +53,15 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'PlomGit Repositories'),
+      home: MultiProvider(
+        providers: [
+          // Need to create the Libgit2Initializer on startup to initialize
+          // the Libgit2 interface layer
+          Provider<Libgit2Initializer>(
+              create: (_) => Libgit2Initializer(), lazy: false),
+        ],
+        child: MyHomePage(title: 'PlomGit Repositories'),
+      ),
     );
   }
 }

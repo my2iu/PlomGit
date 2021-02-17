@@ -37,6 +37,10 @@ dependencies:
 
   flutter_jscore: ^0.1.1
 
+  # Flutter state management stuff
+  provider: ^4.3.3
+
+  # For transferring data to and from isolates
   stream_channel: ^2.0.0
 
   # I wanted universal_platform to allow me to distinguish between Android
