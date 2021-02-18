@@ -23,10 +23,6 @@ class Libgit2 {
     return version;
   }
 
-  static Future<String> initializeC() async {
-    return await _channel.invokeMethod("initializeC");
-  }
-
   static final DynamicLibrary nativeGit2 = Platform.isAndroid
       ? DynamicLibrary.open("libgit2.so")
       : DynamicLibrary.process();

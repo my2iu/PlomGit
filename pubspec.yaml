@@ -38,7 +38,7 @@ dependencies:
   flutter_jscore: ^0.1.1
 
   # Flutter state management stuff
-  provider: ^4.3.3
+  #provider: ^4.3.3
 
   # For transferring data to and from isolates
   stream_channel: ^2.0.0

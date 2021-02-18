@@ -20,16 +20,15 @@ public class Libgit2Plugin implements FlutterPlugin, MethodCallHandler {
   @Override public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "libgit2");
     channel.setMethodCallHandler(this);
+
+    // Need to call from Java to C in order to register the VM with
+    // the C code so that C code can later call into Java
+    System.loadLibrary("git2");
   }
 
   @Override public void onMethodCall(MethodCall call, Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else if (call.method.equals("initializeC")) {
-      // Need to call from Java to C in order to register the VM with
-      // the C code so that C code can later call into Java
-      System.loadLibrary("git2");
-      result.success("OK");
     } else {
       result.notImplemented();
     }
