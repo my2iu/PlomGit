@@ -97,7 +97,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-  assets:
-    - assets/js/isomorphic-git.js
-    - assets/js/isomorphic-git-http.js
-    - assets/js/fs.js
+#  assets:
+#    - assets/js/isomorphic-git.js
+#    - assets/js/isomorphic-git-http.js
+#    - assets/js/fs.js

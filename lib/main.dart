@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:PlomGit/src/jsgit.dart' show JsForGit;
+// import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:PlomGit/src/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
@@ -219,7 +219,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _showRepository(String name, BuildContext context) {
     _getRepositoryDirForName(name).then((uri) {
-      var jsGit = JsForGit.forNewDirectory(uri);
       Navigator.push(
         context,
         MaterialPageRoute<String>(
@@ -235,70 +234,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _refreshRepositories();
       Scaffold.of(context)
           .showSnackBar(SnackBar(content: Text('Repository deleted')));
-    });
-  }
-
-  void _addRemote(String name, BuildContext context) {
-    var url = 'https://github.com/my2iu/PlomGit.git';
-    _getRepositoryDirForName(name).then((pathUri) {
-      var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit.addRemoteTest(url).then((val) {
-        Navigator.push(
-            context,
-            MaterialPageRoute<String>(
-              builder: (BuildContext context) => RepositoryView(name, pathUri),
-            )).then((result) {
-          _refreshRepositories();
-          Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text('Add Remote Done')));
-        });
-      }).catchError((error) {
-        _refreshRepositories();
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
-      });
-    });
-  }
-
-  void _fetch(String name, BuildContext context) {
-    _getRepositoryDirForName(name).then((pathUri) {
-      var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit.fetchTest().then((val) {
-        Navigator.push(
-            context,
-            MaterialPageRoute<String>(
-              builder: (BuildContext context) => RepositoryView(name, pathUri),
-            )).then((result) {
-          _refreshRepositories();
-          Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text('Fetch Done')));
-        });
-      }).catchError((error) {
-        _refreshRepositories();
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
-      });
-    });
-  }
-
-  void _checkout(String name, BuildContext context) {
-    _getRepositoryDirForName(name).then((pathUri) {
-      var jsGit = JsForGit.forNewDirectory(pathUri);
-      jsGit.checkoutTest().then((val) {
-        Navigator.push(
-            context,
-            MaterialPageRoute<String>(
-              builder: (BuildContext context) => RepositoryView(name, pathUri),
-            )).then((result) {
-          _refreshRepositories();
-          Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text('Checkout Done')));
-        });
-      }).catchError((error) {
-        _refreshRepositories();
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ' + error)));
-      });
     });
   }
 
@@ -332,15 +267,6 @@ class _MyHomePageState extends State<MyHomePage> {
               PopupMenuItem(
                   value: () => _deleteRepository(name, context),
                   child: Text('Delete')),
-              PopupMenuItem(
-                  value: () => _addRemote(name, context),
-                  child: Text('Test add remote')),
-              PopupMenuItem(
-                  value: () => _fetch(name, context),
-                  child: Text('Test fetch')),
-              PopupMenuItem(
-                  value: () => _checkout(name, context),
-                  child: Text('Test checkout')),
             ]);
   }
 
