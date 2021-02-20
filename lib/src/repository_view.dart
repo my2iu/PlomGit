@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
+import 'package:PlomGit/src/git_isolate.dart' show GitIsolate;
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
   // final JsForGit jsGit;
   final Uri repositoryUri;
+
   RepositoryView(this.repositoryName, this.repositoryUri);
   @override
   _RepositoryViewState createState() =>
@@ -16,17 +18,41 @@ class RepositoryView extends StatefulWidget {
 class _RepositoryViewState extends State<RepositoryView> {
   final String repositoryName;
   final Uri repositoryUri;
+  String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
+  List<String> remoteList;
+
   _RepositoryViewState(this.repositoryName, this.repositoryUri) {
     dirContents = Directory.fromUri(repositoryUri).list().toList();
+    GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
+      remoteList = remotes;
+    });
+  }
+
+  Widget buildActionsPopupMenu(BuildContext context) {
+    return PopupMenuButton(
+        onSelected: (fn) => fn(),
+        itemBuilder: (BuildContext context) {
+          List<PopupMenuEntry> entries = List();
+          if (remoteList != null) {
+            remoteList.forEach((remote) {
+              entries.add(PopupMenuItem(
+                  value: () {
+                    print("fetch");
+                  },
+                  child: Text('Fetch from $remote')));
+            });
+          }
+          return entries;
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(repositoryName),
-        ),
+            title: Text(repositoryName),
+            actions: <Widget>[buildActionsPopupMenu(context)]),
         body: FutureBuilder(
             future: dirContents,
             builder: (BuildContext context,

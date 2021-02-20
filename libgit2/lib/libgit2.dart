@@ -8,8 +8,15 @@ import 'package:ffi/ffi.dart';
 class git_error extends Struct {
   Pointer<Utf8> message;
 
-  @IntPtr()
+  @Int32()
   int klass;
+}
+
+class _git_strarray extends Struct {
+  Pointer<Pointer<Utf8>> strings;
+
+  @Int64()
+  int count;
 }
 
 class Libgit2 {
@@ -51,6 +58,19 @@ class Libgit2 {
                       Uint32)>>("git_repository_init")
           .asFunction();
 
+  static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>)
+      _repositoryOpen = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<NativeType>>,
+                      Pointer<Utf8>)>>("git_repository_open")
+          .asFunction();
+
+  static final void Function(Pointer<NativeType>) _repositoryFree = nativeGit2
+      .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
+          "git_repository_free")
+      .asFunction();
+
   static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
           Pointer<Utf8>, Pointer<NativeType>) _clone =
       nativeGit2
@@ -58,6 +78,20 @@ class Libgit2 {
               NativeFunction<
                   Int32 Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
                       Pointer<Utf8>, Pointer<NativeType>)>>("git_clone")
+          .asFunction();
+
+  static final int Function(Pointer<_git_strarray>) _strArrayDispose =
+      nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<_git_strarray>)>>(
+              "git_strarray_dispose")
+          .asFunction();
+
+  static final int Function(Pointer<_git_strarray>, Pointer<NativeType>)
+      _remoteList = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<_git_strarray>,
+                      Pointer<NativeType>)>>("git_remote_list")
           .asFunction();
 
   /// Checks the return code for errors and if so, convert it to a thrown
@@ -88,6 +122,27 @@ class Libgit2 {
       free(urlPtr);
     }
   }
+
+  static List<String> remoteList(String dir) {
+    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    repository.value = nullptr;
+    Pointer<_git_strarray> remotesStrings = allocate<_git_strarray>();
+    var dirPtr = Utf8.toUtf8(dir);
+    try {
+      _checkErrors(_repositoryOpen(repository, dirPtr));
+      _checkErrors(_remoteList(remotesStrings, repository.value));
+      List<String> remotes = List();
+      for (int n = 0; n < remotesStrings.ref.count; n++)
+        remotes.add(Utf8.fromUtf8(remotesStrings.ref.strings[n]));
+      _strArrayDispose(remotesStrings);
+      return remotes;
+    } finally {
+      free(dirPtr);
+      if (repository.value != nullptr) _repositoryFree(repository.value);
+      free(repository);
+      free(remotesStrings);
+    }
+  }
 }
 
 /// Packages up Libgit2 error code and error message in a single class
@@ -100,7 +155,7 @@ class Libgit2Exception implements Exception {
 
   Libgit2Exception.fromErrorCode(this.errorCode) {
     var err = Libgit2.errorLast();
-    if (err.address != nullptr) {
+    if (err != nullptr) {
       message = Utf8.fromUtf8(err.ref.message);
       klass = err.ref.klass;
     }
