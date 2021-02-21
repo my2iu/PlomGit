@@ -94,6 +94,57 @@ class Libgit2 {
                       Pointer<NativeType>)>>("git_remote_list")
           .asFunction();
 
+  static final int Function(Pointer<NativeType>, int version)
+      _git_fetch_options_init = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
+              "git_fetch_options_init")
+          .asFunction();
+
+  static final int Function(Pointer<NativeType>, int version)
+      _git_push_options_init = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
+              "git_push_options_init")
+          .asFunction();
+
+  static final int Function() _git_fetch_options_size = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_size")
+      .asFunction();
+
+  static final int Function() _git_push_options_size = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_push_options_size")
+      .asFunction();
+
+  static final int Function() _git_fetch_options_version = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_version")
+      .asFunction();
+
+  static final int Function() _git_push_options_version = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_push_options_version")
+      .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<NativeType>>, Pointer<NativeType>, Pointer<Utf8>)
+      _git_remote_lookup = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<NativeType>>,
+                      Pointer<NativeType>, Pointer<Utf8>)>>("git_remote_lookup")
+          .asFunction();
+
+  static final int Function(Pointer<NativeType>) _git_remote_free = nativeGit2
+      .lookup<NativeFunction<Int32 Function(Pointer<NativeType>)>>(
+          "git_remote_free")
+      .asFunction();
+
+  static final int Function(Pointer<NativeType>, Pointer<_git_strarray>,
+          Pointer<NativeType>, Pointer<Utf8>) _git_remote_fetch =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<NativeType>, Pointer<_git_strarray>,
+                      Pointer<NativeType>, Pointer<Utf8>)>>("git_remote_fetch")
+          .asFunction();
+
   /// Checks the return code for errors and if so, convert it to a thrown
   /// exception
   static int _checkErrors(int errorCode) {
@@ -141,6 +192,33 @@ class Libgit2 {
       if (repository.value != nullptr) _repositoryFree(repository.value);
       free(repository);
       free(remotesStrings);
+    }
+  }
+
+  static void fetch(String dir, String remoteStr) {
+    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    repository.value = nullptr;
+    Pointer<Pointer<NativeType>> remote = allocate<Pointer<NativeType>>();
+    remote.value = nullptr;
+    Pointer<NativeType> fetchOptions =
+        allocate<Int8>(count: _git_fetch_options_size());
+    var dirPtr = Utf8.toUtf8(dir);
+    var remoteStrPtr = Utf8.toUtf8(remoteStr);
+    try {
+      _checkErrors(_repositoryOpen(repository, dirPtr));
+      _checkErrors(_git_remote_lookup(remote, repository.value, remoteStrPtr));
+      _checkErrors(
+          _git_fetch_options_init(fetchOptions, _git_fetch_options_version()));
+      _checkErrors(
+          _git_remote_fetch(remote.value, nullptr, fetchOptions, nullptr));
+    } finally {
+      free(remoteStrPtr);
+      free(dirPtr);
+      free(fetchOptions);
+      if (repository.value != nullptr) _repositoryFree(repository.value);
+      free(repository);
+      if (remote.value != nullptr) _git_remote_free(remote.value);
+      free(remote);
     }
   }
 }

@@ -80,6 +80,10 @@ class GitIsolate {
     return _sendRequest(RequestType.listRemotes, [dir]);
   }
 
+  Future<dynamic> fetch(String dir, String remote) {
+    return _sendRequest(RequestType.fetch, [dir, remote]);
+  }
+
   // Makes a response to a request from the isolate back to the requester
   static void _isolateResponse(IsolateChannel channel, dynamic data) {
     channel.sink.add([0, data]);
@@ -114,6 +118,10 @@ class GitIsolate {
           case RequestType.listRemotes:
             _isolateResponse(channel, Libgit2.remoteList(event[1]));
             break;
+          case RequestType.fetch:
+            Libgit2.fetch(event[1], event[2]);
+            _isolateResponse(channel, "");
+            break;
         }
       } on Libgit2Exception catch (e) {
         // Automatically serialize libgit2 errors
@@ -129,4 +137,4 @@ class GitIsolate {
 }
 
 /// Identifies the type of request/operation being sent to the git isolate
-enum RequestType { queryFeatures, initRepository, clone, listRemotes }
+enum RequestType { queryFeatures, initRepository, clone, listRemotes, fetch }

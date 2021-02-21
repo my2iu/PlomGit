@@ -38,7 +38,15 @@ class _RepositoryViewState extends State<RepositoryView> {
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
                   value: () {
-                    print("fetch");
+                    GitIsolate.instance
+                        .fetch(repositoryDir, remote)
+                        .then((result) {
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text('Fetch successful')));
+                    }).catchError((error) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text('Error: ' + error.toString())));
+                    });
                   },
                   child: Text('Fetch from $remote')));
             });
