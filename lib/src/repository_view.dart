@@ -50,6 +50,21 @@ class _RepositoryViewState extends State<RepositoryView> {
                   },
                   child: Text('Fetch from $remote')));
             });
+            remoteList.forEach((remote) {
+              entries.add(PopupMenuItem(
+                  value: () {
+                    GitIsolate.instance
+                        .push(repositoryDir, remote)
+                        .then((result) {
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text('Push successful')));
+                    }).catchError((error) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text('Error: ' + error.toString())));
+                    });
+                  },
+                  child: Text('Push to $remote')));
+            });
           }
           return entries;
         });

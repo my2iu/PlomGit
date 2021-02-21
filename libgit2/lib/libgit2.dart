@@ -145,6 +145,15 @@ class Libgit2 {
                       Pointer<NativeType>, Pointer<Utf8>)>>("git_remote_fetch")
           .asFunction();
 
+  static final int Function(
+          Pointer<NativeType>, Pointer<_git_strarray>, Pointer<NativeType>)
+      _git_remote_push = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<NativeType>, Pointer<_git_strarray>,
+                      Pointer<NativeType>)>>("git_remote_push")
+          .asFunction();
+
   /// Checks the return code for errors and if so, convert it to a thrown
   /// exception
   static int _checkErrors(int errorCode) {
@@ -154,16 +163,20 @@ class Libgit2 {
 
   static void initRepository(String dir) {
     Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    repository.value = nullptr;
     var dirPtr = Utf8.toUtf8(dir);
     try {
       _checkErrors(_repositoryInit(repository, dirPtr, 0));
     } finally {
       free(dirPtr);
+      if (repository.value != nullptr) _repositoryFree(repository.value);
+      free(repository);
     }
   }
 
   static void clone(String url, String dir) {
     Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    repository.value = nullptr;
     var dirPtr = Utf8.toUtf8(dir);
     var urlPtr = Utf8.toUtf8(url);
     try {
@@ -171,54 +184,83 @@ class Libgit2 {
     } finally {
       free(dirPtr);
       free(urlPtr);
+      if (repository.value != nullptr) _repositoryFree(repository.value);
+      free(repository);
     }
   }
 
-  static List<String> remoteList(String dir) {
+  static T _withRepository<T>(String dir, T Function(Pointer<NativeType>) fn) {
     Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
     repository.value = nullptr;
-    Pointer<_git_strarray> remotesStrings = allocate<_git_strarray>();
     var dirPtr = Utf8.toUtf8(dir);
     try {
       _checkErrors(_repositoryOpen(repository, dirPtr));
-      _checkErrors(_remoteList(remotesStrings, repository.value));
-      List<String> remotes = List();
-      for (int n = 0; n < remotesStrings.ref.count; n++)
-        remotes.add(Utf8.fromUtf8(remotesStrings.ref.strings[n]));
-      _strArrayDispose(remotesStrings);
-      return remotes;
+      return fn(repository.value);
     } finally {
       free(dirPtr);
       if (repository.value != nullptr) _repositoryFree(repository.value);
       free(repository);
+    }
+  }
+
+  static T _withRepositoryAndRemote<T>(String dir, String remoteStr,
+      T Function(Pointer<NativeType>, Pointer<NativeType>) fn) {
+    Pointer<Pointer<NativeType>> remote = allocate<Pointer<NativeType>>();
+    remote.value = nullptr;
+    var remoteStrPtr = Utf8.toUtf8(remoteStr);
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(_git_remote_lookup(remote, repo, remoteStrPtr));
+        return fn(repo, remote.value);
+      });
+    } finally {
+      free(remoteStrPtr);
+      if (remote.value != nullptr) _git_remote_free(remote.value);
+      free(remote);
+    }
+  }
+
+  static List<String> remoteList(String dir) {
+    Pointer<_git_strarray> remotesStrings = allocate<_git_strarray>();
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(_remoteList(remotesStrings, repo));
+        List<String> remotes = List();
+        for (int n = 0; n < remotesStrings.ref.count; n++)
+          remotes.add(Utf8.fromUtf8(remotesStrings.ref.strings[n]));
+        _strArrayDispose(remotesStrings);
+        return remotes;
+      });
+    } finally {
       free(remotesStrings);
     }
   }
 
   static void fetch(String dir, String remoteStr) {
-    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
-    repository.value = nullptr;
-    Pointer<Pointer<NativeType>> remote = allocate<Pointer<NativeType>>();
-    remote.value = nullptr;
     Pointer<NativeType> fetchOptions =
         allocate<Int8>(count: _git_fetch_options_size());
-    var dirPtr = Utf8.toUtf8(dir);
-    var remoteStrPtr = Utf8.toUtf8(remoteStr);
     try {
-      _checkErrors(_repositoryOpen(repository, dirPtr));
-      _checkErrors(_git_remote_lookup(remote, repository.value, remoteStrPtr));
-      _checkErrors(
-          _git_fetch_options_init(fetchOptions, _git_fetch_options_version()));
-      _checkErrors(
-          _git_remote_fetch(remote.value, nullptr, fetchOptions, nullptr));
+      return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
+        _checkErrors(_git_fetch_options_init(
+            fetchOptions, _git_fetch_options_version()));
+        _checkErrors(_git_remote_fetch(remote, nullptr, fetchOptions, nullptr));
+      });
     } finally {
-      free(remoteStrPtr);
-      free(dirPtr);
       free(fetchOptions);
-      if (repository.value != nullptr) _repositoryFree(repository.value);
-      free(repository);
-      if (remote.value != nullptr) _git_remote_free(remote.value);
-      free(remote);
+    }
+  }
+
+  static void push(String dir, String remoteStr) {
+    Pointer<NativeType> pushOptions =
+        allocate<Int8>(count: _git_push_options_size());
+    try {
+      return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
+        _checkErrors(
+            _git_push_options_init(pushOptions, _git_push_options_version()));
+        _checkErrors(_git_remote_push(remote, nullptr, pushOptions));
+      });
+    } finally {
+      free(pushOptions);
     }
   }
 }
