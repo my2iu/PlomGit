@@ -88,6 +88,10 @@ class GitIsolate {
     return _sendRequest(RequestType.push, [dir, remote]);
   }
 
+  Future<dynamic> status(String dir) {
+    return _sendRequest(RequestType.status, [dir]);
+  }
+
   // Makes a response to a request from the isolate back to the requester
   static void _isolateResponse(IsolateChannel channel, dynamic data) {
     channel.sink.add([0, data]);
@@ -130,6 +134,9 @@ class GitIsolate {
             Libgit2.push(event[1], event[2]);
             _isolateResponse(channel, "");
             break;
+          case RequestType.status:
+            _isolateResponse(channel, Libgit2.status(event[1]));
+            break;
         }
       } on Libgit2Exception catch (e) {
         // Automatically serialize libgit2 errors
@@ -151,5 +158,6 @@ enum RequestType {
   clone,
   listRemotes,
   fetch,
-  push
+  push,
+  status
 }

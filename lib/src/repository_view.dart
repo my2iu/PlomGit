@@ -65,6 +65,22 @@ class _RepositoryViewState extends State<RepositoryView> {
                   },
                   child: Text('Push to $remote')));
             });
+            entries.add(PopupMenuItem(
+                value: () {
+                  GitIsolate.instance.status(repositoryDir).then((result) {
+                    Scaffold.of(context).showSnackBar(
+                        SnackBar(content: Text('Status successful')));
+                  }).catchError((error) {
+                    Scaffold.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: ' + error.toString())));
+                  });
+                },
+                child: Text('Test status')));
+            entries.add(PopupMenuItem(
+                value: () {
+                  File(repositoryDir + '/test.txt').writeAsString("hello");
+                },
+                child: Text('Test make file')));
           }
           return entries;
         });
