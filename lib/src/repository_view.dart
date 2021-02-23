@@ -8,22 +8,26 @@ class RepositoryView extends StatefulWidget {
   final String repositoryName;
   // final JsForGit jsGit;
   final Uri repositoryUri;
+  final String pathInRepository;
 
-  RepositoryView(this.repositoryName, this.repositoryUri);
+  RepositoryView(this.repositoryName, this.repositoryUri,
+      [this.pathInRepository = ""]);
   @override
   _RepositoryViewState createState() =>
-      _RepositoryViewState(repositoryName, repositoryUri);
+      _RepositoryViewState(repositoryName, repositoryUri, pathInRepository);
 }
 
 class _RepositoryViewState extends State<RepositoryView> {
   final String repositoryName;
   final Uri repositoryUri;
+  final String _path;
   String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
   List<String> remoteList;
 
-  _RepositoryViewState(this.repositoryName, this.repositoryUri) {
-    dirContents = Directory.fromUri(repositoryUri).list().toList();
+  _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
+    dirContents =
+        Directory.fromUri(repositoryUri.resolve(_path)).list().toList();
     GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
       remoteList = remotes;
     });
@@ -88,10 +92,20 @@ class _RepositoryViewState extends State<RepositoryView> {
 
   @override
   Widget build(BuildContext context) {
+    Widget title;
+    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
+        Theme.of(context).primaryTextTheme;
+    if (_path.isNotEmpty) {
+      title = Column(children: [
+        Text(repositoryName),
+        Text(_path, style: appBarTextTheme.caption)
+      ]);
+    } else {
+      title = Text(repositoryName);
+    }
     return Scaffold(
         appBar: AppBar(
-            title: Text(repositoryName),
-            actions: <Widget>[buildActionsPopupMenu(context)]),
+            title: title, actions: <Widget>[buildActionsPopupMenu(context)]),
         body: FutureBuilder(
             future: dirContents,
             builder: (BuildContext context,
@@ -102,8 +116,20 @@ class _RepositoryViewState extends State<RepositoryView> {
                     itemBuilder: (context, index) {
                       // return Text(snapshot.data[index].path);
                       var fname = path.basename(snapshot.data[index].path);
-                      if (snapshot.data[index] is Directory) fname += '/';
-                      return ListTile(title: Text(fname));
+                      var isDir = snapshot.data[index] is Directory;
+                      if (isDir) fname += '/';
+                      return ListTile(
+                          title: Text(fname),
+                          onTap: () {
+                            if (isDir) {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute<String>(
+                                      builder: (BuildContext context) =>
+                                          RepositoryView(repositoryName,
+                                              repositoryUri, _path + fname)));
+                            }
+                          });
                     });
               } else {
                 return Text('Loading');

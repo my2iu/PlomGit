@@ -220,10 +220,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showRepository(String name, BuildContext context) {
     _getRepositoryDirForName(name).then((uri) {
       Navigator.push(
-        context,
-        MaterialPageRoute<String>(
-            builder: (BuildContext context) => RepositoryView(name, uri)),
-      ).then((result) => _refreshRepositories());
+              context,
+              MaterialPageRoute<String>(
+                  builder: (BuildContext context) => RepositoryView(name, uri)))
+          .then((result) => _refreshRepositories());
     });
   }
 
