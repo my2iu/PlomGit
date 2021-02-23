@@ -2,129 +2,9 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:async';
 
+import 'structs.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
-
-class git_error extends Struct {
-  Pointer<Utf8> message;
-
-  @Int32()
-  int klass;
-}
-
-class _git_strarray extends Struct {
-  Pointer<Pointer<Utf8>> strings;
-
-  @IntPtr()
-  int count;
-}
-
-class _git_diff_file extends Struct {
-  @Int64()
-  int id_0; // Should be a 20 bytes git_oid
-  @Int64()
-  int id_1;
-  @Int32()
-  int id_2;
-
-  Pointer<Utf8> path;
-
-  @Int64()
-  int size;
-
-  @Uint32()
-  int flags;
-
-  @Uint16()
-  int mode;
-
-  @Uint16()
-  int id_abbrev;
-}
-
-class _git_diff_delta extends Struct {
-  @Int32()
-  int status;
-
-  @Uint32()
-  int flags;
-
-  @Uint16()
-  int similarity;
-
-  @Uint16()
-  int nfiles;
-
-  // (this should be a nested struct)
-  @Int64()
-  int old_file_id_0; // Should be a 20 bytes git_oid
-  @Int64()
-  int old_file_id_1;
-  @Int32()
-  int old_file_id_2;
-
-  Pointer<Utf8> old_file_path;
-
-  @Int64()
-  int old_file_size;
-
-  @Uint32()
-  int old_file_flags;
-
-  @Uint16()
-  int old_file_mode;
-
-  @Uint16()
-  int old_file_id_abbrev;
-
-  // (this should be a nested struct)
-  @Int64()
-  int new_file_id_0; // Should be a 20 bytes git_oid
-  @Int64()
-  int new_file_id_1;
-  @Int32()
-  int new_file_id_2;
-
-  Pointer<Utf8> new_file_path;
-
-  @Int64()
-  int new_file_size;
-
-  @Uint32()
-  int new_file_flags;
-
-  @Uint16()
-  int new_file_mode;
-
-  @Uint16()
-  int new_file_id_abbrev;
-}
-
-class _git_status_entry extends Struct {
-  @Int32()
-  int status;
-
-  Pointer<_git_diff_delta> head_to_index;
-  Pointer<_git_diff_delta> index_to_workdir;
-
-  // GIT_STATUS_CURRENT = 0,
-
-  // GIT_STATUS_INDEX_NEW        = (1u << 0),
-  // GIT_STATUS_INDEX_MODIFIED   = (1u << 1),
-  // GIT_STATUS_INDEX_DELETED    = (1u << 2),
-  // GIT_STATUS_INDEX_RENAMED    = (1u << 3),
-  // GIT_STATUS_INDEX_TYPECHANGE = (1u << 4),
-
-  // GIT_STATUS_WT_NEW           = (1u << 7),
-  // GIT_STATUS_WT_MODIFIED      = (1u << 8),
-  // GIT_STATUS_WT_DELETED       = (1u << 9),
-  // GIT_STATUS_WT_TYPECHANGE    = (1u << 10),
-  // GIT_STATUS_WT_RENAMED       = (1u << 11),
-  // GIT_STATUS_WT_UNREADABLE    = (1u << 12),
-
-  // GIT_STATUS_IGNORED          = (1u << 14),
-  // GIT_STATUS_CONFLICTED       = (1u << 15),
-}
 
 class Libgit2 {
   // I don't really need this MethodChannel stuff since I don't need
@@ -157,47 +37,51 @@ class Libgit2 {
       .lookup<NativeFunction<Pointer<git_error> Function()>>("git_error_last")
       .asFunction();
 
-  static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>, int)
+  static final int Function(
+          Pointer<Pointer<git_repository>>, Pointer<Utf8>, int)
       _repositoryInit = nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
-                      Uint32)>>("git_repository_init")
+                  Int32 Function(Pointer<Pointer<git_repository>>,
+                      Pointer<Utf8>, Uint32)>>("git_repository_init")
           .asFunction();
 
-  static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>)
+  static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>)
       _repositoryOpen = nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<Pointer<NativeType>>,
+                  Int32 Function(Pointer<Pointer<git_repository>>,
                       Pointer<Utf8>)>>("git_repository_open")
           .asFunction();
 
-  static final void Function(Pointer<NativeType>) _repositoryFree = nativeGit2
-      .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
-          "git_repository_free")
-      .asFunction();
+  static final void Function(Pointer<git_repository>) _repositoryFree =
+      nativeGit2
+          .lookup<NativeFunction<Void Function(Pointer<git_repository>)>>(
+              "git_repository_free")
+          .asFunction();
 
-  static final int Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
+  static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>,
           Pointer<Utf8>, Pointer<NativeType>) _clone =
       nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<Pointer<NativeType>>, Pointer<Utf8>,
-                      Pointer<Utf8>, Pointer<NativeType>)>>("git_clone")
+                  Int32 Function(
+                      Pointer<Pointer<git_repository>>,
+                      Pointer<Utf8>,
+                      Pointer<Utf8>,
+                      Pointer<NativeType>)>>("git_clone")
           .asFunction();
 
-  static final int Function(Pointer<_git_strarray>) _strArrayDispose =
-      nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<_git_strarray>)>>(
-              "git_strarray_dispose")
-          .asFunction();
+  static final int Function(Pointer<git_strarray>) _strArrayDispose = nativeGit2
+      .lookup<NativeFunction<Int32 Function(Pointer<git_strarray>)>>(
+          "git_strarray_dispose")
+      .asFunction();
 
-  static final int Function(Pointer<_git_strarray>, Pointer<NativeType>)
+  static final int Function(Pointer<git_strarray>, Pointer<NativeType>)
       _remoteList = nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<_git_strarray>,
+                  Int32 Function(Pointer<git_strarray>,
                       Pointer<NativeType>)>>("git_remote_list")
           .asFunction();
 
@@ -244,66 +128,68 @@ class Libgit2 {
       .asFunction();
 
   static final int Function(
-          Pointer<Pointer<NativeType>>, Pointer<NativeType>, Pointer<Utf8>)
+          Pointer<Pointer<git_remote>>, Pointer<git_repository>, Pointer<Utf8>)
       _git_remote_lookup = nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<Pointer<NativeType>>,
-                      Pointer<NativeType>, Pointer<Utf8>)>>("git_remote_lookup")
+                  Int32 Function(
+                      Pointer<Pointer<git_remote>>,
+                      Pointer<git_repository>,
+                      Pointer<Utf8>)>>("git_remote_lookup")
           .asFunction();
 
-  static final int Function(Pointer<NativeType>) _git_remote_free = nativeGit2
-      .lookup<NativeFunction<Int32 Function(Pointer<NativeType>)>>(
+  static final int Function(Pointer<git_remote>) _git_remote_free = nativeGit2
+      .lookup<NativeFunction<Int32 Function(Pointer<git_remote>)>>(
           "git_remote_free")
       .asFunction();
 
-  static final int Function(Pointer<NativeType>, Pointer<_git_strarray>,
+  static final int Function(Pointer<git_remote>, Pointer<git_strarray>,
           Pointer<NativeType>, Pointer<Utf8>) _git_remote_fetch =
       nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<NativeType>, Pointer<_git_strarray>,
+                  Int32 Function(Pointer<git_remote>, Pointer<git_strarray>,
                       Pointer<NativeType>, Pointer<Utf8>)>>("git_remote_fetch")
           .asFunction();
 
   static final int Function(
-          Pointer<NativeType>, Pointer<_git_strarray>, Pointer<NativeType>)
+          Pointer<git_remote>, Pointer<git_strarray>, Pointer<NativeType>)
       _git_remote_push = nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<NativeType>, Pointer<_git_strarray>,
+                  Int32 Function(Pointer<git_remote>, Pointer<git_strarray>,
                       Pointer<NativeType>)>>("git_remote_push")
           .asFunction();
 
-  static final int Function(Pointer<Pointer<NativeType>>, Pointer<NativeType>,
-          Pointer<NativeType>) _git_status_list_new =
+  static final int Function(Pointer<Pointer<git_status_list>>,
+          Pointer<git_repository>, Pointer<NativeType>) _git_status_list_new =
       nativeGit2
           .lookup<
               NativeFunction<
                   Int32 Function(
-                      Pointer<Pointer<NativeType>>,
-                      Pointer<NativeType>,
+                      Pointer<Pointer<git_status_list>>,
+                      Pointer<git_repository>,
                       Pointer<NativeType>)>>("git_status_list_new")
           .asFunction();
 
-  static final void Function(Pointer<NativeType>) _git_status_list_free =
+  static final void Function(Pointer<git_status_list>) _git_status_list_free =
       nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
+          .lookup<NativeFunction<Void Function(Pointer<git_status_list>)>>(
               "git_status_list_free")
           .asFunction();
 
-  static final int Function(Pointer<NativeType>) _git_status_list_entrycount =
-      nativeGit2
-          .lookup<NativeFunction<IntPtr Function(Pointer<NativeType>)>>(
+  static final int Function(Pointer<git_status_list>)
+      _git_status_list_entrycount = nativeGit2
+          .lookup<NativeFunction<IntPtr Function(Pointer<git_status_list>)>>(
               "git_status_list_entrycount")
           .asFunction();
 
-  static final Pointer<_git_status_entry> Function(Pointer<NativeType>, int)
+  static final Pointer<git_status_entry> Function(Pointer<git_status_list>, int)
       _git_status_byindex = nativeGit2
           .lookup<
               NativeFunction<
-                  Pointer<_git_status_entry> Function(
-                      Pointer<NativeType>, IntPtr)>>("git_status_byindex")
+                  Pointer<git_status_entry> Function(
+                      Pointer<git_status_list>, IntPtr)>>("git_status_byindex")
           .asFunction();
 
   // The second parameter can be null or a pointer to a pointer of a string
@@ -323,7 +209,8 @@ class Libgit2 {
   }
 
   static void initRepository(String dir) {
-    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    Pointer<Pointer<git_repository>> repository =
+        allocate<Pointer<git_repository>>();
     repository.value = nullptr;
     var dirPtr = Utf8.toUtf8(dir);
     try {
@@ -336,7 +223,8 @@ class Libgit2 {
   }
 
   static void clone(String url, String dir) {
-    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+    Pointer<Pointer<git_repository>> repository =
+        allocate<Pointer<git_repository>>();
     repository.value = nullptr;
     var dirPtr = Utf8.toUtf8(dir);
     var urlPtr = Utf8.toUtf8(url);
@@ -350,8 +238,10 @@ class Libgit2 {
     }
   }
 
-  static T _withRepository<T>(String dir, T Function(Pointer<NativeType>) fn) {
-    Pointer<Pointer<NativeType>> repository = allocate<Pointer<NativeType>>();
+  static T _withRepository<T>(
+      String dir, T Function(Pointer<git_repository>) fn) {
+    Pointer<Pointer<git_repository>> repository =
+        allocate<Pointer<git_repository>>();
     repository.value = nullptr;
     var dirPtr = Utf8.toUtf8(dir);
     try {
@@ -365,8 +255,8 @@ class Libgit2 {
   }
 
   static T _withRepositoryAndRemote<T>(String dir, String remoteStr,
-      T Function(Pointer<NativeType>, Pointer<NativeType>) fn) {
-    Pointer<Pointer<NativeType>> remote = allocate<Pointer<NativeType>>();
+      T Function(Pointer<git_repository>, Pointer<git_remote>) fn) {
+    Pointer<Pointer<git_remote>> remote = allocate<Pointer<git_remote>>();
     remote.value = nullptr;
     var remoteStrPtr = Utf8.toUtf8(remoteStr);
     try {
@@ -382,7 +272,7 @@ class Libgit2 {
   }
 
   static List<String> remoteList(String dir) {
-    Pointer<_git_strarray> remotesStrings = allocate<_git_strarray>();
+    Pointer<git_strarray> remotesStrings = allocate<git_strarray>();
     try {
       return _withRepository(dir, (repo) {
         _checkErrors(_remoteList(remotesStrings, repo));
@@ -428,7 +318,8 @@ class Libgit2 {
   static dynamic status(String dir) {
     Pointer<NativeType> statusOptions =
         allocate<Int8>(count: _git_status_options_size());
-    Pointer<Pointer<NativeType>> statusList = allocate<Pointer<NativeType>>();
+    Pointer<Pointer<git_status_list>> statusList =
+        allocate<Pointer<git_status_list>>();
     statusList.value = nullptr;
     // Pointer<Pointer<Utf8>> path = allocate<Pointer<Utf8>>(count: 1);
     // path.value = Utf8.toUtf8("*");
@@ -442,7 +333,7 @@ class Libgit2 {
         print(numStatuses);
         if (numStatuses > 0) {
           int n = 0;
-          Pointer<_git_status_entry> entry =
+          Pointer<git_status_entry> entry =
               _git_status_byindex(statusList.value, n);
           print(entry.ref.status);
           print(entry.ref.head_to_index);
