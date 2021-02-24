@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
+import 'util.dart';
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
@@ -57,8 +58,10 @@ class _RepositoryViewState extends State<RepositoryView> {
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
                   value: () {
-                    GitIsolate.instance
-                        .push(repositoryDir, remote)
+                    retryWithAskCredentials(
+                            (username, password) => GitIsolate.instance.push(
+                                repositoryDir, remote, username, password),
+                            context)
                         .then((result) {
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text('Push successful')));
@@ -85,6 +88,16 @@ class _RepositoryViewState extends State<RepositoryView> {
                   File(repositoryDir + '/test.txt').writeAsString("hello");
                 },
                 child: Text('Test make file')));
+            entries.add(PopupMenuItem(
+                value: () {
+                  showDialog(
+                          context: context,
+                          builder: (context) => makeLoginDialog(context))
+                      .then((result) {
+                    print(result);
+                  });
+                },
+                child: Text('Test dialog')));
           }
           return entries;
         });
