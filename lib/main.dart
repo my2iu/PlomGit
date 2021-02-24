@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 // import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
-import 'package:PlomGit/src/git_isolate.dart' show GitIsolate;
+import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart' as log;

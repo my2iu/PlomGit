@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
-import 'package:PlomGit/src/git_isolate.dart' show GitIsolate;
+import 'package:libgit2/git_isolate.dart' show GitIsolate;
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
