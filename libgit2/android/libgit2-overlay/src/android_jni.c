@@ -87,6 +87,15 @@ GIT_EXTERN(int) git_status_options_version(void) {
   return GIT_STATUS_OPTIONS_VERSION;
 }
 
+GIT_EXTERN(void) git_fetch_options_set_credentials_cb(git_fetch_options *opts, git_credential_acquire_cb *credentials_cb) {
+  opts->callbacks.credentials = credentials_cb;
+}
+
+GIT_EXTERN(void) git_push_options_set_credentials_cb(git_push_options *opts, git_credential_acquire_cb *credentials_cb) {
+  opts->callbacks.credentials = credentials_cb;
+}
+
+
 GIT_EXTERN(void) git_status_options_config(git_status_options * opts, const char **path) {
   if (path != NULL) {
     opts->pathspec.count = 1;

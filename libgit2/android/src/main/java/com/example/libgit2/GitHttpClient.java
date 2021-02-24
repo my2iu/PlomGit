@@ -1,5 +1,6 @@
 package com.example.libgit2;
 
+import android.util.Base64;
 import android.util.Log;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -68,6 +69,13 @@ public class GitHttpClient
             return -1;
         }
         return 0;
+    }
+
+    public void setCredentials(String username, String password)
+    {
+        Log.v(TAG, "Credentials " + username + " " + password);
+        connection.setRequestProperty("Authorization", 
+            "Basic " + Base64.encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT));
     }
 
     public int startReadResponse()

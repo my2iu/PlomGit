@@ -24,6 +24,35 @@ class git_repository extends Struct {}
 // Opaque type
 class git_status_list extends Struct {}
 
+// Opaque type
+class git_credential extends Struct {}
+
+typedef git_credentials_acquire_cb = Int32 Function(
+    Pointer<Pointer<git_credential>> out,
+    Pointer<Utf8> url,
+    Pointer<Utf8> username_from_url,
+    Uint32 allowed_type,
+    Pointer<NativeType> payload);
+
+class git_remote_callbacks extends Struct {
+  @Uint32()
+  int version;
+
+  Pointer<NativeFunction<Void Function()>> sideband_progress_dummy;
+  Pointer<NativeFunction<Void Function()>> completion_dummy;
+  Pointer<NativeFunction<git_credentials_acquire_cb>> credentials;
+  Pointer<NativeFunction<Void Function()>> certificate_check_dummy;
+  Pointer<NativeFunction<Void Function()>> transfer_progress_dummy;
+  Pointer<NativeFunction<Void Function()>> update_tips_dummy;
+  Pointer<NativeFunction<Void Function()>> pack_progress_dummy;
+  Pointer<NativeFunction<Void Function()>> push_transfer_progress_dummy;
+  Pointer<NativeFunction<Void Function()>> push_update_reference_dummy;
+  Pointer<NativeFunction<Void Function()>> push_negotiation_dummy;
+  Pointer<NativeFunction<Void Function()>> transport_dummy;
+  Pointer<NativeType> payload;
+  Pointer<NativeFunction<Void Function()>> resolve_url_dummy;
+}
+
 class git_diff_file extends Struct {
   @Int64()
   int id_0; // Should be a 20 bytes git_oid

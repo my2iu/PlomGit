@@ -1224,6 +1224,7 @@ int git_http_client_send_request(
 	jmethodID makeUrlMethodId;
 	jmethodID setUrlMethodId;
 	jmethodID startRequestMethodId;
+	jmethodID setCredentialsMethodId;
 
 	assert(client && request);
 
@@ -1293,6 +1294,15 @@ int git_http_client_send_request(
 	//     (error = generate_request(client, request)) < 0 ||
 	//     (error = client_write_request(client)) < 0)
 	// 	goto done;
+
+	setCredentialsMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "setCredentials", "(Ljava/lang/String;Ljava/lang/String;)V");
+	if (request->credentials && request->credentials->credtype == GIT_CREDENTIAL_USERPASS_PLAINTEXT) {
+		(*env)->CallVoidMethod(env, client->jHttpClient, setCredentialsMethodId, 
+			(*env)->NewStringUTF(env, ((struct git_credential_userpass_plaintext *)request->credentials)->username),
+			(*env)->NewStringUTF(env, ((struct git_credential_userpass_plaintext *)request->credentials)->password));
+
+	}
+
 
 	client->state = SENT_REQUEST;
 
@@ -1509,20 +1519,20 @@ int git_http_client_read_response(
 		} else if (!strcasecmp("Transfer-Encoding", keystr) &&
 				!strcasecmp("chunked", valstr)) {
 				response->chunked = 1;
-		}
-		//  else if (!strcasecmp("Proxy-Authenticate", keystr)) {
-		// 	char *dup = git__strndup(valstr, strlen(valstr));
-		// 	GIT_ERROR_CHECK_ALLOC(dup);
+		} else if (!strcasecmp("Proxy-Authenticate", keystr)) {
+			char *dup = git__strndup(valstr, strlen(valstr));
+			GIT_ERROR_CHECK_ALLOC(dup);
 
-		// 	if (git_vector_insert(&client->proxy.auth_challenges, dup) < 0)
-		// 		return -1;
-		// } else if (!strcasecmp("WWW-Authenticate", keystr)) {
-		// 	char *dup = git__strndup(value->ptr, value->size);
-		// 	GIT_ERROR_CHECK_ALLOC(dup);
+			if (git_vector_insert(&client->proxy.auth_challenges, dup) < 0)
+				return -1;
+		} else if (!strcasecmp("WWW-Authenticate", keystr)) {
+			char *dup = git__strndup(valstr, strlen(valstr));
+			GIT_ERROR_CHECK_ALLOC(dup);
 
-		// 	if (git_vector_insert(&client->server.auth_challenges, dup) < 0)
-		// 		return -1;
-		// } else if (!strcasecmp("Location", keystr)) {
+			if (git_vector_insert(&client->server.auth_challenges, dup) < 0)
+				return -1;
+		} 
+		// else if (!strcasecmp("Location", keystr)) {
 		// 	if (response->location) {
 		// 		git_error_set(GIT_ERROR_HTTP,
 		// 			"multiple location headers");
@@ -1543,12 +1553,12 @@ int git_http_client_read_response(
 	// client->keepalive = http_should_keep_alive(parser);
 
 	/* Prepare for authentication */
-	// collect_authinfo(&ctx->response->server_auth_schemetypes,
-	//                  &ctx->response->server_auth_credtypes,
-	//                  &ctx->client->server.auth_challenges);
-	// collect_authinfo(&ctx->response->proxy_auth_schemetypes,
-	//                  &ctx->response->proxy_auth_credtypes,
-	//                  &ctx->client->proxy.auth_challenges);
+	collect_authinfo(&response->server_auth_schemetypes,
+	                 &response->server_auth_credtypes,
+	                 &client->server.auth_challenges);
+	collect_authinfo(&response->proxy_auth_schemetypes,
+	                 &response->proxy_auth_credtypes,
+	                 &client->proxy.auth_challenges);
 
 	response->resend_credentials = resend_needed(client, response);
 

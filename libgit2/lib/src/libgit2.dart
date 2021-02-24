@@ -6,6 +6,8 @@ import 'structs.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 
+const GIT_PASSTHROUGH = -30;
+
 class Libgit2 {
   // I don't really need this MethodChannel stuff since I don't need
   // interop with Java/Objective-C, but I'll keep it around anyway just
@@ -127,6 +129,30 @@ class Libgit2 {
       .lookup<NativeFunction<Int32 Function()>>("git_status_options_version")
       .asFunction();
 
+  static final void Function(Pointer<NativeType>,
+          Pointer<NativeFunction<git_credentials_acquire_cb>>)
+      _git_fetch_options_set_credentials_cb = nativeGit2
+          .lookup<
+                  NativeFunction<
+                      Void Function(
+                          Pointer<NativeType>,
+                          Pointer<
+                              NativeFunction<git_credentials_acquire_cb>>)>>(
+              "git_fetch_options_set_credentials_cb")
+          .asFunction();
+
+  static final void Function(Pointer<NativeType>,
+          Pointer<NativeFunction<git_credentials_acquire_cb>>)
+      _git_push_options_set_credentials_cb = nativeGit2
+          .lookup<
+                  NativeFunction<
+                      Void Function(
+                          Pointer<NativeType>,
+                          Pointer<
+                              NativeFunction<git_credentials_acquire_cb>>)>>(
+              "git_push_options_set_credentials_cb")
+          .asFunction();
+
   static final int Function(
           Pointer<Pointer<git_remote>>, Pointer<git_repository>, Pointer<Utf8>)
       _git_remote_lookup = nativeGit2
@@ -199,6 +225,17 @@ class Libgit2 {
               NativeFunction<
                   Void Function(Pointer<NativeType>,
                       Pointer<Pointer<Utf8>>)>>("git_status_options_config")
+          .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<git_credential>>, Pointer<Utf8>, Pointer<Utf8>)
+      _git_credential_userpass_plaintext_new = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_credential>>,
+                      Pointer<Utf8>,
+                      Pointer<Utf8>)>>("git_credential_userpass_plaintext_new")
           .asFunction();
 
   /// Checks the return code for errors and if so, convert it to a thrown
@@ -301,6 +338,38 @@ class Libgit2 {
     }
   }
 
+  static String lastUrlCredentialCheck = "";
+  static int credentialsCallback(
+      Pointer<Pointer<git_credential>> out,
+      Pointer<Utf8> url,
+      Pointer<Utf8> username_from_url,
+      @Uint32() int allowed_type,
+      Pointer<NativeType> payload) {
+    print("credential check");
+
+    // We don't interactively ask the user for a password, so if we
+    // get asked for the password for the same page twice, we'll
+    // abort instead of repeatedly retrying the same password.
+    String currentUrl = Utf8.fromUtf8(url);
+    if (currentUrl == lastUrlCredentialCheck) {
+      return GIT_PASSTHROUGH;
+    }
+    lastUrlCredentialCheck = currentUrl;
+
+    // User and password combination
+    if ((allowed_type & 1) != 0) {
+      Pointer<Utf8> username = Utf8.toUtf8("username");
+      Pointer<Utf8> password = Utf8.toUtf8("password");
+      try {
+        return _git_credential_userpass_plaintext_new(out, username, password);
+      } finally {
+        free(username);
+        free(password);
+      }
+    }
+    return GIT_PASSTHROUGH;
+  }
+
   static void push(String dir, String remoteStr) {
     Pointer<NativeType> pushOptions =
         allocate<Int8>(count: _git_push_options_size());
@@ -308,6 +377,10 @@ class Libgit2 {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
         _checkErrors(
             _git_push_options_init(pushOptions, _git_push_options_version()));
+        _git_push_options_set_credentials_cb(
+            pushOptions,
+            Pointer.fromFunction<git_credentials_acquire_cb>(
+                credentialsCallback, GIT_PASSTHROUGH));
         _checkErrors(_git_remote_push(remote, nullptr, pushOptions));
       });
     } finally {
