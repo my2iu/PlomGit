@@ -6,8 +6,6 @@ import 'structs.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 
-const GIT_PASSTHROUGH = -30;
-
 class Libgit2 {
   // I don't really need this MethodChannel stuff since I don't need
   // interop with Java/Objective-C, but I'll keep it around anyway just
@@ -259,7 +257,9 @@ class Libgit2 {
     }
   }
 
-  static void clone(String url, String dir) {
+  static void clone(String url, String dir, String username, String password) {
+    credentialUsername = username;
+    credentialPassword = password;
     Pointer<Pointer<git_repository>> repository =
         allocate<Pointer<git_repository>>();
     repository.value = nullptr;
@@ -324,7 +324,10 @@ class Libgit2 {
     }
   }
 
-  static void fetch(String dir, String remoteStr) {
+  static void fetch(
+      String dir, String remoteStr, String username, String password) {
+    credentialUsername = username;
+    credentialPassword = password;
     Pointer<NativeType> fetchOptions =
         allocate<Int8>(count: _git_fetch_options_size());
     try {
@@ -338,28 +341,36 @@ class Libgit2 {
     }
   }
 
+  // Since Dart is single-threaded, we can only have one libgit2 call
+  // in-flight at once, so it's safe to store data needed for callbacks
+  // in static variables
   static String lastUrlCredentialCheck = "";
+  static String credentialUsername = "";
+  static String credentialPassword = "";
   static int credentialsCallback(
       Pointer<Pointer<git_credential>> out,
       Pointer<Utf8> url,
       Pointer<Utf8> username_from_url,
       @Uint32() int allowed_type,
       Pointer<NativeType> payload) {
-    print("credential check");
-
     // We don't interactively ask the user for a password, so if we
     // get asked for the password for the same page twice, we'll
     // abort instead of repeatedly retrying the same password.
     String currentUrl = Utf8.fromUtf8(url);
     if (currentUrl == lastUrlCredentialCheck) {
-      return GIT_PASSTHROUGH;
+      return Libgit2Exception.GIT_PASSTHROUGH;
     }
     lastUrlCredentialCheck = currentUrl;
 
+    if (credentialUsername.isEmpty && credentialPassword.isEmpty) {
+      // No authentication credentials available, so ask the user for them
+      return Libgit2Exception.GIT_EUSER;
+    }
+
     // User and password combination
     if ((allowed_type & 1) != 0) {
-      Pointer<Utf8> username = Utf8.toUtf8("username");
-      Pointer<Utf8> password = Utf8.toUtf8("password");
+      Pointer<Utf8> username = Utf8.toUtf8(credentialUsername);
+      Pointer<Utf8> password = Utf8.toUtf8(credentialPassword);
       try {
         return _git_credential_userpass_plaintext_new(out, username, password);
       } finally {
@@ -367,10 +378,13 @@ class Libgit2 {
         free(password);
       }
     }
-    return GIT_PASSTHROUGH;
+    return Libgit2Exception.GIT_PASSTHROUGH;
   }
 
-  static void push(String dir, String remoteStr) {
+  static void push(
+      String dir, String remoteStr, String username, String password) {
+    credentialUsername = username;
+    credentialPassword = password;
     Pointer<NativeType> pushOptions =
         allocate<Int8>(count: _git_push_options_size());
     try {
@@ -380,7 +394,7 @@ class Libgit2 {
         _git_push_options_set_credentials_cb(
             pushOptions,
             Pointer.fromFunction<git_credentials_acquire_cb>(
-                credentialsCallback, GIT_PASSTHROUGH));
+                credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
         _checkErrors(_git_remote_push(remote, nullptr, pushOptions));
       });
     } finally {
@@ -440,6 +454,10 @@ class Libgit2Exception implements Exception {
       klass = err.ref.klass;
     }
   }
+
+  // Some error codes
+  static const int GIT_PASSTHROUGH = -30;
+  static const int GIT_EUSER = -7;
 
   String toString() {
     if (message != null) return message + '($errorCode:$klass)';

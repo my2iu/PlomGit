@@ -72,20 +72,23 @@ class GitIsolate {
     return _sendRequest(RequestType.initRepository, [dir]);
   }
 
-  Future<dynamic> clone(String url, String dir) {
-    return _sendRequest(RequestType.clone, [url, dir]);
+  Future<dynamic> clone(String url, String dir,
+      [String username = "", String password = ""]) {
+    return _sendRequest(RequestType.clone, [url, dir, username, password]);
   }
 
   Future<dynamic> listRemotes(String dir) {
     return _sendRequest(RequestType.listRemotes, [dir]);
   }
 
-  Future<dynamic> fetch(String dir, String remote) {
-    return _sendRequest(RequestType.fetch, [dir, remote]);
+  Future<dynamic> fetch(String dir, String remote,
+      [String username = "", String password = ""]) {
+    return _sendRequest(RequestType.fetch, [dir, remote, username, password]);
   }
 
-  Future<dynamic> push(String dir, String remote) {
-    return _sendRequest(RequestType.push, [dir, remote]);
+  Future<dynamic> push(String dir, String remote,
+      [String username = "", String password = ""]) {
+    return _sendRequest(RequestType.push, [dir, remote, username, password]);
   }
 
   Future<dynamic> status(String dir) {
@@ -120,18 +123,18 @@ class GitIsolate {
             _isolateResponse(channel, "");
             break;
           case RequestType.clone:
-            Libgit2.clone(event[1], event[2]);
+            Libgit2.clone(event[1], event[2], event[3], event[4]);
             _isolateResponse(channel, "");
             break;
           case RequestType.listRemotes:
             _isolateResponse(channel, Libgit2.remoteList(event[1]));
             break;
           case RequestType.fetch:
-            Libgit2.fetch(event[1], event[2]);
+            Libgit2.fetch(event[1], event[2], event[3], event[4]);
             _isolateResponse(channel, "");
             break;
           case RequestType.push:
-            Libgit2.push(event[1], event[2]);
+            Libgit2.push(event[1], event[2], event[3], event[4]);
             _isolateResponse(channel, "");
             break;
           case RequestType.status:
