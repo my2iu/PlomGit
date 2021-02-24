@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PlomGit/src/util.dart';
 import 'package:flutter/material.dart';
 // import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
@@ -186,7 +187,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _cloneRepository(BuildContext context, String name, String url) {
     _getRepositoryDirForName(name).then((pathUri) {
-      GitIsolate.instance.clone(url, pathUri.toFilePath()).then((val) {
+      retryWithAskCredentials(
+              (user, password) => GitIsolate.instance
+                  .clone(url, pathUri.toFilePath(), user, password),
+              context)
+          .then((val) {
         Navigator.push(
             context,
             MaterialPageRoute<String>(

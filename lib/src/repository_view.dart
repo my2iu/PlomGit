@@ -43,8 +43,10 @@ class _RepositoryViewState extends State<RepositoryView> {
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
                   value: () {
-                    GitIsolate.instance
-                        .fetch(repositoryDir, remote)
+                    retryWithAskCredentials(
+                            (user, password) => GitIsolate.instance
+                                .fetch(repositoryDir, remote),
+                            context)
                         .then((result) {
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text('Fetch successful')));
