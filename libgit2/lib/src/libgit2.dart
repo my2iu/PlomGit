@@ -430,15 +430,30 @@ class Libgit2 {
         int numStatuses = _git_status_list_entrycount(statusList.value);
         print(numStatuses);
         if (numStatuses > 0) {
-          int n = 0;
-          Pointer<git_status_entry> entry =
-              _git_status_byindex(statusList.value, n);
-          print(entry.ref.status);
-          print(entry.ref.head_to_index);
-          print(entry.ref.head_to_index.ref.nfiles);
-          print(Utf8.fromUtf8(entry.ref.head_to_index.ref.new_file_path));
+          var statusEntries = [];
+          for (int n = 0; n < numStatuses; n++) {
+            Pointer<git_status_entry> entry =
+                _git_status_byindex(statusList.value, n);
+            if (entry.ref.status != 0) print(entry.ref.status);
+            var entryData = [];
+            if (entry.ref.index_to_workdir != nullptr &&
+                entry.ref.index_to_workdir.ref.new_file_path != nullptr)
+              entryData.add(
+                  Utf8.fromUtf8(entry.ref.index_to_workdir.ref.new_file_path));
+            else
+              entryData.add(null);
+            if (entry.ref.head_to_index != nullptr &&
+                entry.ref.head_to_index.ref.old_file_path != nullptr)
+              entryData.add(
+                  Utf8.fromUtf8(entry.ref.head_to_index.ref.old_file_path));
+            else
+              entryData.add(null);
+            entryData.add(entry.ref.status);
+            statusEntries.add(entryData);
+          }
+          return statusEntries;
         }
-        return "";
+        return [];
       });
     } finally {
       free(statusOptions);

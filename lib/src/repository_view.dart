@@ -24,14 +24,35 @@ class _RepositoryViewState extends State<RepositoryView> {
   final String _path;
   String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
+  Future<Map<String, int>> gitStatus;
   List<String> remoteList;
 
   _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
-    dirContents =
-        Directory.fromUri(repositoryUri.resolve(_path)).list().toList();
+    dirContents = Directory.fromUri(repositoryUri.resolve(_path))
+        .list()
+        .toList()
+        .then((list) {
+      list.sort((a, b) {
+        if (a is Directory && !(b is Directory)) return -1;
+        if (!(a is Directory) && b is Directory) return 1;
+        return a.path.compareTo(b.path);
+      });
+      return list;
+    });
+    gitStatus = dirContents
+        .then((_) => GitIsolate.instance.status(repositoryDir))
+        .then((entries) => _processGitStatusEntries(entries));
     GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
       remoteList = remotes;
     });
+  }
+
+  Map<String, int> _processGitStatusEntries(List<dynamic> entries) {
+    Map<String, int> statusMap = {};
+    entries.forEach((entry) {
+      statusMap[entry[0] ?? entry[1]] = entry[2];
+    });
+    return statusMap;
   }
 
   Widget buildActionsPopupMenu(BuildContext context) {
@@ -105,6 +126,52 @@ class _RepositoryViewState extends State<RepositoryView> {
         });
   }
 
+  Widget _makeFileListTile(BuildContext context, FileSystemEntity entry) {
+    // return Text(snapshot.data[index].path);
+    var fname = path.basename(entry.path);
+    var isDir = entry is Directory;
+    if (isDir) fname += '/';
+    var relativePath = path.relative(entry.path, from: repositoryDir);
+    if (isDir) relativePath += '/';
+    var icon = FutureBuilder(
+        future: gitStatus,
+        builder:
+            (BuildContext context, AsyncSnapshot<Map<String, int>> snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data.containsKey(relativePath)) {
+              if (snapshot.data[relativePath] & 128 != 0) {
+                return Icon(Icons.add);
+              }
+              if (snapshot.data[relativePath] == 0)
+                return Icon(Icons.lens_outlined);
+              print(snapshot.data[relativePath]);
+            }
+            if (isDir && fname.startsWith('l'))
+              return Icon(Icons.build_circle);
+            else if (isDir && fname.startsWith('t'))
+              return Icon(Icons.radio_button_off);
+            else if (isDir)
+              return Icon(null);
+            else
+              return Icon(Icons.lens_outlined);
+          } else {
+            return Icon(null);
+          }
+        });
+    return ListTile(
+        title: Row(children: [icon, SizedBox(width: 5), Text(fname)]),
+        // leading: icon,
+        onTap: () {
+          if (isDir) {
+            Navigator.push(
+                context,
+                MaterialPageRoute<String>(
+                    builder: (BuildContext context) => RepositoryView(
+                        repositoryName, repositoryUri, _path + fname)));
+          }
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget title;
@@ -128,24 +195,8 @@ class _RepositoryViewState extends State<RepositoryView> {
               if (snapshot.hasData) {
                 return ListView.builder(
                     itemCount: snapshot.data.length,
-                    itemBuilder: (context, index) {
-                      // return Text(snapshot.data[index].path);
-                      var fname = path.basename(snapshot.data[index].path);
-                      var isDir = snapshot.data[index] is Directory;
-                      if (isDir) fname += '/';
-                      return ListTile(
-                          title: Text(fname),
-                          onTap: () {
-                            if (isDir) {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute<String>(
-                                      builder: (BuildContext context) =>
-                                          RepositoryView(repositoryName,
-                                              repositoryUri, _path + fname)));
-                            }
-                          });
-                    });
+                    itemBuilder: (context, index) =>
+                        _makeFileListTile(context, snapshot.data[index]));
               } else {
                 return Text('Loading');
               }
