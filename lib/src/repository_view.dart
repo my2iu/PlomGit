@@ -18,13 +18,24 @@ class RepositoryView extends StatefulWidget {
       _RepositoryViewState(repositoryName, repositoryUri, pathInRepository);
 }
 
+class _GitStatusFlags {
+  bool isStaged = false;
+  bool isModified = false;
+  bool isNew = false;
+  bool isDeleted = false;
+
+  bool dirHasUnstagedModifications = false;
+  bool dirHasStagedModifications = false;
+  bool dirIsInGit = false;
+}
+
 class _RepositoryViewState extends State<RepositoryView> {
   final String repositoryName;
   final Uri repositoryUri;
   final String _path;
   String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
-  Future<Map<String, int>> gitStatus;
+  Future<Map<String, _GitStatusFlags>> gitStatus;
   List<String> remoteList;
 
   _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
@@ -47,10 +58,34 @@ class _RepositoryViewState extends State<RepositoryView> {
     });
   }
 
-  Map<String, int> _processGitStatusEntries(List<dynamic> entries) {
-    Map<String, int> statusMap = {};
+  Map<String, _GitStatusFlags> _processGitStatusEntries(List<dynamic> entries) {
+    Map<String, _GitStatusFlags> statusMap = {};
     entries.forEach((entry) {
-      statusMap[entry[0] ?? entry[1]] = entry[2];
+      _GitStatusFlags flags = _GitStatusFlags();
+
+      // TODO: Handle rename and copy and status for directories
+      int gitFlags = entry[2];
+      flags.isStaged = (gitFlags & (1 | 2 | 4 | 8 | 16)) != 0;
+      flags.isNew = (gitFlags & (1 | 128)) != 0;
+      flags.isModified = (gitFlags & (2 | 16 | 256 | 2048)) != 0;
+      flags.isDeleted = (gitFlags & (4 | 512)) != 0;
+      statusMap[entry[0] ?? entry[1]] = flags;
+
+      // Add entries for parent directories
+      var parents = path.split(entry[0] ?? entry[1]);
+      parents.removeLast();
+      String parentPath = "";
+      parents.forEach((dirname) {
+        parentPath += dirname + '/';
+        if (!statusMap.containsKey(parentPath))
+          statusMap[parentPath] = _GitStatusFlags();
+        _GitStatusFlags parentFlags = statusMap[parentPath];
+        if (flags.isStaged)
+          parentFlags.dirHasStagedModifications = true;
+        else if (flags.isNew || flags.isModified || flags.isDeleted)
+          parentFlags.dirHasUnstagedModifications = true;
+        if (!flags.isNew) parentFlags.dirIsInGit = true;
+      });
     });
     return statusMap;
   }
@@ -135,25 +170,64 @@ class _RepositoryViewState extends State<RepositoryView> {
     if (isDir) relativePath += '/';
     var icon = FutureBuilder(
         future: gitStatus,
-        builder:
-            (BuildContext context, AsyncSnapshot<Map<String, int>> snapshot) {
+        builder: (BuildContext context,
+            AsyncSnapshot<Map<String, _GitStatusFlags>> snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data.containsKey(relativePath)) {
-              if (snapshot.data[relativePath] & 128 != 0) {
-                return Icon(Icons.add);
+              var statusFlags = snapshot.data[relativePath];
+              if (!isDir) {
+                if (statusFlags.isNew) {
+                  if (statusFlags.isStaged)
+                    return Icon(Icons.add_circle);
+                  else
+                    return Icon(Icons.add);
+                }
+                if (statusFlags.isModified) {
+                  if (statusFlags.isStaged)
+                    return Icon(Icons.build_circle);
+                  else
+                    return Icon(Icons.build_circle_outlined);
+                }
+                if (statusFlags.isDeleted) {
+                  if (statusFlags.isStaged)
+                    return Icon(Icons.remove_circle);
+                  else
+                    return Icon(Icons.remove_circle_outlined);
+                }
+                if (!statusFlags.isStaged) return Icon(Icons.lens_outlined);
+              } else {
+                if (statusFlags.dirHasStagedModifications &&
+                    !statusFlags.dirHasUnstagedModifications)
+                  return Icon(Icons.circle);
+                else if (statusFlags.dirHasStagedModifications &&
+                    statusFlags.dirHasUnstagedModifications)
+                  return Icon(Icons.pause_circle_filled);
+                else if (!statusFlags.dirHasStagedModifications &&
+                    statusFlags.dirHasUnstagedModifications &&
+                    statusFlags.dirIsInGit)
+                  return Icon(Icons.pause_circle_outline);
+                else if (!statusFlags.dirHasStagedModifications &&
+                    statusFlags.dirHasUnstagedModifications &&
+                    !statusFlags.dirIsInGit)
+                  return Icon(Icons.pause);
+                else if (statusFlags.dirIsInGit)
+                  return Icon(Icons.lens_outlined);
+                else
+                  return Icon(null);
               }
-              if (snapshot.data[relativePath] == 0)
-                return Icon(Icons.lens_outlined);
-              print(snapshot.data[relativePath]);
             }
-            if (isDir && fname.startsWith('l'))
-              return Icon(Icons.build_circle);
-            else if (isDir && fname.startsWith('t'))
-              return Icon(Icons.radio_button_off);
-            else if (isDir)
-              return Icon(null);
-            else
-              return Icon(Icons.lens_outlined);
+            // Icons.adjust, Icons.album, Icons.album_outlined, Icons.radio_button_checked, Icons.scatter_plot
+            // Icons.stop, Icons.stop_cicle_outlined, Icons.stop_circle_sharp, Icons.stop_circle, Icons.stop_outlined
+            // Icons.pause, Icons.pause_circle_outline, Icons.pause_circle_filled, Icons.circle
+            // Icons.cancel, Icons.cancel_outlined, Icons.clear
+            // if (isDir && fname.startsWith('l'))
+            //   return Icon(Icons.stop_circle, color: Colors.blueGrey);
+            // else if (isDir && fname.startsWith('t'))
+            //   return Icon(Icons.radio_button_off);
+            // else if (isDir)
+            return Icon(null);
+            // else
+            //   return Icon(Icons.lens_outlined);
           } else {
             return Icon(null);
           }

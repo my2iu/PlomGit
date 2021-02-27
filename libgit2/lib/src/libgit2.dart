@@ -428,13 +428,11 @@ class Libgit2 {
         _git_status_options_config(statusOptions, nullptr);
         _checkErrors(_git_status_list_new(statusList, repo, statusOptions));
         int numStatuses = _git_status_list_entrycount(statusList.value);
-        print(numStatuses);
         if (numStatuses > 0) {
           var statusEntries = [];
           for (int n = 0; n < numStatuses; n++) {
             Pointer<git_status_entry> entry =
                 _git_status_byindex(statusList.value, n);
-            if (entry.ref.status != 0) print(entry.ref.status);
             var entryData = [];
             if (entry.ref.index_to_workdir != nullptr &&
                 entry.ref.index_to_workdir.ref.new_file_path != nullptr)
