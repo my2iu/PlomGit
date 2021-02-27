@@ -198,20 +198,20 @@ class _RepositoryViewState extends State<RepositoryView> {
               } else {
                 if (statusFlags.dirHasStagedModifications &&
                     !statusFlags.dirHasUnstagedModifications)
-                  return Icon(Icons.circle);
+                  return Icon(Icons.folder);
                 else if (statusFlags.dirHasStagedModifications &&
                     statusFlags.dirHasUnstagedModifications)
-                  return Icon(Icons.pause_circle_filled);
+                  return Icon(Icons.snippet_folder);
                 else if (!statusFlags.dirHasStagedModifications &&
                     statusFlags.dirHasUnstagedModifications &&
                     statusFlags.dirIsInGit)
-                  return Icon(Icons.pause_circle_outline);
+                  return Icon(Icons.snippet_folder_outlined);
                 else if (!statusFlags.dirHasStagedModifications &&
                     statusFlags.dirHasUnstagedModifications &&
                     !statusFlags.dirIsInGit)
-                  return Icon(Icons.pause);
+                  return Icon(Icons.create_new_folder_outlined);
                 else if (statusFlags.dirIsInGit)
-                  return Icon(Icons.lens_outlined);
+                  return Icon(Icons.folder_outlined);
                 else
                   return Icon(null);
               }
