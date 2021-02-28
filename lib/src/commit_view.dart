@@ -74,30 +74,45 @@ class CommitViewState extends State<CommitView> {
             future: gitStatus,
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               if (snapshot.hasData) {
-                return Column(children: <Widget>[
-                  Text('Staged Changes',
-                      style: Theme.of(context).textTheme.headline6),
-                  Expanded(
-                      child: ListView.builder(
-                    itemCount: staged.length,
-                    itemBuilder: (context, index) {
-                      return Text(staged[index]);
-                    },
-                  )),
-                  Text('Changes', style: Theme.of(context).textTheme.headline6),
-                  Expanded(
-                      child: ListView.builder(
-                    itemCount: unstaged.length,
-                    itemBuilder: (context, index) {
-                      return Text(unstaged[index]);
-                    },
-                  )),
-                  Row(
-                    children: <Widget>[
-                      ElevatedButton(child: Text('Commit'), onPressed: () {})
-                    ],
-                  )
-                ]);
+                return Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          // MaterialBanner(content: Text("Staged Changed"), actions: []),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(4, 12, 4, 4),
+                              child: Text('Staged Changes',
+                                  style:
+                                      Theme.of(context).textTheme.subtitle1)),
+                          Expanded(
+                              child: Card(
+                                  child: ListView.builder(
+                            itemCount: staged.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(title: Text(staged[index]));
+                            },
+                          ))),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(4, 12, 4, 4),
+                              child: Text('Changes',
+                                  style:
+                                      Theme.of(context).textTheme.subtitle1)),
+                          Expanded(
+                              child: Card(
+                                  child: ListView.builder(
+                            itemCount: unstaged.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(title: Text(unstaged[index]));
+                            },
+                          ))),
+                          Row(
+                            children: <Widget>[
+                              ElevatedButton(
+                                  child: Text('Commit'), onPressed: () {})
+                            ],
+                          )
+                        ]));
               } else {
                 return Text('Loading');
               }
