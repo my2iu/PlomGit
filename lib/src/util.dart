@@ -64,3 +64,22 @@ Future<T> retryWithAskCredentials<T>(
           error is Libgit2Exception &&
           error.errorCode == Libgit2Exception.GIT_EUSER);
 }
+
+class GitStatusFlags {
+  bool isStaged = false;
+  bool isModified = false;
+  bool isNew = false;
+  bool isDeleted = false;
+
+  bool dirHasUnstagedModifications = false;
+  bool dirHasStagedModifications = false;
+  bool dirIsInGit = false;
+
+  GitStatusFlags();
+  GitStatusFlags.fromFlags(int gitFlags) {
+    isStaged = (gitFlags & (1 | 2 | 4 | 8 | 16)) != 0;
+    isNew = (gitFlags & (1 | 128)) != 0;
+    isModified = (gitFlags & (2 | 16 | 256 | 2048)) != 0;
+    isDeleted = (gitFlags & (4 | 512)) != 0;
+  }
+}

@@ -19,24 +19,13 @@ class RepositoryView extends StatefulWidget {
       _RepositoryViewState(repositoryName, repositoryUri, pathInRepository);
 }
 
-class _GitStatusFlags {
-  bool isStaged = false;
-  bool isModified = false;
-  bool isNew = false;
-  bool isDeleted = false;
-
-  bool dirHasUnstagedModifications = false;
-  bool dirHasStagedModifications = false;
-  bool dirIsInGit = false;
-}
-
 class _RepositoryViewState extends State<RepositoryView> {
   final String repositoryName;
   final Uri repositoryUri;
   final String _path;
   String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
-  Future<Map<String, _GitStatusFlags>> gitStatus;
+  Future<Map<String, GitStatusFlags>> gitStatus;
   List<String> remoteList;
 
   _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
@@ -59,17 +48,11 @@ class _RepositoryViewState extends State<RepositoryView> {
     });
   }
 
-  Map<String, _GitStatusFlags> _processGitStatusEntries(List<dynamic> entries) {
-    Map<String, _GitStatusFlags> statusMap = {};
+  Map<String, GitStatusFlags> _processGitStatusEntries(List<dynamic> entries) {
+    Map<String, GitStatusFlags> statusMap = {};
     entries.forEach((entry) {
-      _GitStatusFlags flags = _GitStatusFlags();
-
       // TODO: Handle rename and copy and status for directories
-      int gitFlags = entry[2];
-      flags.isStaged = (gitFlags & (1 | 2 | 4 | 8 | 16)) != 0;
-      flags.isNew = (gitFlags & (1 | 128)) != 0;
-      flags.isModified = (gitFlags & (2 | 16 | 256 | 2048)) != 0;
-      flags.isDeleted = (gitFlags & (4 | 512)) != 0;
+      GitStatusFlags flags = GitStatusFlags.fromFlags(entry[2]);
       statusMap[entry[0] ?? entry[1]] = flags;
 
       // Add entries for parent directories
@@ -79,8 +62,8 @@ class _RepositoryViewState extends State<RepositoryView> {
       parents.forEach((dirname) {
         parentPath += dirname + '/';
         if (!statusMap.containsKey(parentPath))
-          statusMap[parentPath] = _GitStatusFlags();
-        _GitStatusFlags parentFlags = statusMap[parentPath];
+          statusMap[parentPath] = GitStatusFlags();
+        GitStatusFlags parentFlags = statusMap[parentPath];
         if (flags.isStaged)
           parentFlags.dirHasStagedModifications = true;
         else if (flags.isNew || flags.isModified || flags.isDeleted)
@@ -192,7 +175,7 @@ class _RepositoryViewState extends State<RepositoryView> {
     var icon = FutureBuilder(
         future: gitStatus,
         builder: (BuildContext context,
-            AsyncSnapshot<Map<String, _GitStatusFlags>> snapshot) {
+            AsyncSnapshot<Map<String, GitStatusFlags>> snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data.containsKey(relativePath)) {
               var statusFlags = snapshot.data[relativePath];
