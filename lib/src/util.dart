@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:libgit2/libgit2.dart' show Libgit2Exception;
 import 'package:tuple/tuple.dart';
 
+Widget TextAndIcon(Widget text, [Widget icon]) {
+  if (icon == null) icon = Icon(null);
+  return Row(children: <Widget>[icon, SizedBox(width: 5), text]);
+}
+
 Widget makeLoginDialog(BuildContext context) {
   var username = "";
   var password = "";

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
+import 'commit_view.dart';
 import 'util.dart';
 
 class RepositoryView extends StatefulWidget {
@@ -111,7 +112,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                           content: Text('Error: ' + error.toString())));
                     });
                   },
-                  child: Text('Fetch from $remote')));
+                  child: TextAndIcon(
+                      Text('Fetch from $remote'),
+                      Icon(Icons.cloud_download_outlined,
+                          color: Theme.of(context).iconTheme.color))));
             });
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
@@ -128,7 +132,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                           content: Text('Error: ' + error.toString())));
                     });
                   },
-                  child: Text('Push to $remote')));
+                  child: TextAndIcon(
+                      Text('Push to $remote'),
+                      Icon(Icons.cloud_upload_outlined,
+                          color: Theme.of(context).iconTheme.color))));
             });
             entries.add(PopupMenuItem(
                 value: () {
@@ -156,6 +163,20 @@ class _RepositoryViewState extends State<RepositoryView> {
                   });
                 },
                 child: Text('Test dialog')));
+            entries.add(PopupMenuItem(
+                value: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute<String>(
+                          builder: (BuildContext context) =>
+                              CommitView(repositoryName, repositoryUri)));
+
+                  // Show the commit screen
+                },
+                child: TextAndIcon(
+                    Text("Commit"),
+                    Icon(Icons.save_alt,
+                        color: Theme.of(context).iconTheme.color))));
           }
           return entries;
         });
@@ -220,20 +241,17 @@ class _RepositoryViewState extends State<RepositoryView> {
             // Icons.stop, Icons.stop_cicle_outlined, Icons.stop_circle_sharp, Icons.stop_circle, Icons.stop_outlined
             // Icons.pause, Icons.pause_circle_outline, Icons.pause_circle_filled, Icons.circle
             // Icons.cancel, Icons.cancel_outlined, Icons.clear
-            // if (isDir && fname.startsWith('l'))
+            // Icons.source, Icons.source_outlined
+            // Icons.note_add, Icons.note_add_outlined, Icons.description, Icons.description_outlined, Icons.insert_drive_file, Icons.insert_drive_file_outlined
+            // Icons.radio_button_off
             //   return Icon(Icons.stop_circle, color: Colors.blueGrey);
-            // else if (isDir && fname.startsWith('t'))
-            //   return Icon(Icons.radio_button_off);
-            // else if (isDir)
             return Icon(null);
-            // else
-            //   return Icon(Icons.lens_outlined);
           } else {
             return Icon(null);
           }
         });
     return ListTile(
-        title: Row(children: [icon, SizedBox(width: 5), Text(fname)]),
+        title: TextAndIcon(Text(fname), icon),
         // leading: icon,
         onTap: () {
           if (isDir) {
