@@ -2,19 +2,83 @@ import 'package:PlomGit/src/util.dart';
 import 'package:flutter/material.dart';
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 
-class CommitView extends StatefulWidget {
-  CommitView(this.repositoryName, this.repositoryUri);
+class CommitPrepareChangesView extends StatelessWidget {
+  CommitPrepareChangesView(this.repositoryName, this.repositoryUri);
 
   final String repositoryName;
   final Uri repositoryUri;
 
   @override
-  CommitViewState createState() =>
-      CommitViewState(repositoryName, repositoryUri);
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Commit $repositoryName'),
+        ),
+        body: Column(children: [
+          Expanded(
+            child: _CommitFilesView(repositoryName, repositoryUri),
+          ),
+          Row(
+            children: <Widget>[
+              ElevatedButton(
+                  child: Text('Next'),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute<String>(
+                            builder: (BuildContext context) => CommitFinalView(
+                                repositoryName, repositoryUri))).then((result) {
+                      if (result != null) {
+                        Navigator.pop(context, result);
+                      }
+                    });
+                  })
+            ],
+          )
+        ]));
+  }
 }
 
-class CommitViewState extends State<CommitView> {
-  CommitViewState(this.repositoryName, this.repositoryUri) {
+class CommitFinalView extends StatelessWidget {
+  CommitFinalView(this.repositoryName, this.repositoryUri);
+
+  final String repositoryName;
+  final Uri repositoryUri;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Commit Message'),
+        ),
+        body: Column(children: [
+          Expanded(child: _CommitMessageView(repositoryName, repositoryUri)),
+          Row(
+            children: <Widget>[
+              ElevatedButton(
+                  child: Text('Commit'),
+                  onPressed: () {
+                    Navigator.pop(context, "Commit successful");
+                  })
+            ],
+          )
+        ]));
+  }
+}
+
+class _CommitFilesView extends StatefulWidget {
+  _CommitFilesView(this.repositoryName, this.repositoryUri);
+
+  final String repositoryName;
+  final Uri repositoryUri;
+
+  @override
+  _CommitFilesViewState createState() =>
+      _CommitFilesViewState(repositoryName, repositoryUri);
+}
+
+class _CommitFilesViewState extends State<_CommitFilesView> {
+  _CommitFilesViewState(this.repositoryName, this.repositoryUri) {
     gitStatus = GitIsolate.instance.status(repositoryDir);
   }
 
@@ -106,28 +170,93 @@ class CommitViewState extends State<CommitView> {
                       ]));
                 },
               ))),
-              Row(
-                children: <Widget>[
-                  ElevatedButton(child: Text('Commit'), onPressed: () {})
-                ],
-              )
             ]));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Commit $repositoryName'),
-        ),
-        body: FutureBuilder(
-            future: gitStatus,
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.hasData) {
-                return _makeCommitUi(snapshot.data);
-              } else {
-                return Text('Loading');
-              }
-            }));
+    return FutureBuilder(
+        future: gitStatus,
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (snapshot.hasData) {
+            return _makeCommitUi(snapshot.data);
+          } else {
+            return Text('Loading');
+          }
+        });
+  }
+}
+
+class _CommitMessageView extends StatefulWidget {
+  _CommitMessageView(this.repositoryName, this.repositoryUri);
+
+  final String repositoryName;
+  final Uri repositoryUri;
+
+  @override
+  _CommitMessageViewState createState() =>
+      _CommitMessageViewState(repositoryName, repositoryUri);
+}
+
+class _CommitMessageViewState extends State<_CommitMessageView> {
+  _CommitMessageViewState(this.repositoryName, this.repositoryUri) {}
+
+  String repositoryName;
+  Uri repositoryUri;
+  String get repositoryDir => repositoryUri.toFilePath();
+  String name = "";
+  String email = "";
+  String message = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.all(5),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+            Widget>[
+          Expanded(
+              child: Card(
+                  child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: TextFormField(
+                          // controller: TextEditingController(text: message),
+                          // minLines: 3,
+                          maxLines: null,
+                          expands: true,
+                          keyboardType: TextInputType.multiline,
+                          initialValue: message,
+                          decoration: InputDecoration(
+                            // border: OutlineInputBorder(),
+                            icon: Icon(Icons.notes),
+                            // filled: true,
+                            labelText: 'Commit message',
+                          ),
+                          onChanged: (val) => setState(() => message = val))))),
+          SizedBox(height: 5),
+          Card(
+              child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Column(children: [
+                    TextFormField(
+                        decoration: InputDecoration(
+                          // border: OutlineInputBorder(),
+                          icon: Icon(Icons.person),
+                          // filled: true,
+                          labelText: 'Name',
+                        ),
+                        initialValue: name,
+                        onChanged: (val) => setState(() => name = val)),
+                    TextFormField(
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          // border: OutlineInputBorder(),
+                          icon: Icon(Icons.email),
+                          // filled: true,
+                          labelText: 'Email',
+                        ),
+                        initialValue: email,
+                        onChanged: (val) => setState(() => email = val))
+                  ]))),
+        ]));
   }
 }

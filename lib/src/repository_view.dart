@@ -162,8 +162,15 @@ class _RepositoryViewState extends State<RepositoryView> {
                           context,
                           MaterialPageRoute<String>(
                               builder: (BuildContext context) =>
-                                  CommitView(repositoryName, repositoryUri)))
-                      .then((_) => _refresh());
+                                  CommitPrepareChangesView(
+                                      repositoryName, repositoryUri)))
+                      .then((result) {
+                    _refresh();
+                    if (result != null) {
+                      Scaffold.of(context)
+                          .showSnackBar(SnackBar(content: Text(result)));
+                    }
+                  });
                   // Show the commit screen
                 },
                 child: TextAndIcon(
@@ -245,7 +252,6 @@ class _RepositoryViewState extends State<RepositoryView> {
         });
     return ListTile(
         title: TextAndIcon(Text(fname), icon),
-        // leading: icon,
         onTap: () {
           if (isDir) {
             Navigator.push(
