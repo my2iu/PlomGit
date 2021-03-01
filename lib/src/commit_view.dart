@@ -23,13 +23,20 @@ class CommitViewState extends State<CommitView> {
   String get repositoryDir => repositoryUri.toFilePath();
   Future<dynamic> gitStatus;
 
+  void _refresh() {
+    setState(() {
+      gitStatus = GitIsolate.instance.status(repositoryDir);
+    });
+  }
+
   Widget _makeCommitUi(List<dynamic> allChanges) {
     List<String> staged = <String>[];
     List<String> unstaged = <String>[];
     allChanges.forEach((entry) {
-      var flags = GitStatusFlags.fromFlags(entry[2]);
-      if (flags.isStaged) staged.add(entry[0] ?? entry[1]);
-      if (flags.isNew || flags.isDeleted || flags.isModified)
+      var gitFlags = entry[2];
+      if ((gitFlags & (1 | 2 | 4 | 8 | 16)) != 0)
+        staged.add(entry[0] ?? entry[1]);
+      if ((gitFlags & (128 | 256 | 512 | 1024 | 2048)) != 0)
         unstaged.add(entry[0] ?? entry[1]);
     });
     return Padding(
@@ -51,8 +58,17 @@ class CommitViewState extends State<CommitView> {
                       title: Text(staged[index]),
                       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                         IconButton(
+                          tooltip: "Remove",
                           icon: Icon(Icons.remove),
-                          onPressed: () {},
+                          onPressed: () {
+                            GitIsolate.instance
+                                .removeFromIndex(repositoryDir, staged[index])
+                                .then((result) => _refresh())
+                                .catchError((error) {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: Text('Error: ' + error.toString())));
+                            });
+                          },
                         ),
                       ]));
                 },
@@ -70,12 +86,22 @@ class CommitViewState extends State<CommitView> {
                       title: Text(unstaged[index]),
                       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                         IconButton(
+                          tooltip: "Revert",
                           icon: Icon(Icons.undo),
                           onPressed: () {},
                         ),
                         IconButton(
+                          tooltip: "Add",
                           icon: Icon(Icons.add),
-                          onPressed: () {},
+                          onPressed: () {
+                            GitIsolate.instance
+                                .addToIndex(repositoryDir, unstaged[index])
+                                .then((result) => _refresh())
+                                .catchError((error) {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: Text('Error: ' + error.toString())));
+                            });
+                          },
                         ),
                       ]));
                 },

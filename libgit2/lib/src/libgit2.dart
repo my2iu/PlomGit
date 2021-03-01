@@ -241,6 +241,41 @@ class Libgit2 {
                       Pointer<Utf8>)>>("git_credential_userpass_plaintext_new")
           .asFunction();
 
+  static final int Function(
+          Pointer<Pointer<git_index>>, Pointer<git_repository>)
+      _git_repository_index = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<git_index>>,
+                      Pointer<git_repository>)>>("git_repository_index")
+          .asFunction();
+
+  static final int Function(Pointer<git_index>) _git_index_free = nativeGit2
+      .lookup<NativeFunction<Int32 Function(Pointer<git_index>)>>(
+          "git_index_free")
+      .asFunction();
+
+  static final int Function(Pointer<git_index>, Pointer<Utf8>)
+      _git_index_add_bypath = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_index>,
+                      Pointer<Utf8>)>>("git_index_add_bypath")
+          .asFunction();
+
+  static final int Function(Pointer<git_index>, Pointer<Utf8>)
+      _git_index_remove_bypath = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_index>,
+                      Pointer<Utf8>)>>("git_index_remove_bypath")
+          .asFunction();
+
+  static final int Function(Pointer<git_index>) _git_index_write = nativeGit2
+      .lookup<NativeFunction<Int32 Function(Pointer<git_index>)>>(
+          "git_index_write")
+      .asFunction();
+
   /// Checks the return code for errors and if so, convert it to a thrown
   /// exception
   static int _checkErrors(int errorCode) {
@@ -309,6 +344,21 @@ class Libgit2 {
       free(remoteStrPtr);
       if (remote.value != nullptr) _git_remote_free(remote.value);
       free(remote);
+    }
+  }
+
+  static T _withRepositoryAndIndex<T>(
+      String dir, T Function(Pointer<git_repository>, Pointer<git_index>) fn) {
+    Pointer<Pointer<git_index>> index = allocate<Pointer<git_index>>();
+    index.value = nullptr;
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(_git_repository_index(index, repo));
+        return fn(repo, index.value);
+      });
+    } finally {
+      if (index.value != nullptr) _git_index_free(index.value);
+      free(index);
     }
   }
 
@@ -459,6 +509,30 @@ class Libgit2 {
       free(statusList);
       // free(path.value);
       // free(path);
+    }
+  }
+
+  static void addToIndex(String dir, String file) {
+    var filePtr = Utf8.toUtf8(file);
+    try {
+      _withRepositoryAndIndex(dir, (repo, index) {
+        _checkErrors(_git_index_add_bypath(index, filePtr));
+        _checkErrors(_git_index_write(index));
+      });
+    } finally {
+      free(filePtr);
+    }
+  }
+
+  static void removeFromIndex(String dir, String file) {
+    var filePtr = Utf8.toUtf8(file);
+    try {
+      _withRepositoryAndIndex(dir, (repo, index) {
+        _checkErrors(_git_index_remove_bypath(index, filePtr));
+        _checkErrors(_git_index_write(index));
+      });
+    } finally {
+      free(filePtr);
     }
   }
 }

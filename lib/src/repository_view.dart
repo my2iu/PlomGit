@@ -29,6 +29,10 @@ class _RepositoryViewState extends State<RepositoryView> {
   List<String> remoteList;
 
   _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
+    _loadRepositoryInfo();
+  }
+
+  void _loadRepositoryInfo() {
     dirContents = Directory.fromUri(repositoryUri.resolve(_path))
         .list()
         .toList()
@@ -45,6 +49,12 @@ class _RepositoryViewState extends State<RepositoryView> {
         .then((entries) => _processGitStatusEntries(entries));
     GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
       remoteList = remotes;
+    });
+  }
+
+  void _refresh() {
+    setState(() {
+      _loadRepositoryInfo();
     });
   }
 
@@ -149,11 +159,11 @@ class _RepositoryViewState extends State<RepositoryView> {
             entries.add(PopupMenuItem(
                 value: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute<String>(
-                          builder: (BuildContext context) =>
-                              CommitView(repositoryName, repositoryUri)));
-
+                          context,
+                          MaterialPageRoute<String>(
+                              builder: (BuildContext context) =>
+                                  CommitView(repositoryName, repositoryUri)))
+                      .then((_) => _refresh());
                   // Show the commit screen
                 },
                 child: TextAndIcon(
@@ -239,10 +249,11 @@ class _RepositoryViewState extends State<RepositoryView> {
         onTap: () {
           if (isDir) {
             Navigator.push(
-                context,
-                MaterialPageRoute<String>(
-                    builder: (BuildContext context) => RepositoryView(
-                        repositoryName, repositoryUri, _path + fname)));
+                    context,
+                    MaterialPageRoute<String>(
+                        builder: (BuildContext context) => RepositoryView(
+                            repositoryName, repositoryUri, _path + fname)))
+                .then((_) => _refresh());
           }
         });
   }
