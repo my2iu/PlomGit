@@ -14,28 +14,31 @@ class CommitPrepareChangesView extends StatelessWidget {
         appBar: AppBar(
           title: Text('Commit $repositoryName'),
         ),
-        body: Column(children: [
-          Expanded(
-            child: _CommitFilesView(repositoryName, repositoryUri),
-          ),
-          Row(
-            children: <Widget>[
-              ElevatedButton(
-                  child: Text('Next'),
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute<String>(
-                            builder: (BuildContext context) => CommitFinalView(
-                                repositoryName, repositoryUri))).then((result) {
-                      if (result != null) {
-                        Navigator.pop(context, result);
-                      }
-                    });
-                  })
-            ],
-          )
-        ]));
+        body: Builder(
+            builder: (BuildContext context) => Column(children: [
+                  Expanded(
+                    child: _CommitFilesView(repositoryName, repositoryUri),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      ElevatedButton(
+                          child: Text('Next'),
+                          onPressed: () {
+                            Navigator.push(
+                                    context,
+                                    MaterialPageRoute<String>(
+                                        builder: (BuildContext context) =>
+                                            CommitFinalView(
+                                                repositoryName, repositoryUri)))
+                                .then((result) {
+                              if (result != null) {
+                                Navigator.pop(context, result);
+                              }
+                            });
+                          })
+                    ],
+                  )
+                ])));
   }
 }
 
@@ -59,27 +62,29 @@ class CommitFinalView extends StatelessWidget {
         appBar: AppBar(
           title: Text('Commit Message'),
         ),
-        body: Column(children: [
-          Expanded(
-              child: _CommitMessageView(repositoryName, repositoryUri, msgSig)),
-          Row(
-            children: <Widget>[
-              ElevatedButton(
-                  child: Text('Commit'),
-                  onPressed: () {
-                    GitIsolate.instance
-                        .commit(repositoryDir, msgSig.message, msgSig.name,
-                            msgSig.email)
-                        .then((_) {
-                      Navigator.pop(context, "Commit successful");
-                    }).catchError((error) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: ' + error.toString())));
-                    });
-                  })
-            ],
-          )
-        ]));
+        body: Builder(
+            builder: (BuildContext context) => Column(children: [
+                  Expanded(
+                      child: _CommitMessageView(
+                          repositoryName, repositoryUri, msgSig)),
+                  Row(
+                    children: <Widget>[
+                      ElevatedButton(
+                          child: Text('Commit'),
+                          onPressed: () {
+                            GitIsolate.instance
+                                .commit(repositoryDir, msgSig.message,
+                                    msgSig.name, msgSig.email)
+                                .then((_) {
+                              Navigator.pop(context, "Commit successful");
+                            }).catchError((error) {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: Text('Error: ' + error.toString())));
+                            });
+                          })
+                    ],
+                  )
+                ])));
   }
 }
 

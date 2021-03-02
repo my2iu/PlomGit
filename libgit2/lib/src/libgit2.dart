@@ -65,6 +65,12 @@ class Libgit2 {
               "git_repository_free")
           .asFunction();
 
+  static final int Function(Pointer<git_repository>)
+      _git_repository_head_unborn = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
+              "git_repository_head_unborn")
+          .asFunction();
+
   static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>,
           Pointer<Utf8>, Pointer<NativeType>) _clone =
       nativeGit2
@@ -627,10 +633,70 @@ class Libgit2 {
   }
 
   static void commit(String dir, String message, String name, String email) {
+    Pointer<git_oid> headOid = allocate<git_oid>();
+    Pointer<git_oid> treeOid = allocate<git_oid>();
+    Pointer<git_oid> finalCommitOid = allocate<git_oid>();
+    Pointer<Utf8> headStr = Utf8.toUtf8("HEAD");
+    Pointer<Utf8> messageStr = Utf8.toUtf8(message);
+    Pointer<Utf8> nameStr = Utf8.toUtf8(name);
+    Pointer<Utf8> emailStr = Utf8.toUtf8(email);
+    Pointer<Pointer<git_tree>> indexTree = allocate<Pointer<git_tree>>();
+    indexTree.value = nullptr;
+    Pointer<Pointer<git_commit>> parentCommits =
+        allocate<Pointer<git_commit>>(count: 1);
+    parentCommits[0] = nullptr;
+    int numParentCommits = 0;
+    Pointer<Pointer<git_signature>> authorSig =
+        allocate<Pointer<git_signature>>();
+    authorSig.value = nullptr;
     try {
       _withRepositoryAndIndex(dir, (repo, index) {
+        // Convert index to a tree
+        _checkErrors(_git_index_write_tree(treeOid, index));
+        _checkErrors(_git_tree_lookup(indexTree, repo, treeOid));
+
+        // If the repository has no head, then this initial commit has nothing
+        // to branch off of
+        var hasNoHead = _git_repository_head_unborn(repo);
+        _checkErrors(hasNoHead);
+        if (hasNoHead == 0) {
+          // Get head commit that we're branching off of
+          numParentCommits = 1;
+          _checkErrors(_git_reference_name_to_id(headOid, repo, headStr));
+          _checkErrors(
+              _git_commit_lookup(parentCommits.elementAt(0), repo, headOid));
+        }
+
+        // Use the same info for author and commiter signature
+        _checkErrors(_git_signature_now(authorSig, nameStr, emailStr));
+
+        // Perform the commit
+        _checkErrors(_git_commit_create(
+            finalCommitOid,
+            repo,
+            headStr,
+            authorSig.value,
+            authorSig.value,
+            nullptr,
+            messageStr,
+            indexTree.value,
+            numParentCommits,
+            parentCommits));
       });
     } finally {
+      free(finalCommitOid);
+      free(headOid);
+      free(treeOid);
+      free(headStr);
+      if (indexTree.value != nullptr) _git_tree_free(indexTree.value);
+      free(indexTree);
+      if (parentCommits[0] != nullptr) _git_commit_free(parentCommits[0]);
+      free(parentCommits);
+      free(messageStr);
+      free(nameStr);
+      free(emailStr);
+      if (authorSig.value != nullptr) _git_signature_free(authorSig.value);
+      free(authorSig);
     }
   }
 }
