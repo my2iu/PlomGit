@@ -103,6 +103,11 @@ class GitIsolate {
     return _sendRequest(RequestType.removeIndex, [dir, file]);
   }
 
+  Future<dynamic> commit(
+      String dir, String message, String name, String email) {
+    return _sendRequest(RequestType.commit, [dir, message, name, email]);
+  }
+
   // Makes a response to a request from the isolate back to the requester
   static void _isolateResponse(IsolateChannel channel, dynamic data) {
     channel.sink.add([0, data]);
@@ -156,6 +161,10 @@ class GitIsolate {
             Libgit2.removeFromIndex(event[1], event[2]);
             _isolateResponse(channel, "");
             break;
+          case RequestType.commit:
+            Libgit2.commit(event[1], event[2], event[3], event[4]);
+            _isolateResponse(channel, "");
+            break;
         }
       } on Libgit2Exception catch (e) {
         // Automatically serialize libgit2 errors
@@ -180,5 +189,6 @@ enum RequestType {
   push,
   status,
   addIndex,
-  removeIndex
+  removeIndex,
+  commit
 }

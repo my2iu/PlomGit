@@ -39,11 +39,19 @@ class CommitPrepareChangesView extends StatelessWidget {
   }
 }
 
+class _MessageAndSignatureData {
+  String name = "";
+  String email = "";
+  String message = "";
+}
+
 class CommitFinalView extends StatelessWidget {
   CommitFinalView(this.repositoryName, this.repositoryUri);
 
   final String repositoryName;
   final Uri repositoryUri;
+  String get repositoryDir => repositoryUri.toFilePath();
+  final _MessageAndSignatureData msgSig = _MessageAndSignatureData();
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +60,22 @@ class CommitFinalView extends StatelessWidget {
           title: Text('Commit Message'),
         ),
         body: Column(children: [
-          Expanded(child: _CommitMessageView(repositoryName, repositoryUri)),
+          Expanded(
+              child: _CommitMessageView(repositoryName, repositoryUri, msgSig)),
           Row(
             children: <Widget>[
               ElevatedButton(
                   child: Text('Commit'),
                   onPressed: () {
-                    Navigator.pop(context, "Commit successful");
+                    GitIsolate.instance
+                        .commit(repositoryDir, msgSig.message, msgSig.name,
+                            msgSig.email)
+                        .then((_) {
+                      Navigator.pop(context, "Commit successful");
+                    }).catchError((error) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text('Error: ' + error.toString())));
+                    });
                   })
             ],
           )
@@ -188,25 +205,24 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
 }
 
 class _CommitMessageView extends StatefulWidget {
-  _CommitMessageView(this.repositoryName, this.repositoryUri);
+  _CommitMessageView(this.repositoryName, this.repositoryUri, this.msgSig);
 
   final String repositoryName;
   final Uri repositoryUri;
+  final _MessageAndSignatureData msgSig;
 
   @override
   _CommitMessageViewState createState() =>
-      _CommitMessageViewState(repositoryName, repositoryUri);
+      _CommitMessageViewState(repositoryName, repositoryUri, msgSig);
 }
 
 class _CommitMessageViewState extends State<_CommitMessageView> {
-  _CommitMessageViewState(this.repositoryName, this.repositoryUri) {}
+  _CommitMessageViewState(this.repositoryName, this.repositoryUri, this.msgSig);
 
   String repositoryName;
   Uri repositoryUri;
   String get repositoryDir => repositoryUri.toFilePath();
-  String name = "";
-  String email = "";
-  String message = "";
+  _MessageAndSignatureData msgSig;
 
   @override
   Widget build(BuildContext context) {
@@ -224,14 +240,15 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
                           maxLines: null,
                           expands: true,
                           keyboardType: TextInputType.multiline,
-                          initialValue: message,
+                          initialValue: msgSig.message,
                           decoration: InputDecoration(
                             // border: OutlineInputBorder(),
                             icon: Icon(Icons.notes),
                             // filled: true,
                             labelText: 'Commit message',
                           ),
-                          onChanged: (val) => setState(() => message = val))))),
+                          onChanged: (val) =>
+                              setState(() => msgSig.message = val))))),
           SizedBox(height: 5),
           Card(
               child: Padding(
@@ -244,8 +261,8 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
                           // filled: true,
                           labelText: 'Name',
                         ),
-                        initialValue: name,
-                        onChanged: (val) => setState(() => name = val)),
+                        initialValue: msgSig.name,
+                        onChanged: (val) => setState(() => msgSig.name = val)),
                     TextFormField(
                         obscureText: true,
                         decoration: InputDecoration(
@@ -254,8 +271,8 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
                           // filled: true,
                           labelText: 'Email',
                         ),
-                        initialValue: email,
-                        onChanged: (val) => setState(() => email = val))
+                        initialValue: msgSig.email,
+                        onChanged: (val) => setState(() => msgSig.email = val))
                   ]))),
         ]));
   }

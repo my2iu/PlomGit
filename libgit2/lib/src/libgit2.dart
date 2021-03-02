@@ -276,6 +276,96 @@ class Libgit2 {
           "git_index_write")
       .asFunction();
 
+  static final int Function(Pointer<git_oid>, Pointer<git_index>)
+      _git_index_write_tree = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_oid>,
+                      Pointer<git_index>)>>("git_index_write_tree")
+          .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<git_tree>>, Pointer<git_repository>, Pointer<git_oid>)
+      _git_tree_lookup = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_tree>>,
+                      Pointer<git_repository>,
+                      Pointer<git_oid>)>>("git_tree_lookup")
+          .asFunction();
+
+  static final void Function(Pointer<git_tree>) _git_tree_free = nativeGit2
+      .lookup<NativeFunction<Void Function(Pointer<git_tree>)>>("git_tree_free")
+      .asFunction();
+
+  static final int Function(
+          Pointer<git_oid>, Pointer<git_repository>, Pointer<Utf8>)
+      _git_reference_name_to_id = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_oid>, Pointer<git_repository>,
+                      Pointer<Utf8>)>>("git_reference_name_to_id")
+          .asFunction();
+
+  static final int Function(Pointer<Pointer<git_commit>>,
+          Pointer<git_repository>, Pointer<git_oid>) _git_commit_lookup =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_commit>>,
+                      Pointer<git_repository>,
+                      Pointer<git_oid>)>>("git_commit_lookup")
+          .asFunction();
+
+  static final void Function(Pointer<git_commit>) _git_commit_free = nativeGit2
+      .lookup<NativeFunction<Void Function(Pointer<git_commit>)>>(
+          "git_commit_free")
+      .asFunction();
+
+  static final int Function(
+          Pointer<git_oid>,
+          Pointer<git_repository>,
+          Pointer<Utf8>,
+          Pointer<git_signature>,
+          Pointer<git_signature>,
+          Pointer<Utf8>,
+          Pointer<Utf8>,
+          Pointer<git_tree>,
+          int,
+          Pointer<Pointer<git_commit>>) _git_commit_create =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<git_oid>,
+                      Pointer<git_repository>,
+                      Pointer<Utf8>,
+                      Pointer<git_signature>,
+                      Pointer<git_signature>,
+                      Pointer<Utf8>,
+                      Pointer<Utf8>,
+                      Pointer<git_tree>,
+                      IntPtr,
+                      Pointer<Pointer<git_commit>>)>>("git_commit_create")
+          .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<git_signature>>, Pointer<Utf8>, Pointer<Utf8>)
+      _git_signature_now = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<git_signature>>, Pointer<Utf8>,
+                      Pointer<Utf8>)>>("git_signature_now")
+          .asFunction();
+
+  static final void Function(Pointer<git_signature>) _git_signature_free =
+      nativeGit2
+          .lookup<NativeFunction<Void Function(Pointer<git_signature>)>>(
+              "git_signature_free")
+          .asFunction();
+
   /// Checks the return code for errors and if so, convert it to a thrown
   /// exception
   static int _checkErrors(int errorCode) {
@@ -533,6 +623,14 @@ class Libgit2 {
       });
     } finally {
       free(filePtr);
+    }
+  }
+
+  static void commit(String dir, String message, String name, String email) {
+    try {
+      _withRepositoryAndIndex(dir, (repo, index) {
+      });
+    } finally {
     }
   }
 }

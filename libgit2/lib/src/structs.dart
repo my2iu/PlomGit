@@ -30,6 +30,12 @@ class git_credential extends Struct {}
 // Opaque type
 class git_index extends Struct {}
 
+// Opaque type
+class git_tree extends Struct {}
+
+// Opaque type
+class git_commit extends Struct {}
+
 typedef git_credentials_acquire_cb = Int32 Function(
     Pointer<Pointer<git_credential>> out,
     Pointer<Utf8> url,
@@ -161,4 +167,24 @@ class git_status_entry extends Struct {
 
   // GIT_STATUS_IGNORED          = (1u << 14),
   // GIT_STATUS_CONFLICTED       = (1u << 15),
+}
+
+class git_oid extends Struct {
+  @Int64()
+  int id_0; // Should be a 20 bytes git_oid
+  @Int64()
+  int id_1;
+  @Int32()
+  int id_2;
+}
+
+class git_signature extends Struct {
+  Pointer<Utf8> name;
+  Pointer<Utf8> email;
+  @Int64()
+  int when_time;
+  @Int32()
+  int when_offset;
+  @Int8()
+  int when_sign;
 }
