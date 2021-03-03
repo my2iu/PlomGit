@@ -94,6 +94,8 @@ class _RepositoryViewState extends State<RepositoryView> {
               entries.add(PopupMenuItem(
                   value: () {
                     retryWithAskCredentials(
+                            repositoryName,
+                            remote,
                             (user, password) => GitIsolate.instance
                                 .fetch(repositoryDir, remote),
                             context)
@@ -114,6 +116,8 @@ class _RepositoryViewState extends State<RepositoryView> {
               entries.add(PopupMenuItem(
                   value: () {
                     retryWithAskCredentials(
+                            repositoryName,
+                            remote,
                             (username, password) => GitIsolate.instance.push(
                                 repositoryDir, remote, username, password),
                             context)

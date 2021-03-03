@@ -48,22 +48,37 @@ Widget makeLoginDialog(BuildContext context) {
   );
 }
 
-Future<T> retryWithAskCredentials<T>(
+Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
     Future<T> Function(String, String) fn, BuildContext context) {
-  return fn("", "").catchError((error) {
-    // Ask for a username and password and pass those values into the function
-    return showDialog<Tuple2>(
-        context: context,
-        builder: (context) => makeLoginDialog(context)).then((Tuple2 login) {
-      if (login != null) {
-        return fn(login.item1, login.item2);
-      }
-      throw "Cancelled";
-    });
-  },
-      test: (error) =>
-          error is Libgit2Exception &&
-          error.errorCode == Libgit2Exception.GIT_EUSER);
+  // Check if we have any saved credentials
+  String user = "";
+  String password = "";
+  return PlomGitPrefs.instance
+      .readEncryptedUser(repositoryName, remoteName)
+      .then((val) {
+        if (val != null) user = val;
+      })
+      .then((_) => PlomGitPrefs.instance
+          .readEncryptedPassword(repositoryName, remoteName))
+      .then((val) {
+        if (val != null) password = val;
+      })
+      .then((_) => fn(user, password))
+      .catchError((error) {
+        // Ask for a username and password and pass those values into the function
+        return showDialog<Tuple2>(
+                context: context,
+                builder: (context) => makeLoginDialog(context))
+            .then((Tuple2 login) {
+          if (login != null) {
+            return fn(login.item1, login.item2);
+          }
+          throw "Cancelled";
+        });
+      },
+          test: (error) =>
+              error is Libgit2Exception &&
+              error.errorCode == Libgit2Exception.GIT_EUSER);
 }
 
 class GitStatusFlags {

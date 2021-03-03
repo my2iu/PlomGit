@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.pop(dialogContext, () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute<Tuple2<String, String>>(
+                      MaterialPageRoute<Tuple4<String, String, String, String>>(
                         builder: (BuildContext context) =>
                             RepositoryLocationAndRemoteDialog(),
                       ),
@@ -139,7 +139,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       if (result == null) return;
                       String url = result.item1;
                       String name = result.item2;
-                      _cloneRepository(context, name, url);
+                      String user = result.item3;
+                      String password = result.item4;
+                      _cloneRepository(context, name, url, user, password);
                     });
                   });
                 })
@@ -186,22 +188,38 @@ class _MyHomePageState extends State<MyHomePage> {
         .then((uri) => uri.replace(path: uri.path + name + '/'));
   }
 
-  void _cloneRepository(BuildContext context, String name, String url) {
-    _getRepositoryDirForName(name).then((pathUri) {
-      retryWithAskCredentials(
-              (user, password) => GitIsolate.instance
-                  .clone(url, pathUri.toFilePath(), user, password),
-              context)
-          .then((val) {
-        Navigator.push(
-            context,
-            MaterialPageRoute<String>(
-              builder: (BuildContext context) => RepositoryView(name, pathUri),
-            )).then((result) => _refreshRepositories());
-      }).catchError((error) {
-        _refreshRepositories();
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $error')));
+  void _cloneRepository(BuildContext context, String name, String url,
+      String user, String password) {
+    Future<dynamic> waitWriteCredentials = Future.value(null);
+    if (user.isNotEmpty) {
+      waitWriteCredentials = waitWriteCredentials.then((_) =>
+          PlomGitPrefs.instance.writeEncryptedUser(name, "origin", user));
+    }
+    if (password.isNotEmpty) {
+      waitWriteCredentials = waitWriteCredentials.then((_) => PlomGitPrefs
+          .instance
+          .writeEncryptedPassword(name, "origin", password));
+    }
+    waitWriteCredentials.then((_) {
+      _getRepositoryDirForName(name).then((pathUri) {
+        retryWithAskCredentials(
+                name,
+                "origin",
+                (user, password) => GitIsolate.instance
+                    .clone(url, pathUri.toFilePath(), user, password),
+                context)
+            .then((val) {
+          Navigator.push(
+              context,
+              MaterialPageRoute<String>(
+                builder: (BuildContext context) =>
+                    RepositoryView(name, pathUri),
+              )).then((result) => _refreshRepositories());
+        }).catchError((error) {
+          _refreshRepositories();
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Error: $error')));
+        });
       });
     });
   }
@@ -392,29 +410,8 @@ class _RepositoryLocationState extends State<RepositoryLocationDialog> {
   }
 }
 
-class RepositoryLocationAndRemoteDialog extends StatefulWidget {
-  @override
-  _RepositoryLocationAndRemoteState createState() =>
-      _RepositoryLocationAndRemoteState();
-}
-
-class _RepositoryLocationAndRemoteState
-    extends State<RepositoryLocationAndRemoteDialog> {
-  String repositoryName = "Test";
-  String url = "https://github.com/my2iu/PlomGit.git";
-  final _formKey = GlobalKey<FormState>();
-
-  _setName(String name) {
-    setState(() {
-      repositoryName = name;
-    });
-  }
-
-  _setUrl(String newUrl) {
-    setState(() {
-      url = newUrl;
-    });
-  }
+class RepositoryLocationAndRemoteDialog extends StatelessWidget {
+  final RepositoryRemoteInfo remoteInfo = RepositoryRemoteInfo();
 
   @override
   Widget build(BuildContext context) {
@@ -422,26 +419,91 @@ class _RepositoryLocationAndRemoteState
         appBar: AppBar(
           title: Text('Repository Configuration'),
         ),
-        body: Builder(builder: (BuildContext context) {
-          return Form(
-              key: _formKey,
-              child: Column(children: [
-                TextFormField(
-                  initialValue: repositoryName,
-                  decoration: InputDecoration(labelText: 'Repository name'),
-                  onChanged: (text) => _setName(text),
-                ),
-                TextFormField(
-                  initialValue: url,
-                  decoration: InputDecoration(labelText: 'Remote url'),
-                  onChanged: (text) => _setUrl(text),
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, Tuple2(url, repositoryName));
-                    },
-                    child: Text('Clone')),
-              ]));
-        }));
+        body: Padding(
+            padding: EdgeInsets.all(5),
+            child: Column(children: [
+              RemoteConfigurationWidget(remoteInfo),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(
+                        context,
+                        Tuple4(remoteInfo.url, remoteInfo.repositoryName,
+                            remoteInfo.user, remoteInfo.password));
+                  },
+                  child: Text('Clone')),
+            ])));
+  }
+}
+
+class RepositoryRemoteInfo {
+  String repositoryName = "Test";
+  String url = "https://github.com/my2iu/PlomGit.git";
+  String user = "";
+  String password = "";
+}
+
+class RemoteConfigurationWidget extends StatefulWidget {
+  RemoteConfigurationWidget(this.remoteInfo);
+  final RepositoryRemoteInfo remoteInfo;
+  @override
+  _RepositoryLocationAndRemoteState createState() =>
+      _RepositoryLocationAndRemoteState(remoteInfo);
+}
+
+class _RepositoryLocationAndRemoteState
+    extends State<RemoteConfigurationWidget> {
+  _RepositoryLocationAndRemoteState(this.remoteInfo);
+
+  final _formKey = GlobalKey<FormState>();
+  RepositoryRemoteInfo remoteInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+        key: _formKey,
+        child: Column(children: [
+          Card(
+              child: Padding(
+                  padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
+                  child: Column(children: [
+                    TextFormField(
+                      initialValue: remoteInfo.repositoryName,
+                      decoration: InputDecoration(labelText: 'Repository name'),
+                      onChanged: (text) =>
+                          setState(() => remoteInfo.repositoryName = text),
+                    ),
+                    TextFormField(
+                      initialValue: remoteInfo.url,
+                      decoration: InputDecoration(labelText: 'Remote url'),
+                      onChanged: (text) =>
+                          setState(() => remoteInfo.url = text),
+                    ),
+                  ]))),
+          SizedBox(height: 5),
+          Card(
+              child: Padding(
+                  padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
+                  child: Column(children: [
+                    TextFormField(
+                      initialValue: remoteInfo.user,
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.account_circle),
+                        labelText: 'User',
+                      ),
+                      onChanged: (text) =>
+                          setState(() => remoteInfo.user = text),
+                    ),
+                    TextFormField(
+                      initialValue: remoteInfo.password,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.lock),
+                        labelText: 'Password or token',
+                      ),
+                      onChanged: (text) =>
+                          setState(() => remoteInfo.password = text),
+                    ),
+                  ]))),
+        ]));
   }
 }

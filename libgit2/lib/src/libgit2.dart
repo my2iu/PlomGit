@@ -114,6 +114,12 @@ class Libgit2 {
               "git_status_options_init")
           .asFunction();
 
+  static final int Function(Pointer<NativeType>, int version)
+      _git_clone_options_init = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
+              "git_clone_options_init")
+          .asFunction();
+
   static final int Function() _git_fetch_options_size = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_size")
       .asFunction();
@@ -126,6 +132,10 @@ class Libgit2 {
       .lookup<NativeFunction<Int32 Function()>>("git_status_options_size")
       .asFunction();
 
+  static final int Function() _git_clone_options_size = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_clone_options_size")
+      .asFunction();
+
   static final int Function() _git_fetch_options_version = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_version")
       .asFunction();
@@ -136,6 +146,10 @@ class Libgit2 {
 
   static final int Function() _git_status_options_version = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_status_options_version")
+      .asFunction();
+
+  static final int Function() _git_clone_options_version = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_clone_options_version")
       .asFunction();
 
   static final void Function(Pointer<NativeType>,
@@ -160,6 +174,18 @@ class Libgit2 {
                           Pointer<
                               NativeFunction<git_credentials_acquire_cb>>)>>(
               "git_push_options_set_credentials_cb")
+          .asFunction();
+
+  static final void Function(Pointer<NativeType>,
+          Pointer<NativeFunction<git_credentials_acquire_cb>>)
+      _git_clone_options_set_credentials_cb = nativeGit2
+          .lookup<
+                  NativeFunction<
+                      Void Function(
+                          Pointer<NativeType>,
+                          Pointer<
+                              NativeFunction<git_credentials_acquire_cb>>)>>(
+              "git_clone_options_set_credentials_cb")
           .asFunction();
 
   static final int Function(
@@ -398,15 +424,24 @@ class Libgit2 {
     Pointer<Pointer<git_repository>> repository =
         allocate<Pointer<git_repository>>();
     repository.value = nullptr;
+    Pointer<NativeType> cloneOptions =
+        allocate<Int8>(count: _git_clone_options_size());
     var dirPtr = Utf8.toUtf8(dir);
     var urlPtr = Utf8.toUtf8(url);
     try {
-      _checkErrors(_clone(repository, urlPtr, dirPtr, nullptr));
+      _checkErrors(
+          _git_clone_options_init(cloneOptions, _git_clone_options_version()));
+      _git_clone_options_set_credentials_cb(
+          cloneOptions,
+          Pointer.fromFunction<git_credentials_acquire_cb>(
+              credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
+      _checkErrors(_clone(repository, urlPtr, dirPtr, cloneOptions));
     } finally {
       free(dirPtr);
       free(urlPtr);
       if (repository.value != nullptr) _repositoryFree(repository.value);
       free(repository);
+      free(cloneOptions);
     }
   }
 
@@ -483,6 +518,10 @@ class Libgit2 {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
         _checkErrors(_git_fetch_options_init(
             fetchOptions, _git_fetch_options_version()));
+        _git_fetch_options_set_credentials_cb(
+            fetchOptions,
+            Pointer.fromFunction<git_credentials_acquire_cb>(
+                credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
         _checkErrors(_git_remote_fetch(remote, nullptr, fetchOptions, nullptr));
       });
     } finally {
