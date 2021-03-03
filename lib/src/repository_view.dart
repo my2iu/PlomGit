@@ -97,7 +97,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                             repositoryName,
                             remote,
                             (user, password) => GitIsolate.instance
-                                .fetch(repositoryDir, remote),
+                                .fetch(repositoryDir, remote, user, password),
                             context)
                         .then((result) {
                       Scaffold.of(context).showSnackBar(
