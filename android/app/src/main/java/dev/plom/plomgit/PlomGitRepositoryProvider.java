@@ -14,6 +14,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class PlomGitRepositoryProvider extends DocumentsProvider
 {
@@ -45,16 +46,17 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
         row.add(Document.COLUMN_DOCUMENT_ID, documentId);
         if (file.isDirectory()) {
             row.add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR);
-            if (documentId.equals(""))
-                row.add(Document.COLUMN_FLAGS, Document.FLAG_DIR_SUPPORTS_CREATE);
-            else
+            if (documentId.equals("/"))
                 row.add(Document.COLUMN_FLAGS, 0);
+            else
+                row.add(Document.COLUMN_FLAGS, Document.FLAG_DIR_SUPPORTS_CREATE
+                        | Document.FLAG_SUPPORTS_DELETE | Document.FLAG_SUPPORTS_REMOVE);
             row.add(Document.COLUMN_SIZE, 0);
         } else  {
             String mimeType = "application/octet-stream";
             row.add(Document.COLUMN_MIME_TYPE, mimeType);
             row.add(Document.COLUMN_FLAGS, Document.FLAG_SUPPORTS_DELETE
-                    | Document.FLAG_SUPPORTS_WRITE);
+                    | Document.FLAG_SUPPORTS_WRITE | Document.FLAG_SUPPORTS_REMOVE);
             row.add(Document.COLUMN_SIZE, file.length());
         }
         row.add(Document.COLUMN_DISPLAY_NAME, file.getName());
@@ -140,9 +142,63 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
     }
 
     @Override
-    public ParcelFileDescriptor openDocument (String documentId, String mode, CancellationSignal signal)
+    public ParcelFileDescriptor openDocument (String documentId, String mode, CancellationSignal signal) throws FileNotFoundException
     {
-         Log.v(TAG, "openDocument");
-       return null;
+        Log.v(TAG, "openDocument " + documentId);
+        File file = new File(getRepoDir(), documentId.substring(1));
+        final int accessMode = ParcelFileDescriptor.parseMode(mode);
+        return ParcelFileDescriptor.open(file, accessMode);
+    }
+
+    @Override
+    public String createDocument(String parentDocumentId, String mimeType, String displayName) throws FileNotFoundException
+    {
+        Log.v(TAG, "createDocument " + displayName + " in " + parentDocumentId + " mime: " + mimeType);
+        File file = new File(new File(getRepoDir(), parentDocumentId.substring(1)), displayName);
+        try {
+            if (Document.MIME_TYPE_DIR.equals(mimeType))
+            {
+                if (file.mkdir())
+                    return parentDocumentId + "/" + displayName;
+                else
+                    throw new FileNotFoundException();
+            }
+            else
+            {
+                file.createNewFile();
+                return parentDocumentId + "/" + displayName;
+
+            }
+        }
+        catch (IOException e)
+        {
+            throw new FileNotFoundException();
+        }
+    }
+
+    @Override
+    public boolean isChildDocument(String parentDocumentId, String documentId)
+    {
+        String [] parentPaths = parentDocumentId.split("/");
+        String [] childPaths = documentId.split("/");
+        if (parentPaths.length > childPaths.length) return false;
+        for (int n = 0; n < childPaths.length; n++)
+        {
+            if (!childPaths[n].equals(parentPaths[n]))
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void removeDocument(String documentId, String parentDocumentId) throws FileNotFoundException {
+        if (!new File(getRepoDir(), documentId.substring(1)).delete())
+            throw new FileNotFoundException();
+    }
+
+    @Override
+    public void deleteDocument(String documentId) throws FileNotFoundException {
+        if (!new File(getRepoDir(), documentId.substring(1)).delete())
+            throw new FileNotFoundException();
     }
 }
