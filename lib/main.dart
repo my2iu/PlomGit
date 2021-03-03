@@ -1,9 +1,10 @@
 import 'dart:io';
 
-import 'package:PlomGit/src/util.dart';
 import 'package:flutter/material.dart';
 // import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
+import 'package:PlomGit/src/util.dart'
+    show retryWithAskCredentials, PlomGitPrefs;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';

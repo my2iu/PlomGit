@@ -51,6 +51,9 @@ dependencies:
   path_provider: ^1.6.24
 
   http: ^0.12.2  
+
+  # To hold passwords for connecting to remotes
+  flutter_secure_storage: ^3.3.5
   
 dev_dependencies:
   flutter_test:

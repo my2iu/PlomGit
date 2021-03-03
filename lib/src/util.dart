@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:libgit2/libgit2.dart' show Libgit2Exception;
 import 'package:tuple/tuple.dart';
 
@@ -81,5 +82,45 @@ class GitStatusFlags {
     isNew = (gitFlags & (1 | 128)) != 0;
     isModified = (gitFlags & (2 | 16 | 256 | 2048)) != 0;
     isDeleted = (gitFlags & (4 | 512)) != 0;
+  }
+}
+
+class PlomGitPrefs {
+  // Singleton instance
+  static final PlomGitPrefs instance = PlomGitPrefs._create();
+
+  FlutterSecureStorage storage;
+
+  PlomGitPrefs._create() {
+    storage = new FlutterSecureStorage();
+  }
+
+  Future<void> writeEncryptedUser(
+      String repository, String remote, String user) {
+    return storage.write(key: "repo/$repository/$remote/user", value: user);
+  }
+
+  Future<void> writeEncryptedPassword(
+      String repository, String remote, String password) {
+    return storage.write(
+        key: "repo/$repository/$remote/password", value: password);
+  }
+
+  Future<String> readEncryptedUser(String repository, String remote) {
+    return storage.read(key: "repo/$repository/$remote/user");
+  }
+
+  Future<String> readEncryptedPassword(String repository, String remote) {
+    return storage.read(key: "repo/$repository/$remote/password");
+  }
+
+  Future<void> eraseRepositoryPreferences(String repository) {
+    storage.readAll().then((map) {
+      map.keys.forEach((key) {
+        if (key.startsWith("repo/$repository/")) {
+          storage.delete(key: key);
+        }
+      });
+    });
   }
 }
