@@ -174,7 +174,15 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                         IconButton(
                           tooltip: "Revert",
                           icon: Icon(Icons.undo),
-                          onPressed: () {},
+                          onPressed: () {
+                            GitIsolate.instance
+                                .revertFile(repositoryDir, unstaged[index])
+                                .then((result) => _refresh())
+                                .catchError((error) {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: Text('Error: ' + error.toString())));
+                            });
+                          },
                         ),
                         IconButton(
                           tooltip: "Add",

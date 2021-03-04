@@ -125,3 +125,12 @@ GIT_EXTERN(void) git_status_options_config(git_status_options * opts, const char
 		GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
 		GIT_STATUS_OPT_INCLUDE_UNMODIFIED;
 }
+
+GIT_EXTERN(void) git_checkout_options_config_for_revert(git_checkout_options * opts, const char **path) {
+  opts->checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_REMOVE_UNTRACKED | GIT_CHECKOUT_RECREATE_MISSING;
+  if (path != NULL) {
+    opts->checkout_strategy |= GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
+    opts->paths.count = 1;
+    opts->paths.strings = path;
+  }
+}

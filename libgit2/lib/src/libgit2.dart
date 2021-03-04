@@ -159,6 +159,12 @@ class Libgit2 {
               "git_clone_options_init")
           .asFunction();
 
+  static final int Function(Pointer<NativeType>, int version)
+      _git_checkout_options_init = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
+              "git_checkout_options_init")
+          .asFunction();
+
   static final int Function() _git_fetch_options_size = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_size")
       .asFunction();
@@ -381,6 +387,24 @@ class Libgit2 {
               NativeFunction<
                   Int32 Function(Pointer<git_repository>, Pointer<git_object>,
                       Pointer<NativeType>)>>("git_checkout_tree")
+          .asFunction();
+
+  static final int Function(Pointer<git_repository>, Pointer<NativeType>)
+      _git_checkout_head = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_repository>,
+                      Pointer<NativeType>)>>("git_checkout_head")
+          .asFunction();
+
+  // The second parameter can be null or a pointer to a pointer of a string
+  static final void Function(Pointer<NativeType>, Pointer<Pointer<Utf8>>)
+      _git_checkout_options_config_for_revert = nativeGit2
+          .lookup<
+                  NativeFunction<
+                      Void Function(
+                          Pointer<NativeType>, Pointer<Pointer<Utf8>>)>>(
+              "git_checkout_options_config_for_revert")
           .asFunction();
 
   static final void Function(Pointer<git_tree>) _git_tree_free = nativeGit2
@@ -881,7 +905,31 @@ class Libgit2 {
     }
   }
 
-  static int mergeAnalysis(Pointer<git_repository> repo,
+  static void revertFile(String dir, String file) {
+    var filePtr = Utf8.toUtf8(file);
+    Pointer<NativeType> checkoutOptions =
+        allocate<Int8>(count: _git_checkout_options_size());
+    Pointer<Pointer<Utf8>> fileStrStr = allocate<Pointer<Utf8>>(count: 1);
+    fileStrStr[0] = Utf8.toUtf8(file);
+    try {
+      _withRepository(dir, (repo) {
+        _checkErrors(_git_checkout_options_init(
+            checkoutOptions, _git_checkout_options_version()));
+        _git_checkout_options_config_for_revert(checkoutOptions, fileStrStr);
+        print(file);
+
+        _checkErrors(_git_checkout_head(repo, checkoutOptions));
+        print(file);
+      });
+    } finally {
+      free(checkoutOptions);
+      free(filePtr);
+      free(fileStrStr[0]);
+      free(fileStrStr);
+    }
+  }
+
+  static int _mergeAnalysis(Pointer<git_repository> repo,
       Pointer<Pointer<git_annotated_commit>> upstreamToMerge) {
     Pointer<Int32> mergeAnalysis = allocate<Int32>();
     mergeAnalysis.value = 0;
@@ -923,7 +971,7 @@ class Libgit2 {
         _checkErrors(_git_branch_upstream(upstreamRef, headRef.value));
         _checkErrors(_git_annotated_commit_from_ref(
             upstreamToMerge.elementAt(0), repo, upstreamRef.value));
-        int analysisResults = mergeAnalysis(repo, upstreamToMerge);
+        int analysisResults = _mergeAnalysis(repo, upstreamToMerge);
         if ((analysisResults & 2) != 0) {
           return "Merge already up-to-date";
         } else if ((analysisResults & (8)) != 0) {
