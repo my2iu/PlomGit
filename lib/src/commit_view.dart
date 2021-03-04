@@ -115,25 +115,26 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
     });
   }
 
-  Widget _makeConfirmDialog(String title, String message, String action) {
+  Widget _makeConfirmDialog(String title, String message, String actionMessage,
+      [String cancelMessage = "Cancel"]) {
     return AlertDialog(
-      title: Text("Revert"),
+      title: Text(title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text("Revert changes?"),
+          Text(message),
         ],
       ),
       actions: <Widget>[
         TextButton(
-          child: Text('Cancel'),
+          child: Text(cancelMessage),
           onPressed: () {
             Navigator.pop(context, false);
           },
         ),
         TextButton(
-          child: Text('Revert'),
+          child: Text(actionMessage),
           onPressed: () {
             Navigator.pop(context, true);
           },

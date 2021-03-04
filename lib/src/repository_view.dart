@@ -151,6 +151,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                     else
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text("Merge successful")));
+                    _refresh();
                   }).catchError((error) {
                     Scaffold.of(context).showSnackBar(
                         SnackBar(content: Text('Error: ' + error.toString())));

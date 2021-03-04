@@ -381,11 +381,11 @@ class Libgit2 {
           .asFunction();
 
   static final int Function(
-          Pointer<git_repository>, Pointer<git_object>, Pointer<NativeType>)
+          Pointer<git_repository>, Pointer<NativeType>, Pointer<NativeType>)
       _git_checkout_tree = nativeGit2
           .lookup<
               NativeFunction<
-                  Int32 Function(Pointer<git_repository>, Pointer<git_object>,
+                  Int32 Function(Pointer<git_repository>, Pointer<NativeType>,
                       Pointer<NativeType>)>>("git_checkout_tree")
           .asFunction();
 
@@ -407,6 +407,12 @@ class Libgit2 {
               "git_checkout_options_config_for_revert")
           .asFunction();
 
+  static final void Function(Pointer<NativeType>)
+      _git_checkout_options_config_for_fastforward = nativeGit2
+          .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
+              "git_checkout_options_config_for_fastforward")
+          .asFunction();
+
   static final void Function(Pointer<git_tree>) _git_tree_free = nativeGit2
       .lookup<NativeFunction<Void Function(Pointer<git_tree>)>>("git_tree_free")
       .asFunction();
@@ -418,6 +424,18 @@ class Libgit2 {
               NativeFunction<
                   Int32 Function(Pointer<git_oid>, Pointer<git_repository>,
                       Pointer<Utf8>)>>("git_reference_name_to_id")
+          .asFunction();
+
+  static final int Function(Pointer<Pointer<git_reference>>,
+          Pointer<git_reference>, Pointer<git_oid>, Pointer<Utf8>)
+      _git_reference_set_target = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_reference>>,
+                      Pointer<git_reference>,
+                      Pointer<git_oid>,
+                      Pointer<Utf8>)>>("git_reference_set_target")
           .asFunction();
 
   static final int Function(Pointer<Pointer<git_commit>>,
@@ -976,8 +994,39 @@ class Libgit2 {
         } else if ((analysisResults & (4)) != 0) {
           Pointer<git_oid> upstreamCommitId =
               _git_annotated_commit_id(upstreamToMerge[0]);
+          Pointer<NativeType> checkoutOptions =
+              allocate<Int8>(count: _git_checkout_options_size());
+          Pointer<Pointer<git_commit>> upstreamCommit =
+              allocate<Pointer<git_commit>>();
+          upstreamCommit.value = nullptr;
+          Pointer<Pointer<git_reference>> newHeadRef =
+              allocate<Pointer<git_reference>>();
+          newHeadRef.value = nullptr;
+          try {
+            // Get the commit to merge to
+            _checkErrors(
+                _git_commit_lookup(upstreamCommit, repo, upstreamCommitId));
 
-          return "Merge fast-forward";
+            // Checkout upstream to fast-forward
+            _checkErrors(_git_checkout_options_init(
+                checkoutOptions, _git_checkout_options_version()));
+            _git_checkout_options_config_for_fastforward(checkoutOptions);
+            _checkErrors(_git_checkout_tree(
+                repo, upstreamCommit.value, checkoutOptions));
+
+            // Move HEAD
+            _checkErrors(_git_reference_set_target(
+                newHeadRef, headRef.value, upstreamCommitId, nullptr));
+            return "Merge fast-forward";
+          } finally {
+            free(checkoutOptions);
+            if (upstreamCommit.value != nullptr)
+              _git_commit_free(upstreamCommit.value);
+            free(upstreamCommit);
+            if (newHeadRef.value != nullptr)
+              _git_reference_free(newHeadRef.value);
+            free(newHeadRef);
+          }
         } else if ((analysisResults & 1) != 0) {
           return "Merge successful";
         }

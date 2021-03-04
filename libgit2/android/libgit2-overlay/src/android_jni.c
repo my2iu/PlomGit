@@ -134,3 +134,7 @@ GIT_EXTERN(void) git_checkout_options_config_for_revert(git_checkout_options * o
     opts->paths.strings = path;
   }
 }
+
+GIT_EXTERN(void) git_checkout_options_config_for_fastforward(git_checkout_options * opts) {
+  opts->checkout_strategy = GIT_CHECKOUT_SAFE;
+}
