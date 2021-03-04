@@ -108,6 +108,11 @@ class GitIsolate {
     return _sendRequest(RequestType.commit, [dir, message, name, email]);
   }
 
+  Future<dynamic> mergeWithUpstream(String dir, String remote,
+      [String username = "", String password = ""]) {
+    return _sendRequest(RequestType.merge, [dir, remote, username, password]);
+  }
+
   // Makes a response to a request from the isolate back to the requester
   static void _isolateResponse(IsolateChannel channel, dynamic data) {
     channel.sink.add([0, data]);
@@ -165,6 +170,12 @@ class GitIsolate {
             Libgit2.commit(event[1], event[2], event[3], event[4]);
             _isolateResponse(channel, "");
             break;
+          case RequestType.merge:
+            _isolateResponse(
+                channel,
+                Libgit2.mergeWithUpstream(
+                    event[1], event[2], event[3], event[4]));
+            break;
         }
       } on Libgit2Exception catch (e) {
         // Automatically serialize libgit2 errors
@@ -190,5 +201,6 @@ enum RequestType {
   status,
   addIndex,
   removeIndex,
-  commit
+  commit,
+  merge
 }

@@ -79,6 +79,10 @@ GIT_EXTERN(int) git_clone_options_size(void) {
   return sizeof(git_clone_options);
 }
 
+GIT_EXTERN(int) git_checkout_options_size(void) {
+  return sizeof(git_checkout_options);
+}
+
 GIT_EXTERN(int) git_fetch_options_version(void) {
   return GIT_FETCH_OPTIONS_VERSION;
 }
@@ -93,6 +97,10 @@ GIT_EXTERN(int) git_status_options_version(void) {
 
 GIT_EXTERN(int) git_clone_options_version(void) {
   return GIT_CLONE_OPTIONS_VERSION;
+}
+
+GIT_EXTERN(int) git_checkout_options_version(void) {
+  return GIT_CHECKOUT_OPTIONS_VERSION;
 }
 
 GIT_EXTERN(void) git_fetch_options_set_credentials_cb(git_fetch_options *opts, git_credential_acquire_cb *credentials_cb) {

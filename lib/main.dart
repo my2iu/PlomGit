@@ -13,6 +13,9 @@ import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
 import 'package:tuple/tuple.dart';
 
+// TODO: Don't allow "/" in repository and remote names since we used that elsewhere
+// TODO: Fix-up error checking in modifications to C code
+
 void main() {
   log.hierarchicalLoggingEnabled = true;
   log.Logger("plomgit.fs").level = log.Level.ALL;

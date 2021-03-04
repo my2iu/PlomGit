@@ -36,6 +36,15 @@ class git_tree extends Struct {}
 // Opaque type
 class git_commit extends Struct {}
 
+// Opaque type
+class git_annotated_commit extends Struct {}
+
+// Opaque type
+class git_reference extends Struct {}
+
+// Opaque type
+class git_object extends Struct {}
+
 typedef git_credentials_acquire_cb = Int32 Function(
     Pointer<Pointer<git_credential>> out,
     Pointer<Utf8> url,
@@ -187,4 +196,12 @@ class git_signature extends Struct {
   int when_offset;
   @Int8()
   int when_sign;
+}
+
+class git_buf extends Struct {
+  Pointer<Utf8> ptr;
+  @IntPtr()
+  int asize;
+  @IntPtr()
+  int size;
 }

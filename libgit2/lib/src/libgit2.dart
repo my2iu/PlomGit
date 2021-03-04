@@ -59,6 +59,36 @@ class Libgit2 {
                       Pointer<Utf8>)>>("git_repository_open")
           .asFunction();
 
+  static final int Function(Pointer<git_repository>) _git_repository_state =
+      nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
+              "git_repository_state")
+          .asFunction();
+
+  static final int Function(Pointer<git_repository>)
+      _git_repository_state_cleanup = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
+              "git_repository_state_cleanup")
+          .asFunction();
+
+  static final int Function(
+          Pointer<git_repository>,
+          Pointer<
+              NativeFunction<
+                  Int32 Function(Pointer<git_oid>, Pointer<NativeType>)>>,
+          Pointer<NativeType>) _git_repository_mergehead_foreach =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<git_repository>,
+                      Pointer<
+                          NativeFunction<
+                              Int32 Function(
+                                  Pointer<git_oid>, Pointer<NativeType>)>>,
+                      Pointer<NativeType>)>>("git_repository_mergehead_foreach")
+          .asFunction();
+
   static final void Function(Pointer<git_repository>) _repositoryFree =
       nativeGit2
           .lookup<NativeFunction<Void Function(Pointer<git_repository>)>>(
@@ -69,6 +99,15 @@ class Libgit2 {
       _git_repository_head_unborn = nativeGit2
           .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
               "git_repository_head_unborn")
+          .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<git_reference>>, Pointer<git_repository>)
+      _git_repository_head = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<git_reference>>,
+                      Pointer<git_repository>)>>("git_repository_head")
           .asFunction();
 
   static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>,
@@ -136,6 +175,10 @@ class Libgit2 {
       .lookup<NativeFunction<Int32 Function()>>("git_clone_options_size")
       .asFunction();
 
+  static final int Function() _git_checkout_options_size = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_checkout_options_size")
+      .asFunction();
+
   static final int Function() _git_fetch_options_version = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_version")
       .asFunction();
@@ -150,6 +193,10 @@ class Libgit2 {
 
   static final int Function() _git_clone_options_version = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_clone_options_version")
+      .asFunction();
+
+  static final int Function() _git_checkout_options_version = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_checkout_options_version")
       .asFunction();
 
   static final void Function(Pointer<NativeType>,
@@ -327,6 +374,15 @@ class Libgit2 {
                       Pointer<git_oid>)>>("git_tree_lookup")
           .asFunction();
 
+  static final int Function(
+          Pointer<git_repository>, Pointer<git_object>, Pointer<NativeType>)
+      _git_checkout_tree = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_repository>, Pointer<git_object>,
+                      Pointer<NativeType>)>>("git_checkout_tree")
+          .asFunction();
+
   static final void Function(Pointer<git_tree>) _git_tree_free = nativeGit2
       .lookup<NativeFunction<Void Function(Pointer<git_tree>)>>("git_tree_free")
       .asFunction();
@@ -397,6 +453,92 @@ class Libgit2 {
           .lookup<NativeFunction<Void Function(Pointer<git_signature>)>>(
               "git_signature_free")
           .asFunction();
+
+  static final int Function(Pointer<Int32>, Pointer<Int32>,
+          Pointer<git_repository>, Pointer<Pointer<NativeType>>, int)
+      _git_merge_analysis = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Int32>,
+                      Pointer<Int32>,
+                      Pointer<git_repository>,
+                      Pointer<Pointer<NativeType>>,
+                      IntPtr)>>("git_merge_analysis")
+          .asFunction();
+
+  static final int Function(Pointer<Pointer<git_annotated_commit>>,
+          Pointer<git_repository>, Pointer<git_reference>)
+      _git_annotated_commit_from_ref = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_annotated_commit>>,
+                      Pointer<git_repository>,
+                      Pointer<git_reference>)>>("git_annotated_commit_from_ref")
+          .asFunction();
+
+  static final Pointer<git_oid> Function(Pointer<git_annotated_commit>)
+      _git_annotated_commit_id = nativeGit2
+          .lookup<
+                  NativeFunction<
+                      Pointer<git_oid> Function(
+                          Pointer<git_annotated_commit>)>>(
+              "git_annotated_commit_id")
+          .asFunction();
+
+  static final void Function(Pointer<git_annotated_commit>)
+      _git_annotated_commit_free = nativeGit2
+          .lookup<NativeFunction<Void Function(Pointer<git_annotated_commit>)>>(
+              "git_annotated_commit_free")
+          .asFunction();
+
+  static final int Function(Pointer<Pointer<git_reference>>,
+          Pointer<git_repository>, Pointer<Utf8>) _git_reference_dwim =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_reference>>,
+                      Pointer<git_repository>,
+                      Pointer<Utf8>)>>("git_reference_dwim")
+          .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<git_reference>>, Pointer<git_reference>)
+      _git_branch_upstream = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<git_reference>>,
+                      Pointer<git_reference>)>>("git_branch_upstream")
+          .asFunction();
+
+  static final int Function(Pointer<Pointer<Utf8>>, Pointer<git_reference>)
+      _git_branch_name = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<Utf8>>,
+                      Pointer<git_reference>)>>("git_branch_name")
+          .asFunction();
+
+  static final void Function(Pointer<git_reference>) _git_reference_free =
+      nativeGit2
+          .lookup<NativeFunction<Void Function(Pointer<git_reference>)>>(
+              "git_reference_free")
+          .asFunction();
+
+  static Pointer<git_buf> _callocGitBuf() {
+    Pointer<git_buf> buf = allocate<git_buf>();
+    buf.ref.asize = 0;
+    buf.ref.size = 0;
+    buf.ref.ptr = nullptr;
+    return buf;
+  }
+
+  static final void Function(Pointer<git_buf>) _git_buf_dispose = nativeGit2
+      .lookup<NativeFunction<Void Function(Pointer<git_buf>)>>(
+          "git_buf_dispose")
+      .asFunction();
 
   /// Checks the return code for errors and if so, convert it to a thrown
   /// exception
@@ -736,6 +878,83 @@ class Libgit2 {
       free(emailStr);
       if (authorSig.value != nullptr) _git_signature_free(authorSig.value);
       free(authorSig);
+    }
+  }
+
+  static int mergeAnalysis(Pointer<git_repository> repo,
+      Pointer<Pointer<git_annotated_commit>> upstreamToMerge) {
+    Pointer<Int32> mergeAnalysis = allocate<Int32>();
+    mergeAnalysis.value = 0;
+    Pointer<Int32> mergePreferences = allocate<Int32>();
+    mergePreferences.value = 0;
+    try {
+      _checkErrors(_git_merge_analysis(
+          mergeAnalysis, mergePreferences, repo, upstreamToMerge, 1));
+      int toReturn = mergeAnalysis.value;
+      return toReturn;
+    } finally {
+      free(mergeAnalysis);
+      free(mergePreferences);
+    }
+  }
+
+  static String mergeWithUpstream(
+      String dir, String remoteStr, String username, String password) {
+    setupCredentials(username, password);
+    Pointer<Pointer<git_annotated_commit>> upstreamToMerge =
+        allocate<Pointer<git_annotated_commit>>(count: 1);
+    upstreamToMerge.elementAt(0).value = nullptr;
+
+    Pointer<Pointer<git_reference>> headRefToMergeWith =
+        allocate<Pointer<git_reference>>();
+    headRefToMergeWith.value = nullptr;
+    Pointer<Utf8> headRefString = Utf8.toUtf8("HEAD");
+    Pointer<git_buf> buf = _callocGitBuf();
+
+    Pointer<Pointer<git_reference>> headRef =
+        allocate<Pointer<git_reference>>();
+    headRef.value = nullptr;
+    Pointer<Pointer<git_reference>> upstreamRef =
+        allocate<Pointer<git_reference>>();
+    upstreamRef.value = nullptr;
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(_git_repository_head(headRef, repo));
+        _checkErrors(_git_branch_upstream(upstreamRef, headRef.value));
+        _checkErrors(_git_annotated_commit_from_ref(
+            upstreamToMerge.elementAt(0), repo, upstreamRef.value));
+        int analysisResults = mergeAnalysis(repo, upstreamToMerge);
+        if ((analysisResults & 2) != 0) {
+          return "Merge already up-to-date";
+        } else if ((analysisResults & (8)) != 0) {
+          return "No HEAD commit to merge";
+        } else if ((analysisResults & (4)) != 0) {
+          Pointer<git_oid> upstreamCommitId =
+              _git_annotated_commit_id(upstreamToMerge[0]);
+
+          return "Merge fast-forward";
+        } else if ((analysisResults & 1) != 0) {
+          return "Merge successful";
+        }
+        return "Cannot merge";
+      });
+    } finally {
+      // free(mergeAnalysis);
+      // free(mergePreferences);
+      if (upstreamToMerge.value != nullptr)
+        _git_annotated_commit_free(upstreamToMerge.value);
+      free(upstreamToMerge);
+      if (headRefToMergeWith.value != nullptr)
+        _git_reference_free(headRefToMergeWith.value);
+      free(headRefToMergeWith);
+      free(headRefString);
+      _git_buf_dispose(buf);
+      free(buf);
+
+      if (headRef.value != nullptr) _git_reference_free(headRef.value);
+      free(headRef);
+      if (upstreamRef.value != nullptr) _git_reference_free(upstreamRef.value);
+      free(upstreamRef);
     }
   }
 }

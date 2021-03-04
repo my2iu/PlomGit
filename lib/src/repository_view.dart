@@ -134,6 +134,31 @@ class _RepositoryViewState extends State<RepositoryView> {
                       Icon(Icons.cloud_upload_outlined,
                           color: Theme.of(context).iconTheme.color))));
             });
+            remoteList.forEach((remote) {
+              entries.add(PopupMenuItem(
+                value: () {
+                  retryWithAskCredentials(
+                          repositoryName,
+                          remote,
+                          (username, password) => GitIsolate.instance
+                              .mergeWithUpstream(
+                                  repositoryDir, remote, username, password),
+                          context)
+                      .then((result) {
+                    if (result != null)
+                      Scaffold.of(context)
+                          .showSnackBar(SnackBar(content: Text(result)));
+                    else
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("Merge successful")));
+                  }).catchError((error) {
+                    Scaffold.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: ' + error.toString())));
+                  });
+                },
+                child: Text('Test Merge to $remote'),
+              ));
+            });
             entries.add(PopupMenuItem(
                 value: () {
                   GitIsolate.instance.status(repositoryDir).then((result) {
