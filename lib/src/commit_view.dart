@@ -115,6 +115,33 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
     });
   }
 
+  Widget _makeConfirmDialog(String title, String message, String action) {
+    return AlertDialog(
+      title: Text("Revert"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text("Revert changes?"),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: Text('Cancel'),
+          onPressed: () {
+            Navigator.pop(context, false);
+          },
+        ),
+        TextButton(
+          child: Text('Revert'),
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _makeCommitUi(List<dynamic> allChanges) {
     List<String> staged = <String>[];
     List<String> unstaged = <String>[];
@@ -175,12 +202,21 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                           tooltip: "Revert",
                           icon: Icon(Icons.undo),
                           onPressed: () {
-                            GitIsolate.instance
-                                .revertFile(repositoryDir, unstaged[index])
-                                .then((result) => _refresh())
-                                .catchError((error) {
-                              Scaffold.of(context).showSnackBar(SnackBar(
-                                  content: Text('Error: ' + error.toString())));
+                            showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => _makeConfirmDialog(
+                                        "Revert", "Revert changes?", "Revert"))
+                                .then((response) {
+                              if (response) {
+                                GitIsolate.instance
+                                    .revertFile(repositoryDir, unstaged[index])
+                                    .then((result) => _refresh())
+                                    .catchError((error) {
+                                  Scaffold.of(context).showSnackBar(SnackBar(
+                                      content:
+                                          Text('Error: ' + error.toString())));
+                                });
+                              }
                             });
                           },
                         ),

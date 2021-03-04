@@ -916,10 +916,7 @@ class Libgit2 {
         _checkErrors(_git_checkout_options_init(
             checkoutOptions, _git_checkout_options_version()));
         _git_checkout_options_config_for_revert(checkoutOptions, fileStrStr);
-        print(file);
-
         _checkErrors(_git_checkout_head(repo, checkoutOptions));
-        print(file);
       });
     } finally {
       free(checkoutOptions);
