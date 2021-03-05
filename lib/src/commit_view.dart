@@ -296,54 +296,54 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
   Widget build(BuildContext context) {
     return Padding(
         padding: EdgeInsets.all(kDefaultPadding),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-            Widget>[
-          Expanded(
-              child: Card(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                  child: Card(
+                      child: Padding(
+                          padding: EdgeInsets.all(kDefaultPadding),
+                          child: TextFormField(
+                              // controller: TextEditingController(text: message),
+                              // minLines: 3,
+                              maxLines: null,
+                              expands: true,
+                              keyboardType: TextInputType.multiline,
+                              initialValue: msgSig.message,
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: InputDecoration(
+                                // border: OutlineInputBorder(),
+                                icon: Icon(Icons.notes),
+                                // filled: true,
+                                labelText: 'Commit message',
+                              ),
+                              onChanged: (val) => msgSig.message = val)))),
+              SizedBox(height: kDefaultPadding),
+              Card(
                   child: Padding(
                       padding: EdgeInsets.all(kDefaultPadding),
-                      child: TextFormField(
-                          // controller: TextEditingController(text: message),
-                          // minLines: 3,
-                          maxLines: null,
-                          expands: true,
-                          keyboardType: TextInputType.multiline,
-                          initialValue: msgSig.message,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(
-                            // border: OutlineInputBorder(),
-                            icon: Icon(Icons.notes),
-                            // filled: true,
-                            labelText: 'Commit message',
-                          ),
-                          onChanged: (val) =>
-                              setState(() => msgSig.message = val))))),
-          SizedBox(height: kDefaultPadding),
-          Card(
-              child: Padding(
-                  padding: EdgeInsets.all(kDefaultPadding),
-                  child: Column(children: [
-                    TextFormField(
-                        decoration: InputDecoration(
-                          // border: OutlineInputBorder(),
-                          icon: Icon(Icons.person),
-                          // filled: true,
-                          labelText: 'Name',
-                        ),
-                        textCapitalization: TextCapitalization.words,
-                        initialValue: msgSig.name,
-                        onChanged: (val) => setState(() => msgSig.name = val)),
-                    TextFormField(
-                        textCapitalization: TextCapitalization.none,
-                        decoration: InputDecoration(
-                          // border: OutlineInputBorder(),
-                          icon: Icon(Icons.email),
-                          // filled: true,
-                          labelText: 'Email',
-                        ),
-                        initialValue: msgSig.email,
-                        onChanged: (val) => setState(() => msgSig.email = val))
-                  ]))),
-        ]));
+                      child: Column(children: [
+                        TextFormField(
+                            decoration: InputDecoration(
+                              // border: OutlineInputBorder(),
+                              icon: Icon(Icons.person),
+                              // filled: true,
+                              labelText: 'Name',
+                            ),
+                            textCapitalization: TextCapitalization.words,
+                            initialValue: msgSig.name,
+                            onChanged: (val) => msgSig.name = val),
+                        TextFormField(
+                            textCapitalization: TextCapitalization.none,
+                            decoration: InputDecoration(
+                              // border: OutlineInputBorder(),
+                              icon: Icon(Icons.email),
+                              // filled: true,
+                              labelText: 'Email',
+                            ),
+                            initialValue: msgSig.email,
+                            onChanged: (val) => msgSig.email = val)
+                      ]))),
+            ]));
   }
 }

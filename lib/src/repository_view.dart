@@ -128,6 +128,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                                 .fetch(repositoryDir, remote, user, password),
                             context)
                         .then((result) {
+                      _refresh();
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text('Fetch successful')));
                     }).catchError((error) {
@@ -150,6 +151,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                                 repositoryDir, remote, username, password),
                             context)
                         .then((result) {
+                      _refresh();
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text('Push successful')));
                     }).catchError((error) {

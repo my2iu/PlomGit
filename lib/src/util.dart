@@ -184,7 +184,7 @@ class PlomGitPrefs {
   }
 
   Future<void> eraseRepositoryPreferences(String repository) {
-    storage.readAll().then((map) {
+    return storage.readAll().then((map) {
       map.keys.forEach((key) {
         if (key.startsWith("repo/$repository/")) {
           storage.delete(key: key);

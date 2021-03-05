@@ -117,22 +117,6 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext dialogContext) {
           return SimpleDialog(title: Text('New repository'), children: <Widget>[
             SimpleDialogOption(
-                child: Text('Create local repository'),
-                onPressed: () {
-                  Navigator.pop(dialogContext, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<String>(
-                        builder: (BuildContext context) =>
-                            RepositoryLocationDialog(),
-                      ),
-                    ).then((result) {
-                      if (result == null) return;
-                      _createLocalRepository(context, result);
-                    });
-                  });
-                }),
-            SimpleDialogOption(
                 child: Text('Clone repository'),
                 onPressed: () {
                   Navigator.pop(dialogContext, () {
@@ -151,7 +135,23 @@ class _MyHomePageState extends State<MyHomePage> {
                       _cloneRepository(context, name, url, user, password);
                     });
                   });
-                })
+                }),
+            SimpleDialogOption(
+                child: Text('Create local repository'),
+                onPressed: () {
+                  Navigator.pop(dialogContext, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<String>(
+                        builder: (BuildContext context) =>
+                            RepositoryLocationDialog(),
+                      ),
+                    ).then((result) {
+                      if (result == null) return;
+                      _createLocalRepository(context, result);
+                    });
+                  });
+                }),
           ]);
         }).then((fn) {
       if (fn != null) fn();
@@ -261,6 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _deleteRepository(String name, BuildContext context) {
     _getRepositoryDirForName(name)
         .then((uri) => Directory.fromUri(uri).delete(recursive: true))
+        .then((_) => PlomGitPrefs.instance.eraseRepositoryPreferences(name))
         .then((result) {
       _refreshRepositories();
       Scaffold.of(context)
@@ -477,14 +478,12 @@ class _RepositoryLocationAndRemoteState
                     TextFormField(
                       initialValue: remoteInfo.repositoryName,
                       decoration: InputDecoration(labelText: 'Repository name'),
-                      onChanged: (text) =>
-                          setState(() => remoteInfo.repositoryName = text),
+                      onChanged: (text) => remoteInfo.repositoryName = text,
                     ),
                     TextFormField(
                       initialValue: remoteInfo.url,
                       decoration: InputDecoration(labelText: 'Remote url'),
-                      onChanged: (text) =>
-                          setState(() => remoteInfo.url = text),
+                      onChanged: (text) => remoteInfo.url = text,
                     ),
                   ]))),
           SizedBox(height: kDefaultPadding),
@@ -499,8 +498,7 @@ class _RepositoryLocationAndRemoteState
                         icon: Icon(Icons.account_circle),
                         labelText: 'User',
                       ),
-                      onChanged: (text) =>
-                          setState(() => remoteInfo.user = text),
+                      onChanged: (text) => remoteInfo.user = text,
                     ),
                     TextFormField(
                       initialValue: remoteInfo.password,
@@ -509,8 +507,7 @@ class _RepositoryLocationAndRemoteState
                         icon: Icon(Icons.lock),
                         labelText: 'Password or token',
                       ),
-                      onChanged: (text) =>
-                          setState(() => remoteInfo.password = text),
+                      onChanged: (text) => remoteInfo.password = text,
                     ),
                   ]))),
         ]));
