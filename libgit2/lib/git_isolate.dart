@@ -117,6 +117,14 @@ class GitIsolate {
     return _sendRequest(RequestType.revertFile, [dir, file]);
   }
 
+  Future<dynamic> repositoryState(String dir) {
+    return _sendRequest(RequestType.repositoryState, [dir]);
+  }
+
+  Future<dynamic> aheadBehind(String dir) {
+    return _sendRequest(RequestType.aheadBehind, [dir]);
+  }
+
   // Makes a response to a request from the isolate back to the requester
   static void _isolateResponse(IsolateChannel channel, dynamic data) {
     channel.sink.add([0, data]);
@@ -184,6 +192,12 @@ class GitIsolate {
             Libgit2.revertFile(event[1], event[2]);
             _isolateResponse(channel, "");
             break;
+          case RequestType.repositoryState:
+            _isolateResponse(channel, Libgit2.repositoryState(event[1]));
+            break;
+          case RequestType.aheadBehind:
+            _isolateResponse(channel, Libgit2.aheadBehind(event[1]));
+            break;
         }
       } on Libgit2Exception catch (e) {
         // Automatically serialize libgit2 errors
@@ -211,5 +225,7 @@ enum RequestType {
   removeIndex,
   commit,
   merge,
-  revertFile
+  revertFile,
+  repositoryState,
+  aheadBehind
 }

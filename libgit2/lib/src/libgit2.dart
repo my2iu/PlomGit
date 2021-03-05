@@ -110,6 +110,19 @@ class Libgit2 {
                       Pointer<git_repository>)>>("git_repository_head")
           .asFunction();
 
+  static final int Function(Pointer<IntPtr>, Pointer<IntPtr>,
+          Pointer<git_repository>, Pointer<git_oid>, Pointer<git_oid>)
+      _git_graph_ahead_behind = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<IntPtr>,
+                      Pointer<IntPtr>,
+                      Pointer<git_repository>,
+                      Pointer<git_oid>,
+                      Pointer<git_oid>)>>("git_graph_ahead_behind")
+          .asFunction();
+
   static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>,
           Pointer<Utf8>, Pointer<NativeType>) _clone =
       nativeGit2
@@ -436,6 +449,23 @@ class Libgit2 {
                       Pointer<git_reference>,
                       Pointer<git_oid>,
                       Pointer<Utf8>)>>("git_reference_set_target")
+          .asFunction();
+
+  static final int Function(
+          Pointer<Pointer<git_reference>>, Pointer<git_reference>)
+      _git_reference_resolve = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<Pointer<git_reference>>,
+                      Pointer<git_reference>)>>("git_reference_resolve")
+          .asFunction();
+
+  static final Pointer<git_oid> Function(Pointer<git_reference>)
+      _git_reference_target = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Pointer<git_oid> Function(
+                      Pointer<git_reference>)>>("git_reference_target")
           .asFunction();
 
   static final int Function(Pointer<Pointer<git_commit>>,
@@ -1049,6 +1079,61 @@ class Libgit2 {
       free(headRef);
       if (upstreamRef.value != nullptr) _git_reference_free(upstreamRef.value);
       free(upstreamRef);
+    }
+  }
+
+  static int repositoryState(String dir) {
+    return _withRepository(dir, (repo) {
+      return _git_repository_state(repo);
+    });
+  }
+
+  static List<int> aheadBehind(String dir) {
+    Pointer<IntPtr> ahead = allocate<IntPtr>();
+    Pointer<IntPtr> behind = allocate<IntPtr>();
+    Pointer<Pointer<git_reference>> headRef =
+        allocate<Pointer<git_reference>>();
+    headRef.value = nullptr;
+    Pointer<Pointer<git_reference>> headDirectRef =
+        allocate<Pointer<git_reference>>();
+    headDirectRef.value = nullptr;
+    Pointer<Pointer<git_reference>> upstreamRef =
+        allocate<Pointer<git_reference>>();
+    upstreamRef.value = nullptr;
+    Pointer<Pointer<git_reference>> upstreamDirectRef =
+        allocate<Pointer<git_reference>>();
+    upstreamDirectRef.value = nullptr;
+
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(_git_repository_head(headRef, repo));
+        _checkErrors(_git_reference_resolve(headDirectRef, headRef.value));
+
+        _checkErrors(_git_branch_upstream(upstreamRef, headRef.value));
+        _checkErrors(
+            _git_reference_resolve(upstreamDirectRef, upstreamRef.value));
+
+        _checkErrors(_git_graph_ahead_behind(
+            ahead,
+            behind,
+            repo,
+            _git_reference_target(headDirectRef.value),
+            _git_reference_target(upstreamDirectRef.value)));
+        return <int>[ahead.value, behind.value];
+      });
+    } finally {
+      free(ahead);
+      free(behind);
+      if (headRef.value != nullptr) _git_reference_free(headRef.value);
+      free(headRef);
+      if (headDirectRef.value != nullptr)
+        _git_reference_free(headDirectRef.value);
+      free(headDirectRef);
+      if (upstreamRef.value != nullptr) _git_reference_free(upstreamRef.value);
+      free(upstreamRef);
+      if (upstreamDirectRef.value != nullptr)
+        _git_reference_free(upstreamDirectRef.value);
+      free(upstreamDirectRef);
     }
   }
 }

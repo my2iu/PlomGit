@@ -26,7 +26,11 @@ class _RepositoryViewState extends State<RepositoryView> {
   String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
   Future<Map<String, GitStatusFlags>> gitStatus;
+
   List<String> remoteList;
+  int repoState;
+  int ahead;
+  int behind;
 
   _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
     _loadRepositoryInfo();
@@ -50,6 +54,26 @@ class _RepositoryViewState extends State<RepositoryView> {
     GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
       remoteList = remotes;
     });
+    gitStatus
+        .catchError((err) {
+          // Ignore errors
+        })
+        .then((_) => GitIsolate.instance.repositoryState(repositoryDir))
+        .then((state) {
+          setState(() {
+            repoState = state;
+          });
+        })
+        .catchError((err) {
+          // Ignore errors
+        })
+        .then((_) => GitIsolate.instance.aheadBehind(repositoryDir))
+        .then((diffList) {
+          setState(() {
+            ahead = diffList[0];
+            behind = diffList[1];
+          });
+        });
   }
 
   void _refresh() {
@@ -294,6 +318,40 @@ class _RepositoryViewState extends State<RepositoryView> {
         });
   }
 
+  PreferredSizeWidget _makeStatusBar() {
+    TextStyle textStyle = (Theme.of(context).appBarTheme.textTheme ??
+            Theme.of(context).primaryTextTheme)
+        .subtitle1;
+    double size = textStyle.fontSize;
+    String repoStateMessage = "";
+    if (repoState != null && repoState == 1) repoStateMessage = "merging";
+    if (repoStateMessage.isEmpty &&
+        (ahead == null || ahead == 0) &&
+        (behind == null || behind == 0)) return null;
+    List<Widget> children = [];
+    if (repoStateMessage.isNotEmpty)
+      children.add(Text(repoStateMessage, style: textStyle));
+    if (ahead != null && ahead != 0) {
+      if (children.isNotEmpty)
+        children.add(SizedBox(width: textStyle.fontSize / 2));
+      children.add(Text(ahead.toString(), style: textStyle));
+      children.add(Icon(Icons.arrow_upward,
+          color: textStyle.color, size: textStyle.fontSize));
+    }
+    if (behind != null && behind != 0) {
+      if (children.isNotEmpty)
+        children.add(SizedBox(width: textStyle.fontSize / 2));
+      children.add(Text(behind.toString(), style: textStyle));
+      children.add(Icon(Icons.arrow_downward,
+          color: textStyle.color, size: textStyle.fontSize));
+    }
+    return PreferredSize(
+      child:
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: children),
+      preferredSize: Size.fromRadius(size),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget title;
@@ -309,7 +367,10 @@ class _RepositoryViewState extends State<RepositoryView> {
     }
     return Scaffold(
         appBar: AppBar(
-            title: title, actions: <Widget>[buildActionsPopupMenu(context)]),
+          title: title,
+          actions: <Widget>[buildActionsPopupMenu(context)],
+          bottom: _makeStatusBar(),
+        ),
         body: FutureBuilder(
             future: dirContents,
             builder: (BuildContext context,
