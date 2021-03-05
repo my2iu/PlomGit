@@ -298,6 +298,7 @@ class _RepositoryViewState extends State<RepositoryView> {
             // Icons.source, Icons.source_outlined
             // Icons.note_add, Icons.note_add_outlined, Icons.description, Icons.description_outlined, Icons.insert_drive_file, Icons.insert_drive_file_outlined
             // Icons.radio_button_off
+            // Icons.swap_horiz, Icons.swap_horizontal_circle, Icons.swap_horizontal_circle_outlined
             //   return Icon(Icons.stop_circle, color: Colors.blueGrey);
             return Icon(null);
           } else {

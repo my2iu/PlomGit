@@ -291,6 +291,7 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
                           expands: true,
                           keyboardType: TextInputType.multiline,
                           initialValue: msgSig.message,
+                          textCapitalization: TextCapitalization.sentences,
                           decoration: InputDecoration(
                             // border: OutlineInputBorder(),
                             icon: Icon(Icons.notes),
@@ -311,10 +312,11 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
                           // filled: true,
                           labelText: 'Name',
                         ),
+                        textCapitalization: TextCapitalization.words,
                         initialValue: msgSig.name,
                         onChanged: (val) => setState(() => msgSig.name = val)),
                     TextFormField(
-                        obscureText: true,
+                        textCapitalization: TextCapitalization.none,
                         decoration: InputDecoration(
                           // border: OutlineInputBorder(),
                           icon: Icon(Icons.email),

@@ -178,6 +178,12 @@ class Libgit2 {
               "git_checkout_options_init")
           .asFunction();
 
+  static final int Function(Pointer<NativeType>, int version)
+      _git_merge_options_init = nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
+              "git_merge_options_init")
+          .asFunction();
+
   static final int Function() _git_fetch_options_size = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_size")
       .asFunction();
@@ -198,6 +204,10 @@ class Libgit2 {
       .lookup<NativeFunction<Int32 Function()>>("git_checkout_options_size")
       .asFunction();
 
+  static final int Function() _git_merge_options_size = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_merge_options_size")
+      .asFunction();
+
   static final int Function() _git_fetch_options_version = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_version")
       .asFunction();
@@ -216,6 +226,10 @@ class Libgit2 {
 
   static final int Function() _git_checkout_options_version = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_checkout_options_version")
+      .asFunction();
+
+  static final int Function() _git_merge_options_version = nativeGit2
+      .lookup<NativeFunction<Int32 Function()>>("git_merge_options_version")
       .asFunction();
 
   static final void Function(Pointer<NativeType>,
@@ -426,6 +440,12 @@ class Libgit2 {
               "git_checkout_options_config_for_fastforward")
           .asFunction();
 
+  static final void Function(Pointer<NativeType>)
+      _git_checkout_options_config_for_merge = nativeGit2
+          .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
+              "git_checkout_options_config_for_merge")
+          .asFunction();
+
   static final void Function(Pointer<git_tree>) _git_tree_free = nativeGit2
       .lookup<NativeFunction<Void Function(Pointer<git_tree>)>>("git_tree_free")
       .asFunction();
@@ -537,6 +557,23 @@ class Libgit2 {
                       Pointer<git_repository>,
                       Pointer<Pointer<NativeType>>,
                       IntPtr)>>("git_merge_analysis")
+          .asFunction();
+
+  static final int Function(
+          Pointer<git_repository>,
+          Pointer<Pointer<git_annotated_commit>>,
+          int,
+          Pointer<NativeType>,
+          Pointer<NativeType>) _git_merge =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<git_repository>,
+                      Pointer<Pointer<git_annotated_commit>>,
+                      IntPtr,
+                      Pointer<NativeType>,
+                      Pointer<NativeType>)>>("git_merge")
           .asFunction();
 
   static final int Function(Pointer<Pointer<git_annotated_commit>>,
@@ -1058,13 +1095,30 @@ class Libgit2 {
             free(newHeadRef);
           }
         } else if ((analysisResults & 1) != 0) {
-          return "Merge successful";
+          Pointer<NativeType> checkoutOptions =
+              allocate<Int8>(count: _git_checkout_options_size());
+          Pointer<NativeType> mergeOptions =
+              allocate<Int8>(count: _git_merge_options_size());
+
+          try {
+            _checkErrors(_git_checkout_options_init(
+                checkoutOptions, _git_checkout_options_version()));
+            _git_checkout_options_config_for_merge(checkoutOptions);
+            _checkErrors(_git_merge_options_init(
+                mergeOptions, _git_merge_options_version()));
+
+            _checkErrors(_git_merge(
+                repo, upstreamToMerge, 1, mergeOptions, checkoutOptions));
+
+            return "Merge complete, please commit";
+          } finally {
+            free(checkoutOptions);
+            free(mergeOptions);
+          }
         }
         return "Cannot merge";
       });
     } finally {
-      // free(mergeAnalysis);
-      // free(mergePreferences);
       if (upstreamToMerge.value != nullptr)
         _git_annotated_commit_free(upstreamToMerge.value);
       free(upstreamToMerge);

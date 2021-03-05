@@ -83,6 +83,10 @@ GIT_EXTERN(int) git_checkout_options_size(void) {
   return sizeof(git_checkout_options);
 }
 
+GIT_EXTERN(int) git_merge_options_size(void) {
+  return sizeof(git_checkout_options);
+}
+
 GIT_EXTERN(int) git_fetch_options_version(void) {
   return GIT_FETCH_OPTIONS_VERSION;
 }
@@ -100,6 +104,10 @@ GIT_EXTERN(int) git_clone_options_version(void) {
 }
 
 GIT_EXTERN(int) git_checkout_options_version(void) {
+  return GIT_CHECKOUT_OPTIONS_VERSION;
+}
+
+GIT_EXTERN(int) git_merge_options_version(void) {
   return GIT_CHECKOUT_OPTIONS_VERSION;
 }
 
@@ -137,4 +145,8 @@ GIT_EXTERN(void) git_checkout_options_config_for_revert(git_checkout_options * o
 
 GIT_EXTERN(void) git_checkout_options_config_for_fastforward(git_checkout_options * opts) {
   opts->checkout_strategy = GIT_CHECKOUT_SAFE;
+}
+
+GIT_EXTERN(void) git_checkout_options_config_for_merge(git_checkout_options * opts) {
+  opts->checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_ALLOW_CONFLICTS;
 }
