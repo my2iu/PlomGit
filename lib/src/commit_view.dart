@@ -4,16 +4,24 @@ import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'util.dart';
 
 class CommitPrepareChangesView extends StatelessWidget {
-  CommitPrepareChangesView(this.repositoryName, this.repositoryUri);
+  CommitPrepareChangesView(
+      this.repositoryName, this.repositoryUri, this.isMerged);
 
+  final bool isMerged;
   final String repositoryName;
   final Uri repositoryUri;
 
   @override
   Widget build(BuildContext context) {
+    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
+        Theme.of(context).primaryTextTheme;
     return Scaffold(
         appBar: AppBar(
-          title: Text('Commit $repositoryName'),
+          title:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            isMerged ? Text('Commit Merge') : Text('Commit'),
+            Text(repositoryName, style: appBarTextTheme.caption)
+          ]),
         ),
         body: Builder(
             builder: (BuildContext context) => Column(children: [
@@ -26,12 +34,13 @@ class CommitPrepareChangesView extends StatelessWidget {
                           child: Text('Next'),
                           onPressed: () {
                             Navigator.push(
-                                    context,
-                                    MaterialPageRoute<String>(
-                                        builder: (BuildContext context) =>
-                                            CommitFinalView(
-                                                repositoryName, repositoryUri)))
-                                .then((result) {
+                                context,
+                                MaterialPageRoute<String>(
+                                    builder: (BuildContext context) =>
+                                        CommitFinalView(
+                                            repositoryName,
+                                            repositoryUri,
+                                            isMerged))).then((result) {
                               if (result != null) {
                                 Navigator.pop(context, result);
                               }
@@ -50,18 +59,26 @@ class _MessageAndSignatureData {
 }
 
 class CommitFinalView extends StatelessWidget {
-  CommitFinalView(this.repositoryName, this.repositoryUri);
+  CommitFinalView(this.repositoryName, this.repositoryUri, this.isMerged);
 
   final String repositoryName;
   final Uri repositoryUri;
   String get repositoryDir => repositoryUri.toFilePath();
   final _MessageAndSignatureData msgSig = _MessageAndSignatureData();
+  final bool isMerged;
 
   @override
   Widget build(BuildContext context) {
+    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
+        Theme.of(context).primaryTextTheme;
+
     return Scaffold(
         appBar: AppBar(
-          title: Text('Commit Message'),
+          title:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            isMerged ? Text('Merge Message') : Text('Commit Message'),
+            Text(repositoryName, style: appBarTextTheme.caption)
+          ]),
         ),
         body: Builder(
             builder: (BuildContext context) => Column(children: [

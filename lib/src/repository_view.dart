@@ -26,9 +26,10 @@ class _RepositoryViewState extends State<RepositoryView> {
   String get repositoryDir => repositoryUri.toFilePath();
   Future<List<FileSystemEntity>> dirContents;
   Future<Map<String, GitStatusFlags>> gitStatus;
+  Future<GitRepositoryState> repoStateFuture;
 
   List<String> remoteList;
-  int repoState;
+  GitRepositoryState repoState;
   int ahead;
   int behind;
 
@@ -54,16 +55,19 @@ class _RepositoryViewState extends State<RepositoryView> {
     GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
       remoteList = remotes;
     });
-    gitStatus
+    repoStateFuture = gitStatus
         .catchError((err) {
           // Ignore errors
         })
         .then((_) => GitIsolate.instance.repositoryState(repositoryDir))
         .then((state) {
+          var s = GitRepositoryState.fromState(state);
           setState(() {
-            repoState = state;
+            repoState = s;
           });
-        })
+          return s;
+        });
+    repoStateFuture
         .catchError((err) {
           // Ignore errors
         })
@@ -181,7 +185,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                         SnackBar(content: Text('Error: ' + error.toString())));
                   });
                 },
-                child: Text('Test Merge to $remote'),
+                child: TextAndIcon(
+                    Text('Merge with upstream'),
+                    Icon(Icons.call_merge,
+                        color: Theme.of(context).iconTheme.color)),
               ));
             });
             entries.add(PopupMenuItem(
@@ -212,12 +219,13 @@ class _RepositoryViewState extends State<RepositoryView> {
                 child: Text('Test dialog')));
             entries.add(PopupMenuItem(
                 value: () {
-                  Navigator.push(
+                  repoStateFuture
+                      .then((state) => Navigator.push(
                           context,
                           MaterialPageRoute<String>(
                               builder: (BuildContext context) =>
-                                  CommitPrepareChangesView(
-                                      repositoryName, repositoryUri)))
+                                  CommitPrepareChangesView(repositoryName,
+                                      repositoryUri, state.merge))))
                       .then((result) {
                     _refresh();
                     if (result != null) {
@@ -331,11 +339,11 @@ class _RepositoryViewState extends State<RepositoryView> {
         .subtitle2;
     double size = textStyle.fontSize;
     // String repoStateMessage = "";
-    if ((repoState == null || repoState != 0) &&
+    if ((repoState == null || !repoState.normal) &&
         (ahead == null || ahead == 0) &&
         (behind == null || behind == 0)) return null;
     List<Widget> children = [];
-    if (repoState != null && repoState == 1) {
+    if (repoState != null && repoState.merge) {
       children.add(Icon(Icons.call_merge, color: textStyle.color, size: size));
     }
     if (ahead != null && ahead != 0) {
@@ -359,7 +367,7 @@ class _RepositoryViewState extends State<RepositoryView> {
     TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
         Theme.of(context).primaryTextTheme;
     if (_path.isNotEmpty) {
-      title = Column(children: [
+      title = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(repositoryName),
         Text(_path, style: appBarTextTheme.caption)
       ]);

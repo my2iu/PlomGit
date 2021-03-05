@@ -81,6 +81,13 @@ Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
               error.errorCode == Libgit2Exception.GIT_EUSER);
 }
 
+class GitRepositoryState {
+  int state;
+  GitRepositoryState.fromState(this.state);
+  bool get normal => (state == 0);
+  bool get merge => (state == 1);
+}
+
 class RawGitStatusFlags {
   RawGitStatusFlags.fromStatus(int status) {
     indexNew = ((status & 1) != 0);
