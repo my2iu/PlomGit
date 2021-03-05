@@ -318,38 +318,32 @@ class _RepositoryViewState extends State<RepositoryView> {
         });
   }
 
-  PreferredSizeWidget _makeStatusBar() {
+  Widget _makeStatusBar() {
     TextStyle textStyle = (Theme.of(context).appBarTheme.textTheme ??
             Theme.of(context).primaryTextTheme)
-        .subtitle1;
+        .subtitle2;
     double size = textStyle.fontSize;
-    String repoStateMessage = "";
-    if (repoState != null && repoState == 1) repoStateMessage = "merging";
-    if (repoStateMessage.isEmpty &&
+    // String repoStateMessage = "";
+    if ((repoState == null || repoState != 0) &&
         (ahead == null || ahead == 0) &&
         (behind == null || behind == 0)) return null;
     List<Widget> children = [];
-    if (repoStateMessage.isNotEmpty)
-      children.add(Text(repoStateMessage, style: textStyle));
+    if (repoState != null && repoState == 1) {
+      children.add(Icon(Icons.call_made, color: textStyle.color, size: size));
+    }
     if (ahead != null && ahead != 0) {
-      if (children.isNotEmpty)
-        children.add(SizedBox(width: textStyle.fontSize / 2));
+      if (children.isNotEmpty) children.add(SizedBox(width: size / 2));
       children.add(Text(ahead.toString(), style: textStyle));
-      children.add(Icon(Icons.arrow_upward,
-          color: textStyle.color, size: textStyle.fontSize));
+      children
+          .add(Icon(Icons.arrow_upward, color: textStyle.color, size: size));
     }
     if (behind != null && behind != 0) {
-      if (children.isNotEmpty)
-        children.add(SizedBox(width: textStyle.fontSize / 2));
+      if (children.isNotEmpty) children.add(SizedBox(width: size / 2));
       children.add(Text(behind.toString(), style: textStyle));
-      children.add(Icon(Icons.arrow_downward,
-          color: textStyle.color, size: textStyle.fontSize));
+      children
+          .add(Icon(Icons.arrow_downward, color: textStyle.color, size: size));
     }
-    return PreferredSize(
-      child:
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: children),
-      preferredSize: Size.fromRadius(size),
-    );
+    return Row(children: children);
   }
 
   @override
@@ -365,11 +359,14 @@ class _RepositoryViewState extends State<RepositoryView> {
     } else {
       title = Text(repositoryName);
     }
+    List<Widget> appBarActions = [];
+    Widget statusInfo = _makeStatusBar();
+    if (statusInfo != null) appBarActions.add(statusInfo);
+    appBarActions.add(buildActionsPopupMenu(context));
     return Scaffold(
         appBar: AppBar(
           title: title,
-          actions: <Widget>[buildActionsPopupMenu(context)],
-          bottom: _makeStatusBar(),
+          actions: appBarActions,
         ),
         body: FutureBuilder(
             future: dirContents,
