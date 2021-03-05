@@ -1,6 +1,7 @@
 import 'package:PlomGit/src/util.dart';
 import 'package:flutter/material.dart';
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
+import 'util.dart';
 
 class CommitPrepareChangesView extends StatelessWidget {
   CommitPrepareChangesView(this.repositoryName, this.repositoryUri);
@@ -152,13 +153,14 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
       if (gitFlags.unstaged) unstaged.add(entry[0] ?? entry[1]);
     });
     return Padding(
-        padding: EdgeInsets.all(5),
+        padding: EdgeInsets.all(kDefaultPadding),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               // MaterialBanner(content: Text("Staged Changed"), actions: []),
               Padding(
-                  padding: EdgeInsets.fromLTRB(4, 12, 4, 4),
+                  padding: EdgeInsets.fromLTRB(kDefaultPadding,
+                      kDefaultSectionSpacing, kDefaultPadding, kDefaultPadding),
                   child: Text('Staged Changes',
                       style: Theme.of(context).textTheme.subtitle1)),
               Expanded(
@@ -186,7 +188,8 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                 },
               ))),
               Padding(
-                  padding: EdgeInsets.fromLTRB(4, 12, 4, 4),
+                  padding: EdgeInsets.fromLTRB(kDefaultPadding,
+                      kDefaultSectionSpacing, kDefaultPadding, kDefaultPadding),
                   child: Text('Changes',
                       style: Theme.of(context).textTheme.subtitle1)),
               Expanded(
@@ -275,13 +278,13 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.all(5),
+        padding: EdgeInsets.all(kDefaultPadding),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
             Widget>[
           Expanded(
               child: Card(
                   child: Padding(
-                      padding: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(kDefaultPadding),
                       child: TextFormField(
                           // controller: TextEditingController(text: message),
                           // minLines: 3,
@@ -298,10 +301,10 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
                           ),
                           onChanged: (val) =>
                               setState(() => msgSig.message = val))))),
-          SizedBox(height: 5),
+          SizedBox(height: kDefaultPadding),
           Card(
               child: Padding(
-                  padding: EdgeInsets.all(5),
+                  padding: EdgeInsets.all(kDefaultPadding),
                   child: Column(children: [
                     TextFormField(
                         decoration: InputDecoration(

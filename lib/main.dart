@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 // import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:PlomGit/src/util.dart'
-    show retryWithAskCredentials, PlomGitPrefs;
+    show
+        retryWithAskCredentials,
+        PlomGitPrefs,
+        kDefaultPadding,
+        kDefaultSectionSpacing;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
@@ -423,7 +427,7 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
           title: Text('Repository Configuration'),
         ),
         body: Padding(
-            padding: EdgeInsets.all(5),
+            padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               RemoteConfigurationWidget(remoteInfo),
               ElevatedButton(
@@ -467,7 +471,8 @@ class _RepositoryLocationAndRemoteState
         child: Column(children: [
           Card(
               child: Padding(
-                  padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
+                  padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
+                      kDefaultPadding, kDefaultPadding),
                   child: Column(children: [
                     TextFormField(
                       initialValue: remoteInfo.repositoryName,
@@ -482,10 +487,11 @@ class _RepositoryLocationAndRemoteState
                           setState(() => remoteInfo.url = text),
                     ),
                   ]))),
-          SizedBox(height: 5),
+          SizedBox(height: kDefaultPadding),
           Card(
               child: Padding(
-                  padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
+                  padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
+                      kDefaultPadding, kDefaultPadding),
                   child: Column(children: [
                     TextFormField(
                       initialValue: remoteInfo.user,

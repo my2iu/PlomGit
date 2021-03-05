@@ -186,3 +186,6 @@ class PlomGitPrefs {
     });
   }
 }
+
+const double kDefaultPadding = 5;
+const double kDefaultSectionSpacing = 12;
