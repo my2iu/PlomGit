@@ -179,7 +179,7 @@ class GitIsolate {
             _isolateResponse(channel, "");
             break;
           case RequestType.commit:
-            Libgit2.commit(event[1], event[2], event[3], event[4]);
+            Libgit2.commitMerge(event[1], event[2], event[3], event[4]);
             _isolateResponse(channel, "");
             break;
           case RequestType.merge:

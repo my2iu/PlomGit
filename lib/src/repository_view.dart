@@ -221,6 +221,14 @@ class _RepositoryViewState extends State<RepositoryView> {
                 child: Text('Test dialog')));
             entries.add(PopupMenuItem(
                 value: () {
+                  _refresh();
+                },
+                child: TextAndIcon(
+                    Text("Refresh"),
+                    Icon(Icons.refresh,
+                        color: Theme.of(context).iconTheme.color))));
+            entries.add(PopupMenuItem(
+                value: () {
                   repoStateFuture
                       .then((state) => Navigator.push(
                           context,

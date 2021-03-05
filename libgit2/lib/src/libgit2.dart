@@ -546,6 +546,14 @@ class Libgit2 {
               "git_signature_free")
           .asFunction();
 
+  static final int Function(Pointer<git_oid>, Pointer<git_oid>) _git_oid_cpy =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<git_oid>, Pointer<git_oid>)>>("git_oid_cpy")
+          .asFunction();
+
   static final int Function(Pointer<Int32>, Pointer<Int32>,
           Pointer<git_repository>, Pointer<Pointer<NativeType>>, int)
       _git_merge_analysis = nativeGit2
@@ -982,6 +990,121 @@ class Libgit2 {
       free(indexTree);
       if (parentCommits[0] != nullptr) _git_commit_free(parentCommits[0]);
       free(parentCommits);
+      free(messageStr);
+      free(nameStr);
+      free(emailStr);
+      if (authorSig.value != nullptr) _git_signature_free(authorSig.value);
+      free(authorSig);
+    }
+  }
+
+  // Since Dart is single-threaded, we can only have one libgit2 call
+  // in-flight at once, so it's safe to store data needed for callbacks
+  // in static variables
+  static List<Pointer<git_oid>> mergeHeadsFromCallback;
+  static int mergeHeadsCallback(
+      Pointer<git_oid> oid, Pointer<NativeType> payload) {
+    Pointer<git_oid> newOid = allocate<git_oid>();
+    _git_oid_cpy(newOid, oid);
+    mergeHeadsFromCallback.add(newOid);
+    return 0;
+  }
+
+  static void commitMerge(
+      String dir, String message, String name, String email) {
+    Pointer<git_oid> headOid = allocate<git_oid>();
+    Pointer<git_oid> treeOid = allocate<git_oid>();
+    Pointer<git_oid> finalCommitOid = allocate<git_oid>();
+    Pointer<Utf8> headStr = Utf8.toUtf8("HEAD");
+    Pointer<Utf8> messageStr = Utf8.toUtf8(message);
+    Pointer<Utf8> nameStr = Utf8.toUtf8(name);
+    Pointer<Utf8> emailStr = Utf8.toUtf8(email);
+    Pointer<Pointer<git_tree>> indexTree = allocate<Pointer<git_tree>>();
+    indexTree.value = nullptr;
+    int numParentCommits = 0;
+    Pointer<Pointer<git_commit>> parentCommits = nullptr;
+    Pointer<Pointer<git_signature>> authorSig =
+        allocate<Pointer<git_signature>>();
+    authorSig.value = nullptr;
+    try {
+      _withRepositoryAndIndex(dir, (repo, index) {
+        // Check if we're in the middle of a merge
+        int repoState = _git_repository_state(repo);
+        // Figure out the different heads that we're merging
+        mergeHeadsFromCallback = [];
+        try {
+          if (repoState == 1) {
+            _git_repository_mergehead_foreach(
+                repo,
+                Pointer.fromFunction<
+                        Int32 Function(Pointer<git_oid>, Pointer<NativeType>)>(
+                    mergeHeadsCallback, 1),
+                nullptr);
+          }
+          // Allocate parent commits
+          numParentCommits = mergeHeadsFromCallback.length + 1;
+          parentCommits =
+              allocate<Pointer<git_commit>>(count: numParentCommits);
+          for (int n = 0; n < numParentCommits; n++) parentCommits[n] = nullptr;
+
+          // Convert merge heads to annotated_commits
+          for (int n = 0; n < mergeHeadsFromCallback.length; n++) {
+            _checkErrors(_git_commit_lookup(parentCommits.elementAt(n + 1),
+                repo, mergeHeadsFromCallback[n]));
+          }
+        } finally {
+          mergeHeadsFromCallback.forEach((oid) {
+            free(oid);
+          });
+          mergeHeadsFromCallback = null;
+        }
+
+        // Convert index to a tree
+        _checkErrors(_git_index_write_tree(treeOid, index));
+        _checkErrors(_git_tree_lookup(indexTree, repo, treeOid));
+
+        // If the repository has no head, then this initial commit has nothing
+        // to branch off of
+        var hasNoHead = _git_repository_head_unborn(repo);
+        _checkErrors(hasNoHead);
+        if (hasNoHead == 0) {
+          // Get head commit that we're branching off of
+          _checkErrors(_git_reference_name_to_id(headOid, repo, headStr));
+          _checkErrors(
+              _git_commit_lookup(parentCommits.elementAt(0), repo, headOid));
+        }
+
+        // Use the same info for author and commiter signature
+        _checkErrors(_git_signature_now(authorSig, nameStr, emailStr));
+
+        // Perform the commit
+        _checkErrors(_git_commit_create(
+            finalCommitOid,
+            repo,
+            headStr,
+            authorSig.value,
+            authorSig.value,
+            nullptr,
+            messageStr,
+            indexTree.value,
+            numParentCommits,
+            parentCommits));
+
+        _checkErrors(_git_repository_state_cleanup(repo));
+      });
+    } finally {
+      free(finalCommitOid);
+      free(headOid);
+      free(treeOid);
+      free(headStr);
+      if (indexTree.value != nullptr) _git_tree_free(indexTree.value);
+      free(indexTree);
+      if (parentCommits != nullptr) {
+        for (int n = 0; n < numParentCommits; n++) {
+          if (parentCommits[n] != nullptr) _git_commit_free(parentCommits[n]);
+        }
+        free(parentCommits);
+      }
       free(messageStr);
       free(nameStr);
       free(emailStr);
