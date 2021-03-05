@@ -147,11 +147,9 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
     List<String> staged = <String>[];
     List<String> unstaged = <String>[];
     allChanges.forEach((entry) {
-      var gitFlags = entry[2];
-      if ((gitFlags & (1 | 2 | 4 | 8 | 16)) != 0)
-        staged.add(entry[0] ?? entry[1]);
-      if ((gitFlags & (128 | 256 | 512 | 1024 | 2048)) != 0)
-        unstaged.add(entry[0] ?? entry[1]);
+      var gitFlags = RawGitStatusFlags.fromStatus(entry[2]);
+      if (gitFlags.staged) staged.add(entry[0] ?? entry[1]);
+      if (gitFlags.unstaged) unstaged.add(entry[0] ?? entry[1]);
     });
     return Padding(
         padding: EdgeInsets.all(5),

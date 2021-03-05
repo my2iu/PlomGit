@@ -269,6 +269,12 @@ class _RepositoryViewState extends State<RepositoryView> {
                   else
                     return Icon(Icons.remove_circle_outlined);
                 }
+                if (statusFlags.isConflicted) {
+                  if (statusFlags.isStaged)
+                    return Icon(Icons.swap_horizontal_circle);
+                  else
+                    return Icon(Icons.swap_horizontal_circle_outlined);
+                }
                 if (!statusFlags.isStaged) return Icon(Icons.lens_outlined);
               } else {
                 if (statusFlags.dirHasStagedModifications &&
@@ -330,7 +336,7 @@ class _RepositoryViewState extends State<RepositoryView> {
         (behind == null || behind == 0)) return null;
     List<Widget> children = [];
     if (repoState != null && repoState == 1) {
-      children.add(Icon(Icons.call_made, color: textStyle.color, size: size));
+      children.add(Icon(Icons.call_merge, color: textStyle.color, size: size));
     }
     if (ahead != null && ahead != 0) {
       if (children.isNotEmpty) children.add(SizedBox(width: size / 2));

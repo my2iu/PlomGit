@@ -81,11 +81,53 @@ Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
               error.errorCode == Libgit2Exception.GIT_EUSER);
 }
 
+class RawGitStatusFlags {
+  RawGitStatusFlags.fromStatus(int status) {
+    indexNew = ((status & 1) != 0);
+    indexModified = ((status & 2) != 0);
+    indexDeleted = ((status & 4) != 0);
+    indexRenamed = ((status & 8) != 0);
+    indexTypechange = ((status & 16) != 0);
+    workTreeNew = ((status & 128) != 0);
+    workTreeModified = ((status & 256) != 0);
+    workTreeDeleted = ((status & 512) != 0);
+    workTreeTypechange = ((status & 1024) != 0);
+    workTreeRenamed = ((status & 2048) != 0);
+    workTreeUnreadable = ((status & 4096) != 0);
+    ignored = ((status & 16384) != 0);
+    conflicted = ((status & 32768) != 0);
+  }
+
+  bool indexNew = false;
+  bool indexModified = false;
+  bool indexDeleted = false;
+  bool indexRenamed = false;
+  bool indexTypechange = false;
+  bool workTreeNew = false;
+  bool workTreeModified = false;
+  bool workTreeDeleted = false;
+  bool workTreeTypechange = false;
+  bool workTreeRenamed = false;
+  bool workTreeUnreadable = false;
+  bool ignored = false;
+  bool conflicted = false;
+  bool get staged =>
+      indexNew | indexModified | indexDeleted | indexRenamed | indexTypechange;
+  bool get unstaged =>
+      workTreeNew |
+      workTreeModified |
+      workTreeDeleted |
+      workTreeTypechange |
+      workTreeUnreadable |
+      conflicted;
+}
+
 class GitStatusFlags {
   bool isStaged = false;
   bool isModified = false;
   bool isNew = false;
   bool isDeleted = false;
+  bool isConflicted = false;
 
   bool dirHasUnstagedModifications = false;
   bool dirHasStagedModifications = false;
@@ -93,10 +135,15 @@ class GitStatusFlags {
 
   GitStatusFlags();
   GitStatusFlags.fromFlags(int gitFlags) {
-    isStaged = (gitFlags & (1 | 2 | 4 | 8 | 16)) != 0;
-    isNew = (gitFlags & (1 | 128)) != 0;
-    isModified = (gitFlags & (2 | 16 | 256 | 2048)) != 0;
-    isDeleted = (gitFlags & (4 | 512)) != 0;
+    var status = RawGitStatusFlags.fromStatus(gitFlags);
+    isStaged = status.staged;
+    isNew = status.workTreeNew || status.indexNew;
+    isModified = status.indexModified |
+        status.indexTypechange |
+        status.workTreeModified |
+        status.workTreeTypechange;
+    isDeleted = status.indexDeleted | status.workTreeDeleted;
+    isConflicted = status.conflicted;
   }
 }
 
