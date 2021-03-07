@@ -182,9 +182,12 @@ class _MyHomePageState extends State<MyHomePage> {
         return uri.replace(path: uri.path + 'repositories/');
       });
     } else {
+      // On iOS, we're lazy and we'll just dump things directly in the documents
+      // directory so that we can let iOS automatically share all the files
+      // without us needing to explicitly create a file provider.
       repositoryPath = getApplicationDocumentsDirectory().then((dir) {
         var uri = dir.uri;
-        return uri.replace(path: uri.path + 'repositories/');
+        return uri.replace(path: uri.path);
       });
     }
     return repositoryPath;
