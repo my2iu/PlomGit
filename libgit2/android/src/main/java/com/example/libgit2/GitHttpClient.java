@@ -78,10 +78,29 @@ public class GitHttpClient
             "Basic " + Base64.encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT));
     }
 
+    public void setRequestProperty(String property, String value)
+    {
+        Log.v(TAG, "Request header " + property + " : " + value);
+        connection.setRequestProperty(property, value); 
+    }
+
+    public void setChunked()
+    {
+        Log.v(TAG, "Chunked");
+        connection.setChunkedStreamingMode(0); 
+    }
+
+    public void setCustomRequestHeader(String header)
+    {
+        Log.v(TAG, "Custom request header " + header);
+        // TODO: Implement this
+    }
+
     public int startReadResponse()
     {
         try {
             responseCode = connection.getResponseCode();
+            Log.v(TAG, "Response code " + responseCode);
         }
         catch (Exception e)
         {
@@ -186,6 +205,7 @@ public class GitHttpClient
     {
         try {
             Log.v(TAG, "Sending " + data.length + " bytes");
+            // Log.v(TAG, "Sending: " + new String(data, StandardCharsets.UTF_8));
             connection.getOutputStream().write(data);
         }
         catch (IOException e)
@@ -208,6 +228,10 @@ public class GitHttpClient
         url.username = username;
         url.password = password;
         return url;
+    }
+
+    public static void tempDebugJvmLog(String msg) {
+            Log.v(TAG, msg);
     }
 
     public static native void gitErrorSet(int klass, String msg);

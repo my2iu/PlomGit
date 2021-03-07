@@ -60,6 +60,22 @@ void releaseJvmEnv(void)
         (*gJvm)->DetachCurrentThread(gJvm);
 }
 
+void tempDebugJvmLog(char * message)
+{
+	JNIEnv * env;
+
+	env = getJvmEnv();
+  debugJvmLog(env, message);
+	releaseJvmEnv();
+}
+
+void debugJvmLog(JNIEnv * env, char * message)
+{
+	jmethodID logMethodId;
+	logMethodId = (*env)->GetStaticMethodID(env, jGitHttpClientClass, "tempDebugJvmLog", "(Ljava/lang/String;)V");
+  (*env)->CallStaticVoidMethod(env, jGitHttpClientClass, logMethodId, (*env)->NewStringUTF(env, message));
+}
+
 
 // Some extra functions for interfacing with libgit2
 

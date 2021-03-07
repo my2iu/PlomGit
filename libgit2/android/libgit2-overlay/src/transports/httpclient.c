@@ -662,6 +662,7 @@ static int generate_connect_request(
 }
 
 static int generate_request(
+	JNIEnv *env,
 	git_http_client *client,
 	git_http_request *request)
 {
@@ -671,67 +672,100 @@ static int generate_request(
 
 	assert(client && request);
 
-	git_buf_clear(&client->request_msg);
-	buf = &client->request_msg;
+	jmethodID setRequestPropertyMethodId;
+	jmethodID setCredentialsMethodId;
 
-	/* GET|POST path HTTP/1.1 */
-	git_buf_puts(buf, name_for_method(request->method));
-	git_buf_putc(buf, ' ');
+	setRequestPropertyMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "setRequestProperty", "(Ljava/lang/String;Ljava/lang/String;)V");
 
-	if (request->proxy && strcmp(request->url->scheme, "https"))
-		git_net_url_fmt(buf, request->url);
-	else
-		git_net_url_fmt_path(buf, request->url);
+	// git_buf_clear(&client->request_msg);
+	// buf = &client->request_msg;
 
-	git_buf_puts(buf, " HTTP/1.1\r\n");
+	// /* GET|POST path HTTP/1.1 */
+	// git_buf_puts(buf, name_for_method(request->method));
+	// git_buf_putc(buf, ' ');
 
-	git_buf_puts(buf, "User-Agent: ");
-	git_http__user_agent(buf);
-	git_buf_puts(buf, "\r\n");
+	// if (request->proxy && strcmp(request->url->scheme, "https"))
+	// 	git_net_url_fmt(buf, request->url);
+	// else
+	// 	git_net_url_fmt_path(buf, request->url);
 
-	git_buf_printf(buf, "Host: %s", request->url->host);
+	// git_buf_puts(buf, " HTTP/1.1\r\n");
 
-	if (!git_net_url_is_default_port(request->url))
-		git_buf_printf(buf, ":%s", request->url->port);
+	// git_buf_puts(buf, "User-Agent: ");
+	// git_http__user_agent(buf);
+	// git_buf_puts(buf, "\r\n");
 
-	git_buf_puts(buf, "\r\n");
+	// git_buf_printf(buf, "Host: %s", request->url->host);
 
-	if (request->accept)
-		git_buf_printf(buf, "Accept: %s\r\n", request->accept);
-	else
-		git_buf_puts(buf, "Accept: */*\r\n");
+	// if (!git_net_url_is_default_port(request->url))
+	// 	git_buf_printf(buf, ":%s", request->url->port);
 
-	if (request->content_type)
-		git_buf_printf(buf, "Content-Type: %s\r\n",
-			request->content_type);
+	// git_buf_puts(buf, "\r\n");
 
-	if (request->chunked)
-		git_buf_puts(buf, "Transfer-Encoding: chunked\r\n");
+	if (request->accept) {
+		(*env)->CallVoidMethod(env, client->jHttpClient, setRequestPropertyMethodId,
+			(*env)->NewStringUTF(env, "Accept"),
+			(*env)->NewStringUTF(env, request->accept));
+		// git_buf_printf(buf, "Accept: %s\r\n", request->accept);
+	} else {
+		(*env)->CallVoidMethod(env, client->jHttpClient, setRequestPropertyMethodId,
+			(*env)->NewStringUTF(env, "Accept"),
+			(*env)->NewStringUTF(env, "*/*"));
+		// git_buf_puts(buf, "Accept: */*\r\n");
+	}
 
-	if (request->content_length > 0)
-		git_buf_printf(buf, "Content-Length: %"PRIuZ "\r\n",
-			request->content_length);
+	if (request->content_type) {
+		// git_buf_printf(buf, "Content-Type: %s\r\n",
+		// 	request->content_type);
+		(*env)->CallVoidMethod(env, client->jHttpClient, setRequestPropertyMethodId,
+			(*env)->NewStringUTF(env, "Content-Type"),
+			(*env)->NewStringUTF(env, request->content_type));
+	}
 
-	if (request->expect_continue)
-		git_buf_printf(buf, "Expect: 100-continue\r\n");
+	if (request->chunked) {
+		// git_buf_puts(buf, "Transfer-Encoding: chunked\r\n");
 
-	if ((error = apply_server_credentials(buf, client, request)) < 0 ||
-	    (error = apply_proxy_credentials(buf, client, request)) < 0)
-		return error;
+		jmethodID setChunkedMethodId;
+		setChunkedMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "setChunked", "()V");
+		(*env)->CallVoidMethod(env, client->jHttpClient, setChunkedMethodId);
+	}
+
+	// if (request->content_length > 0)
+	// 	git_buf_printf(buf, "Content-Length: %"PRIuZ "\r\n",
+	// 		request->content_length);
+
+	// if (request->expect_continue)
+	// 	git_buf_printf(buf, "Expect: 100-continue\r\n");
+
+	// if ((error = apply_server_credentials(buf, client, request)) < 0 ||
+	//     (error = apply_proxy_credentials(buf, client, request)) < 0)
+	// 	return error;
+
+	setCredentialsMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "setCredentials", "(Ljava/lang/String;Ljava/lang/String;)V");
+	if (request->credentials && request->credentials->credtype == GIT_CREDENTIAL_USERPASS_PLAINTEXT) {
+		(*env)->CallVoidMethod(env, client->jHttpClient, setCredentialsMethodId, 
+			(*env)->NewStringUTF(env, ((struct git_credential_userpass_plaintext *)request->credentials)->username),
+			(*env)->NewStringUTF(env, ((struct git_credential_userpass_plaintext *)request->credentials)->password));
+	}
 
 	if (request->custom_headers) {
+		jmethodID setCustomRequestHeaderMethodId;
+		setCustomRequestHeaderMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "setCustomRequestHeader", "(Ljava/lang/String;)V");
 		for (i = 0; i < request->custom_headers->count; i++) {
 			const char *hdr = request->custom_headers->strings[i];
 
-			if (hdr)
-				git_buf_printf(buf, "%s\r\n", hdr);
+			if (hdr) {
+				// git_buf_printf(buf, "%s\r\n", hdr);
+				(*env)->CallVoidMethod(env, client->jHttpClient, setCustomRequestHeaderMethodId,
+					(*env)->NewStringUTF(env, hdr));
+			}
 		}
 	}
 
-	git_buf_puts(buf, "\r\n");
+	// git_buf_puts(buf, "\r\n");
 
-	if (git_buf_oom(buf))
-		return -1;
+	// if (git_buf_oom(buf))
+	// 	return -1;
 
 	return 0;
 }
@@ -1224,7 +1258,6 @@ int git_http_client_send_request(
 	jmethodID makeUrlMethodId;
 	jmethodID setUrlMethodId;
 	jmethodID startRequestMethodId;
-	jmethodID setCredentialsMethodId;
 
 	assert(client && request);
 
@@ -1290,18 +1323,12 @@ int git_http_client_send_request(
 		goto done;
 
 
-	// if ((error = http_client_connect(client, request)) < 0 ||
-	//     (error = generate_request(client, request)) < 0 ||
-	//     (error = client_write_request(client)) < 0)
-	// 	goto done;
-
-	setCredentialsMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "setCredentials", "(Ljava/lang/String;Ljava/lang/String;)V");
-	if (request->credentials && request->credentials->credtype == GIT_CREDENTIAL_USERPASS_PLAINTEXT) {
-		(*env)->CallVoidMethod(env, client->jHttpClient, setCredentialsMethodId, 
-			(*env)->NewStringUTF(env, ((struct git_credential_userpass_plaintext *)request->credentials)->username),
-			(*env)->NewStringUTF(env, ((struct git_credential_userpass_plaintext *)request->credentials)->password));
-
-	}
+	if (
+		//(error = http_client_connect(client, request)) < 0 ||
+	     (error = generate_request(env, client, request)) < 0 //||
+	//     (error = client_write_request(client)) < 0
+	)
+	 	goto done;
 
 
 	client->state = SENT_REQUEST;
@@ -1400,10 +1427,12 @@ int git_http_client_send_body(
 
 		client->request_body_remain -= buffer_len;
 	} else {
-		if ((error = git_buf_printf(&hdr, "%" PRIxZ "\r\n", buffer_len)) < 0 ||
-		    (error = send_bytes(client, hdr.ptr, hdr.size)) < 0 ||
-		    (error = send_bytes(client, buffer, buffer_len)) < 0 ||
-		    (error = send_bytes(client, "\r\n", 2)) < 0)
+		if (
+			// (error = git_buf_printf(&hdr, "%" PRIxZ "\r\n", buffer_len)) < 0 ||
+		    // (error = send_bytes(client, hdr.ptr, hdr.size)) < 0 ||
+		    (error = send_bytes(client, buffer, buffer_len)) < 0 //||
+		    // (error = send_bytes(client, "\r\n", 2)) < 0
+			)
 			goto done;
 	}
 
@@ -1412,7 +1441,7 @@ done:
 	return error;
 }
 
-static int complete_request(git_http_client *client)
+static int complete_request(JNIEnv * env, git_http_client *client)
 {
 	int error = 0;
 
@@ -1422,7 +1451,21 @@ static int complete_request(git_http_client *client)
 		git_error_set(GIT_ERROR_HTTP, "truncated write");
 		error = -1;
 	} else if (client->request_chunked) {
-		error = stream_write(&client->server, "0\r\n\r\n", 5);
+		// jmethodID writeBytesMethodId;
+		// jobject jBytes;
+		// jbyte * jBytesRaw;
+		// int error;
+		// int buffer_len = 5;
+		// char * buffer = "0\r\n\r\n";
+		// writeBytesMethodId = (*env)->GetMethodID(env, jGitHttpClientClass, "writeBytes", "([B)I");
+		// jBytes = (*env)->NewByteArray(env, buffer_len);
+		// jBytesRaw = (*env)->GetByteArrayElements(env, jBytes, NULL);
+		// memcpy(jBytesRaw, buffer, buffer_len);
+		// (*env)->ReleaseByteArrayElements(env, jBytes, jBytesRaw, 0);
+		// error = (*env)->CallIntMethod(env, client->jHttpClient, writeBytesMethodId, jBytes);
+
+
+		// error = stream_write(&client->server, "0\r\n\r\n", 5);
 	}
 
 	client->state = SENT_REQUEST;
@@ -1447,7 +1490,7 @@ int git_http_client_read_response(
 	env = getJvmEnv();
 
 	if (client->state == SENDING_BODY) {
-		if ((error = complete_request(client)) < 0)
+		if ((error = complete_request(env, client)) < 0)
 			goto done;
 	}
 
