@@ -19,6 +19,7 @@ import 'package:tuple/tuple.dart';
 
 // TODO: Don't allow "/" in repository and remote names since we used that elsewhere
 // TODO: Fix-up error checking in modifications to C code
+// TODO: Use ffigen to autogenerate C bindings
 
 void main() {
   log.hierarchicalLoggingEnabled = true;

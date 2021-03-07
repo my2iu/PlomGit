@@ -450,6 +450,13 @@ class Libgit2 {
       .lookup<NativeFunction<Void Function(Pointer<git_tree>)>>("git_tree_free")
       .asFunction();
 
+  static final Pointer<Utf8> Function(
+      Pointer<
+          git_reference>) _git_reference_name = nativeGit2
+      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<git_reference>)>>(
+          "git_reference_name")
+      .asFunction();
+
   static final int Function(
           Pointer<git_oid>, Pointer<git_repository>, Pointer<Utf8>)
       _git_reference_name_to_id = nativeGit2
@@ -842,18 +849,32 @@ class Libgit2 {
     setupCredentials(username, password);
     Pointer<NativeType> pushOptions =
         allocate<Int8>(count: _git_push_options_size());
+    Pointer<git_strarray> refStrings = allocate<git_strarray>();
+    refStrings.ref.count = 1;
+    refStrings.ref.strings = allocate<Pointer<Utf8>>(count: 1);
+    Pointer<Pointer<git_reference>> headRef =
+        allocate<Pointer<git_reference>>();
+    headRef.value = nullptr;
     try {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
+        // Just push head to wherever for now
+        _checkErrors(_git_repository_head(headRef, repo));
+        refStrings.ref.strings[0] = _git_reference_name(headRef.value);
+
         _checkErrors(
             _git_push_options_init(pushOptions, _git_push_options_version()));
         _git_push_options_set_credentials_cb(
             pushOptions,
             Pointer.fromFunction<git_credentials_acquire_cb>(
                 credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
-        _checkErrors(_git_remote_push(remote, nullptr, pushOptions));
+        _checkErrors(_git_remote_push(remote, refStrings, pushOptions));
       });
     } finally {
       free(pushOptions);
+      if (headRef.value != nullptr) _git_reference_free(headRef.value);
+      free(headRef);
+      free(refStrings.ref.strings);
+      free(refStrings);
     }
   }
 
@@ -930,74 +951,6 @@ class Libgit2 {
     }
   }
 
-  static void commit(String dir, String message, String name, String email) {
-    Pointer<git_oid> headOid = allocate<git_oid>();
-    Pointer<git_oid> treeOid = allocate<git_oid>();
-    Pointer<git_oid> finalCommitOid = allocate<git_oid>();
-    Pointer<Utf8> headStr = Utf8.toUtf8("HEAD");
-    Pointer<Utf8> messageStr = Utf8.toUtf8(message);
-    Pointer<Utf8> nameStr = Utf8.toUtf8(name);
-    Pointer<Utf8> emailStr = Utf8.toUtf8(email);
-    Pointer<Pointer<git_tree>> indexTree = allocate<Pointer<git_tree>>();
-    indexTree.value = nullptr;
-    Pointer<Pointer<git_commit>> parentCommits =
-        allocate<Pointer<git_commit>>(count: 1);
-    parentCommits[0] = nullptr;
-    int numParentCommits = 0;
-    Pointer<Pointer<git_signature>> authorSig =
-        allocate<Pointer<git_signature>>();
-    authorSig.value = nullptr;
-    try {
-      _withRepositoryAndIndex(dir, (repo, index) {
-        // Convert index to a tree
-        _checkErrors(_git_index_write_tree(treeOid, index));
-        _checkErrors(_git_tree_lookup(indexTree, repo, treeOid));
-
-        // If the repository has no head, then this initial commit has nothing
-        // to branch off of
-        var hasNoHead = _git_repository_head_unborn(repo);
-        _checkErrors(hasNoHead);
-        if (hasNoHead == 0) {
-          // Get head commit that we're branching off of
-          numParentCommits = 1;
-          _checkErrors(_git_reference_name_to_id(headOid, repo, headStr));
-          _checkErrors(
-              _git_commit_lookup(parentCommits.elementAt(0), repo, headOid));
-        }
-
-        // Use the same info for author and commiter signature
-        _checkErrors(_git_signature_now(authorSig, nameStr, emailStr));
-
-        // Perform the commit
-        _checkErrors(_git_commit_create(
-            finalCommitOid,
-            repo,
-            headStr,
-            authorSig.value,
-            authorSig.value,
-            nullptr,
-            messageStr,
-            indexTree.value,
-            numParentCommits,
-            parentCommits));
-      });
-    } finally {
-      free(finalCommitOid);
-      free(headOid);
-      free(treeOid);
-      free(headStr);
-      if (indexTree.value != nullptr) _git_tree_free(indexTree.value);
-      free(indexTree);
-      if (parentCommits[0] != nullptr) _git_commit_free(parentCommits[0]);
-      free(parentCommits);
-      free(messageStr);
-      free(nameStr);
-      free(emailStr);
-      if (authorSig.value != nullptr) _git_signature_free(authorSig.value);
-      free(authorSig);
-    }
-  }
-
   // Since Dart is single-threaded, we can only have one libgit2 call
   // in-flight at once, so it's safe to store data needed for callbacks
   // in static variables
@@ -1010,8 +963,7 @@ class Libgit2 {
     return 0;
   }
 
-  static void commitMerge(
-      String dir, String message, String name, String email) {
+  static void commit(String dir, String message, String name, String email) {
     Pointer<git_oid> headOid = allocate<git_oid>();
     Pointer<git_oid> treeOid = allocate<git_oid>();
     Pointer<git_oid> finalCommitOid = allocate<git_oid>();
