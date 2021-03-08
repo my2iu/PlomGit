@@ -168,9 +168,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // var jsGit = JsForGit(null);
     // jsGit
     //     .clone()
-    //     .then((val) => Scaffold.of(context)
+    //     .then((val) => ScaffoldMessenger.of(context)
     //         .showSnackBar(SnackBar(content: Text('Clone successful'))))
-    //     .catchError((error) => Scaffold.of(context)
+    //     .catchError((error) => ScaffoldMessenger.of(context)
     //         .showSnackBar(SnackBar(content: Text('Error: ' + error))))
     //     .whenComplete(() => print('done2'));
   }
@@ -231,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
               )).then((result) => _refreshRepositories());
         }).catchError((error) {
           _refreshRepositories();
-          Scaffold.of(context)
+          ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text('Error: $error')));
         });
       });
@@ -249,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
             )).then((result) => _refreshRepositories());
       }).catchError((error) {
         _refreshRepositories();
-        Scaffold.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ' + error.toString())));
       });
     });
@@ -271,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
         .then((_) => PlomGitPrefs.instance.eraseRepositoryPreferences(name))
         .then((result) {
       _refreshRepositories();
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Repository deleted')));
     });
   }

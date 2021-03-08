@@ -198,12 +198,20 @@ Future<U> showProgressWhileWaitingFor<U>(
     BuildContext context, Future<U> future) {
   showDialog(
       context: context,
+      barrierColor: null,
       barrierDismissible: false,
       builder: (context) => WillPopScope(
           onWillPop: () => Future.value(false),
-          child: Center(
-              child: Container(
-                  child: CircularProgressIndicator(), width: 32, height: 32))));
+          child: Align(
+              alignment: Alignment(0.0, -0.25),
+              child: Card(
+                  elevation: 3,
+                  child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Container(
+                          child: CircularProgressIndicator(),
+                          width: 32,
+                          height: 32))))));
 
   return future.whenComplete(() {
     Navigator.of(context).pop();

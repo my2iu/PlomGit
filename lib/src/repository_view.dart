@@ -131,10 +131,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                                 context))
                         .then((result) {
                       _refresh();
-                      Scaffold.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Fetch successful')));
                     }).catchError((error) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text('Error: ' + error.toString())));
                     });
                   },
@@ -157,10 +157,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                                 context))
                         .then((result) {
                       _refresh();
-                      Scaffold.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Push successful')));
                     }).catchError((error) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text('Error: ' + error.toString())));
                     });
                   },
@@ -181,14 +181,14 @@ class _RepositoryViewState extends State<RepositoryView> {
                           context)
                       .then((result) {
                     if (result != null)
-                      Scaffold.of(context)
+                      ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(result)));
                     else
-                      Scaffold.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Merge successful")));
                     _refresh();
                   }).catchError((error) {
-                    Scaffold.of(context).showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Error: ' + error.toString())));
                   });
                 },
@@ -201,10 +201,10 @@ class _RepositoryViewState extends State<RepositoryView> {
             entries.add(PopupMenuItem(
                 value: () {
                   GitIsolate.instance.status(repositoryDir).then((result) {
-                    Scaffold.of(context).showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Status successful')));
                   }).catchError((error) {
-                    Scaffold.of(context).showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Error: ' + error.toString())));
                   });
                 },
@@ -250,7 +250,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                       .then((result) {
                     _refresh();
                     if (result != null) {
-                      Scaffold.of(context)
+                      ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(result)));
                     }
                   });
