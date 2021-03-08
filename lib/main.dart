@@ -8,7 +8,8 @@ import 'package:PlomGit/src/util.dart'
         retryWithAskCredentials,
         PlomGitPrefs,
         kDefaultPadding,
-        kDefaultSectionSpacing;
+        kDefaultSectionSpacing,
+        showProgressWhileWaitingFor;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
@@ -213,12 +214,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     waitWriteCredentials.then((_) {
       _getRepositoryDirForName(name).then((pathUri) {
-        retryWithAskCredentials(
-                name,
-                "origin",
-                (user, password) => GitIsolate.instance
-                    .clone(url, pathUri.toFilePath(), user, password),
-                context)
+        showProgressWhileWaitingFor(
+                context,
+                retryWithAskCredentials(
+                    name,
+                    "origin",
+                    (user, password) => GitIsolate.instance
+                        .clone(url, pathUri.toFilePath(), user, password),
+                    context))
             .then((val) {
           Navigator.push(
               context,

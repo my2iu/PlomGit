@@ -121,12 +121,14 @@ class _RepositoryViewState extends State<RepositoryView> {
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
                   value: () {
-                    retryWithAskCredentials(
-                            repositoryName,
-                            remote,
-                            (user, password) => GitIsolate.instance
-                                .fetch(repositoryDir, remote, user, password),
-                            context)
+                    showProgressWhileWaitingFor(
+                            context,
+                            retryWithAskCredentials(
+                                repositoryName,
+                                remote,
+                                (user, password) => GitIsolate.instance.fetch(
+                                    repositoryDir, remote, user, password),
+                                context))
                         .then((result) {
                       _refresh();
                       Scaffold.of(context).showSnackBar(
@@ -144,12 +146,15 @@ class _RepositoryViewState extends State<RepositoryView> {
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
                   value: () {
-                    retryWithAskCredentials(
-                            repositoryName,
-                            remote,
-                            (username, password) => GitIsolate.instance.push(
-                                repositoryDir, remote, username, password),
-                            context)
+                    showProgressWhileWaitingFor(
+                            context,
+                            retryWithAskCredentials(
+                                repositoryName,
+                                remote,
+                                (username, password) => GitIsolate.instance
+                                    .push(repositoryDir, remote, username,
+                                        password),
+                                context))
                         .then((result) {
                       _refresh();
                       Scaffold.of(context).showSnackBar(
@@ -219,6 +224,12 @@ class _RepositoryViewState extends State<RepositoryView> {
                   });
                 },
                 child: Text('Test dialog')));
+            entries.add(PopupMenuItem(
+                value: () {
+                  showProgressWhileWaitingFor(
+                      context, Future.delayed(Duration(seconds: 3)));
+                },
+                child: Text('Test progress')));
             entries.add(PopupMenuItem(
                 value: () {
                   _refresh();

@@ -194,5 +194,21 @@ class PlomGitPrefs {
   }
 }
 
+Future<U> showProgressWhileWaitingFor<U>(
+    BuildContext context, Future<U> future) {
+  showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => WillPopScope(
+          onWillPop: () => Future.value(false),
+          child: Center(
+              child: Container(
+                  child: CircularProgressIndicator(), width: 32, height: 32))));
+
+  return future.whenComplete(() {
+    Navigator.of(context).pop();
+  });
+}
+
 const double kDefaultPadding = 5;
 const double kDefaultSectionSpacing = 12;
