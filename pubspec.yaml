@@ -27,10 +27,10 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.0
+  cupertino_icons: ^1.0.2
 
-  logging: ^0.11.4
-  tuple: ^1.0.3
+  logging: ^1.0.0
+  tuple: ^2.0.0-nullsafety.0
 
   libgit2:
     path: libgit2/
@@ -41,19 +41,19 @@ dependencies:
   #provider: ^4.3.3
 
   # For transferring data to and from isolates
-  stream_channel: ^2.0.0
+  stream_channel: ^2.1.0
 
   # I wanted universal_platform to allow me to distinguish between Android
   # and other platforms without using Platform (which causes problems with
   # compiling for the web), but I ended up needing other things from Platform
   # anyway, so this isn't strictly needed.
-  universal_platform: ^0.1.3
-  path_provider: ^1.6.24
+  universal_platform: ^1.0.0-nullsafety
+  path_provider: ^2.0.1
 
-  http: ^0.12.2  
+  http: ^0.13.0  
 
   # To hold passwords for connecting to remotes
-  flutter_secure_storage: ^3.3.5
+  flutter_secure_storage: ^4.1.0
   
 dev_dependencies:
   flutter_test:
