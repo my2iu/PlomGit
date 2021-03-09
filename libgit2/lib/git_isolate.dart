@@ -25,7 +25,7 @@ class GitIsolate {
   // isolate expects all requests to be a list. list[0] should be a string
   // with the type of the event. The rest of the list can be
   // context-specific parameters for the event.
-  IsolateChannel<dynamic> _isoChannel;
+  late IsolateChannel<dynamic> _isoChannel;
 
   // Private constructor
   GitIsolate._create() {
@@ -48,7 +48,7 @@ class GitIsolate {
   }
 
   // Sends a request for a git operation to the git isolate
-  Future<dynamic> _sendRequest(RequestType request, [List params]) {
+  Future<dynamic> _sendRequest(RequestType request, [List? params]) {
     List req;
     if (params != null) {
       req = [request.index];

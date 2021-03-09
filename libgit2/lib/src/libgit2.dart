@@ -12,8 +12,8 @@ class Libgit2 {
   // in case.
   static const MethodChannel _channel = const MethodChannel('libgit2');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
+  static Future<String?> get platformVersion async {
+    final String? version = await _channel.invokeMethod('getPlatformVersion');
     return version;
   }
 
@@ -135,10 +135,11 @@ class Libgit2 {
                       Pointer<NativeType>)>>("git_clone")
           .asFunction();
 
-  static final int Function(Pointer<git_strarray>) _strArrayDispose = nativeGit2
-      .lookup<NativeFunction<Int32 Function(Pointer<git_strarray>)>>(
-          "git_strarray_dispose")
-      .asFunction();
+  static final int Function(Pointer<git_strarray>) _strArrayDispose =
+      nativeGit2
+          .lookup<NativeFunction<Int32 Function(Pointer<git_strarray>)>>(
+              "git_strarray_dispose")
+          .asFunction();
 
   static final int Function(Pointer<git_strarray>, Pointer<NativeType>)
       _remoteList = nativeGit2
@@ -553,8 +554,8 @@ class Libgit2 {
               "git_signature_free")
           .asFunction();
 
-  static final int Function(Pointer<git_oid>, Pointer<git_oid>) _git_oid_cpy =
-      nativeGit2
+  static final int Function(Pointer<git_oid>, Pointer<git_oid>)
+      _git_oid_cpy = nativeGit2
           .lookup<
               NativeFunction<
                   Int32 Function(
@@ -953,12 +954,12 @@ class Libgit2 {
   // Since Dart is single-threaded, we can only have one libgit2 call
   // in-flight at once, so it's safe to store data needed for callbacks
   // in static variables
-  static List<Pointer<git_oid>> mergeHeadsFromCallback;
+  static List<Pointer<git_oid> >? mergeHeadsFromCallback;
   static int mergeHeadsCallback(
       Pointer<git_oid> oid, Pointer<NativeType> payload) {
     Pointer<git_oid> newOid = calloc<git_oid>();
     _git_oid_cpy(newOid, oid);
-    mergeHeadsFromCallback.add(newOid);
+    mergeHeadsFromCallback!.add(newOid);
     return 0;
   }
 
@@ -993,17 +994,17 @@ class Libgit2 {
                 nullptr);
           }
           // Allocate parent commits
-          numParentCommits = mergeHeadsFromCallback.length + 1;
+          numParentCommits = mergeHeadsFromCallback!.length + 1;
           parentCommits = calloc.call<Pointer<git_commit>>(numParentCommits);
           for (int n = 0; n < numParentCommits; n++) parentCommits[n] = nullptr;
 
           // Convert merge heads to annotated_commits
-          for (int n = 0; n < mergeHeadsFromCallback.length; n++) {
+          for (int n = 0; n < mergeHeadsFromCallback!.length; n++) {
             _checkErrors(_git_commit_lookup(parentCommits.elementAt(n + 1),
-                repo, mergeHeadsFromCallback[n]));
+                repo, mergeHeadsFromCallback![n]));
           }
         } finally {
-          mergeHeadsFromCallback.forEach((oid) {
+          mergeHeadsFromCallback!.forEach((oid) {
             calloc.free(oid);
           });
           mergeHeadsFromCallback = null;
@@ -1265,9 +1266,9 @@ class Libgit2 {
 
 /// Packages up Libgit2 error code and error message in a single class
 class Libgit2Exception implements Exception {
-  String message;
-  int errorCode;
-  int klass;
+  String? message;
+  int? errorCode;
+  int? klass;
 
   Libgit2Exception(this.errorCode, this.message, this.klass);
 
@@ -1284,7 +1285,7 @@ class Libgit2Exception implements Exception {
   static const int GIT_EUSER = -7;
 
   String toString() {
-    if (message != null) return message + '($errorCode:$klass)';
+    if (message != null) return (message ?? "") + '($errorCode:$klass)';
     return 'Libgit2Exception($errorCode)';
   }
 }
