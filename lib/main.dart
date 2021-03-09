@@ -6,10 +6,12 @@ import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:PlomGit/src/util.dart'
     show
         RepositoryNameTextFormField,
-        retryWithAskCredentials,
+        RemoteUserTextFormField,
+        RemotePasswordTextFormField,
         PlomGitPrefs,
         kDefaultPadding,
         kDefaultSectionSpacing,
+        retryWithAskCredentials,
         showProgressWhileWaitingFor;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
@@ -19,9 +21,11 @@ import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
 import 'package:tuple/tuple.dart';
 
-// TODO: Don't allow "/" in repository and remote names since we used that elsewhere
 // TODO: Fix-up error checking in modifications to C code
 // TODO: Use ffigen to autogenerate C bindings
+// TODO: Change default repository branch
+// TODO: Save email and name
+// TODO: Save commit message and set the commit message on a merge
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
@@ -380,19 +384,9 @@ class RepositoryRemoteInfo {
   String password = "";
 }
 
-class RemoteConfigurationWidget extends StatefulWidget {
+class RemoteConfigurationWidget extends StatelessWidget {
   RemoteConfigurationWidget(this.remoteInfo);
   final RepositoryRemoteInfo remoteInfo;
-  @override
-  _RepositoryLocationAndRemoteState createState() =>
-      _RepositoryLocationAndRemoteState(remoteInfo);
-}
-
-class _RepositoryLocationAndRemoteState
-    extends State<RemoteConfigurationWidget> {
-  _RepositoryLocationAndRemoteState(this.remoteInfo);
-
-  RepositoryRemoteInfo remoteInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -417,22 +411,13 @@ class _RepositoryLocationAndRemoteState
               padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
                   kDefaultPadding, kDefaultPadding),
               child: Column(children: [
-                TextFormField(
+                RemoteUserTextFormField(
                   initialValue: remoteInfo.user,
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.account_circle),
-                    labelText: 'User',
-                  ),
-                  onChanged: (text) => remoteInfo.user = text,
+                  onSaved: (text) => remoteInfo.user = text,
                 ),
-                TextFormField(
+                RemotePasswordTextFormField(
                   initialValue: remoteInfo.password,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.lock),
-                    labelText: 'Password or token',
-                  ),
-                  onChanged: (text) => remoteInfo.password = text,
+                  onSaved: (text) => remoteInfo.password = text,
                 ),
               ]))),
     ]);

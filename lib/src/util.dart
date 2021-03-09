@@ -11,7 +11,8 @@ class TextAndIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     var iconWidget = icon;
     if (icon == null) iconWidget = Icon(null);
-    return Row(children: <Widget>[iconWidget, SizedBox(width: 5), text]);
+    return Row(
+        children: <Widget>[iconWidget, SizedBox(width: kDefaultPadding), text]);
   }
 }
 
@@ -26,6 +27,101 @@ class RepositoryNameTextFormField extends StatelessWidget {
       initialValue: initialValue,
       decoration: InputDecoration(labelText: 'Repository name'),
       onSaved: onSaved,
+      validator: (text) {
+        if (text.isEmpty) return "Please enter a name";
+        if (text.contains("/")) return "The name should not use the / symbol";
+        if (text.contains("\\")) return "The name should not use the \\ symbol";
+        return null;
+      },
+    );
+  }
+}
+
+class RemoteUserTextFormField extends StatelessWidget {
+  RemoteUserTextFormField({this.initialValue, this.onSaved});
+  final String initialValue;
+  final Function(String) onSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      initialValue: initialValue,
+      decoration: InputDecoration(
+        icon: Icon(Icons.account_circle),
+        labelText: 'User',
+      ),
+      onSaved: onSaved,
+    );
+  }
+}
+
+class RemotePasswordTextFormField extends StatelessWidget {
+  RemotePasswordTextFormField({this.initialValue, this.onSaved});
+  final String initialValue;
+  final Function(String) onSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      initialValue: initialValue,
+      obscureText: true,
+      decoration: InputDecoration(
+        icon: Icon(Icons.lock),
+        labelText: 'Password or token',
+      ),
+      onSaved: onSaved,
+    );
+  }
+}
+
+class CheckboxFormField extends StatelessWidget {
+  CheckboxFormField(
+      {this.initialValue = false, this.message, this.validator, this.onSaved});
+  final bool initialValue;
+  final String message;
+  final FormFieldValidator<bool> validator;
+  final FormFieldSetter<bool> onSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<bool>(
+      initialValue: initialValue,
+      builder: (state) {
+        Widget main;
+        if (message == null) {
+          main = Checkbox(
+            value: state.value,
+            onChanged: (bool newVal) => state.didChange(newVal),
+          );
+        } else {
+          var text = state.hasError
+              ? Text(message,
+                  style: TextStyle(color: Theme.of(context).errorColor))
+              : Text(message);
+          main = Row(
+            children: <Widget>[
+              Checkbox(
+                value: state.value,
+                onChanged: (bool newVal) => state.didChange(newVal),
+              ),
+              SizedBox(width: kDefaultPadding),
+              text,
+            ],
+          );
+        }
+        if (state.hasError) {
+          main = InputDecorator(
+            child: main,
+            decoration: InputDecoration(
+                errorText: state.errorText,
+                isCollapsed: true,
+                errorBorder: InputBorder.none),
+          );
+        }
+        return main;
+      },
+      validator: validator,
+      onSaved: onSaved,
     );
   }
 }
@@ -33,26 +129,31 @@ class RepositoryNameTextFormField extends StatelessWidget {
 Widget makeLoginDialog(BuildContext context) {
   var username = "";
   var password = "";
+  bool saveLogin = false;
+  final formKey = GlobalKey<FormState>();
   return AlertDialog(
     title: Text("Login"),
-    content: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        TextField(
-            decoration: InputDecoration(
-              icon: Icon(Icons.account_circle),
-              labelText: 'User',
+    content: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            RemoteUserTextFormField(
+              initialValue: "",
+              onSaved: (val) => username = val,
             ),
-            onChanged: (val) => username = val),
-        TextField(
-            obscureText: true,
-            decoration: InputDecoration(
-              icon: Icon(Icons.lock),
-              labelText: 'Password',
+            RemotePasswordTextFormField(
+              initialValue: "",
+              onSaved: (val) => password = val,
             ),
-            onChanged: (val) => password = val),
-      ],
-    ),
+            SizedBox(height: kDefaultPadding),
+            CheckboxFormField(
+              initialValue: saveLogin,
+              message: "Remember login",
+              onSaved: (val) => saveLogin = val,
+            ),
+          ],
+        )),
     actions: <Widget>[
       TextButton(
         child: Text('Cancel'),
@@ -63,7 +164,10 @@ Widget makeLoginDialog(BuildContext context) {
       TextButton(
         child: Text('OK'),
         onPressed: () {
-          Navigator.pop(context, Tuple2(username, password));
+          if (formKey.currentState.validate()) {
+            formKey.currentState.save();
+            Navigator.pop(context, Tuple2(username, password));
+          }
         },
       ),
     ],

@@ -4,7 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'commit_view.dart';
-import 'util.dart';
+import 'util.dart'
+    show
+        GitStatusFlags,
+        GitRepositoryState,
+        TextAndIcon,
+        makeLoginDialog,
+        showProgressWhileWaitingFor,
+        retryWithAskCredentials;
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
