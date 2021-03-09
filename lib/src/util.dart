@@ -3,9 +3,31 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:libgit2/libgit2.dart' show Libgit2Exception;
 import 'package:tuple/tuple.dart';
 
-Widget TextAndIcon(Widget text, [Widget icon]) {
-  if (icon == null) icon = Icon(null);
-  return Row(children: <Widget>[icon, SizedBox(width: 5), text]);
+class TextAndIcon extends StatelessWidget {
+  TextAndIcon(this.text, [this.icon]);
+  final Widget text;
+  final Widget icon;
+  @override
+  Widget build(BuildContext context) {
+    var iconWidget = icon;
+    if (icon == null) iconWidget = Icon(null);
+    return Row(children: <Widget>[iconWidget, SizedBox(width: 5), text]);
+  }
+}
+
+class RepositoryNameTextFormField extends StatelessWidget {
+  RepositoryNameTextFormField({this.initialValue, this.onSaved});
+  final String initialValue;
+  final Function(String) onSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      initialValue: initialValue,
+      decoration: InputDecoration(labelText: 'Repository name'),
+      onSaved: onSaved,
+    );
+  }
 }
 
 Widget makeLoginDialog(BuildContext context) {

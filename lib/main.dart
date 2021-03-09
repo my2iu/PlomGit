@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:PlomGit/src/util.dart'
     show
+        RepositoryNameTextFormField,
         retryWithAskCredentials,
         PlomGitPrefs,
         kDefaultPadding,
@@ -80,7 +81,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   Future<List<Directory>> dirContents;
 
   _MyHomePageState() {
@@ -89,28 +89,6 @@ class _MyHomePageState extends State<MyHomePage> {
         .where((entry) => entry is Directory)
         .map((entry) => entry as Directory)
         .toList());
-  }
-
-  void _setCounter(int val) {
-    setState(() {
-      _counter = val;
-      dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
-          .list()
-          .where((entry) => entry is Directory)
-          .map((entry) => entry as Directory)
-          .toList());
-    });
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
   }
 
   void _newRepositoryPressed(BuildContext context) {
@@ -158,21 +136,6 @@ class _MyHomePageState extends State<MyHomePage> {
         }).then((fn) {
       if (fn != null) fn();
     });
-  }
-
-  _pressed(BuildContext context) {
-    // Libgit2.platformVersion
-    //     .then((val) => print(val))
-    //     .catchError((err) => print(err.toString()));
-
-    // var jsGit = JsForGit(null);
-    // jsGit
-    //     .clone()
-    //     .then((val) => ScaffoldMessenger.of(context)
-    //         .showSnackBar(SnackBar(content: Text('Clone successful'))))
-    //     .catchError((error) => ScaffoldMessenger.of(context)
-    //         .showSnackBar(SnackBar(content: Text('Error: ' + error))))
-    //     .whenComplete(() => print('done2'));
   }
 
   Future<Uri> _getRepositoryBaseDir() {
@@ -279,7 +242,13 @@ class _MyHomePageState extends State<MyHomePage> {
   // I should create a proper model for storing the list of repositories that
   // can then refresh different views, but I'm too lazy to implement that right now
   void _refreshRepositories() {
-    _setCounter(0);
+    setState(() {
+      dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
+          .list()
+          .where((entry) => entry is Directory)
+          .map((entry) => entry as Directory)
+          .toList());
+    });
   }
 
   Widget _buildRepositoryList(BuildContext context, AsyncSnapshot snapshot) {
@@ -324,59 +293,15 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Builder(builder: (BuildContext context) {
-          return Center(
-            // Center is a layout widget. It takes a single child and positions it
-            // in the middle of the parent.
-            child: Column(
-              // Column is also a layout widget. It takes a list of children and
-              // arranges them vertically. By default, it sizes itself to fit its
-              // children horizontally, and tries to be as tall as its parent.
-              //
-              // Invoke "debug painting" (press "p" in the console, choose the
-              // "Toggle Debug Paint" action from the Flutter Inspector in Android
-              // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-              // to see the wireframe for each widget.
-              //
-              // Column has various properties to control how it sizes itself and
-              // how it positions its children. Here we use mainAxisAlignment to
-              // center the children vertically; the main axis here is the vertical
-              // axis because Columns are vertical (the cross axis would be
-              // horizontal).
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                FutureBuilder(
-                    future: dirContents,
-                    builder: (futureContext, snapshot) {
-                      return _buildRepositoryList(futureContext, snapshot);
-                    }),
-                Text(
-                  'You have pushed the button this many times:',
-                ),
-                Text(
-                  '$_counter',
-                  style: Theme.of(context).textTheme.headline4,
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      _pressed(context);
-                    },
-                    child: Text('Test')),
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute<String>(
-                          builder: (BuildContext context) =>
-                              RepositoryLocationDialog(),
-                        ),
-                      ).then((result) {
-                        if (result == null) return;
-                        _createLocalRepository(context, result);
-                      });
-                    },
-                    child: Text('Init')),
-              ],
-            ),
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              FutureBuilder(
+                  future: dirContents,
+                  builder: (futureContext, snapshot) {
+                    return _buildRepositoryList(futureContext, snapshot);
+                  }),
+            ],
           );
         }),
         floatingActionButton: Builder(
@@ -389,17 +314,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class RepositoryLocationDialog extends StatefulWidget {
-  @override
-  _RepositoryLocationState createState() => _RepositoryLocationState();
-}
-
-class _RepositoryLocationState extends State<RepositoryLocationDialog> {
-  String repositoryName = "Test";
+class RepositoryLocationDialog extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    String repositoryName = "Test";
     return Scaffold(
         appBar: AppBar(
           title: Text('Repository Configuration'),
@@ -408,16 +328,15 @@ class _RepositoryLocationState extends State<RepositoryLocationDialog> {
           return Form(
               key: _formKey,
               child: Column(children: [
-                TextFormField(
-                  initialValue: repositoryName,
-                  decoration: InputDecoration(labelText: 'Repository name'),
-                  onChanged: (text) {
-                    repositoryName = text;
-                  },
-                ),
+                RepositoryNameTextFormField(
+                    initialValue: repositoryName,
+                    onSaved: (text) => repositoryName = text),
                 ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context, repositoryName);
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                        Navigator.pop(context, repositoryName);
+                      }
                     },
                     child: Text('Create')),
               ]));
@@ -427,6 +346,7 @@ class _RepositoryLocationState extends State<RepositoryLocationDialog> {
 
 class RepositoryLocationAndRemoteDialog extends StatelessWidget {
   final RepositoryRemoteInfo remoteInfo = RepositoryRemoteInfo();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -437,13 +357,16 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
         body: Padding(
             padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
-              RemoteConfigurationWidget(remoteInfo),
+              Form(key: _formKey, child: RemoteConfigurationWidget(remoteInfo)),
               ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(
-                        context,
-                        Tuple4(remoteInfo.url, remoteInfo.repositoryName,
-                            remoteInfo.user, remoteInfo.password));
+                    if (_formKey.currentState.validate()) {
+                      _formKey.currentState.save();
+                      Navigator.pop(
+                          context,
+                          Tuple4(remoteInfo.url, remoteInfo.repositoryName,
+                              remoteInfo.user, remoteInfo.password));
+                    }
                   },
                   child: Text('Clone')),
             ])));
@@ -469,54 +392,49 @@ class _RepositoryLocationAndRemoteState
     extends State<RemoteConfigurationWidget> {
   _RepositoryLocationAndRemoteState(this.remoteInfo);
 
-  final _formKey = GlobalKey<FormState>();
   RepositoryRemoteInfo remoteInfo;
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-        key: _formKey,
-        child: Column(children: [
-          Card(
-              child: Padding(
-                  padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
-                      kDefaultPadding, kDefaultPadding),
-                  child: Column(children: [
-                    TextFormField(
-                      initialValue: remoteInfo.repositoryName,
-                      decoration: InputDecoration(labelText: 'Repository name'),
-                      onChanged: (text) => remoteInfo.repositoryName = text,
-                    ),
-                    TextFormField(
-                      initialValue: remoteInfo.url,
-                      decoration: InputDecoration(labelText: 'Remote url'),
-                      onChanged: (text) => remoteInfo.url = text,
-                    ),
-                  ]))),
-          SizedBox(height: kDefaultPadding),
-          Card(
-              child: Padding(
-                  padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
-                      kDefaultPadding, kDefaultPadding),
-                  child: Column(children: [
-                    TextFormField(
-                      initialValue: remoteInfo.user,
-                      decoration: InputDecoration(
-                        icon: Icon(Icons.account_circle),
-                        labelText: 'User',
-                      ),
-                      onChanged: (text) => remoteInfo.user = text,
-                    ),
-                    TextFormField(
-                      initialValue: remoteInfo.password,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        icon: Icon(Icons.lock),
-                        labelText: 'Password or token',
-                      ),
-                      onChanged: (text) => remoteInfo.password = text,
-                    ),
-                  ]))),
-        ]));
+    return Column(children: [
+      Card(
+          child: Padding(
+              padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
+                  kDefaultPadding, kDefaultPadding),
+              child: Column(children: [
+                RepositoryNameTextFormField(
+                    initialValue: remoteInfo.repositoryName,
+                    onSaved: (text) => remoteInfo.repositoryName = text),
+                TextFormField(
+                  initialValue: remoteInfo.url,
+                  decoration: InputDecoration(labelText: 'Remote url'),
+                  onChanged: (text) => remoteInfo.url = text,
+                ),
+              ]))),
+      SizedBox(height: kDefaultSectionSpacing),
+      Card(
+          child: Padding(
+              padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
+                  kDefaultPadding, kDefaultPadding),
+              child: Column(children: [
+                TextFormField(
+                  initialValue: remoteInfo.user,
+                  decoration: InputDecoration(
+                    icon: Icon(Icons.account_circle),
+                    labelText: 'User',
+                  ),
+                  onChanged: (text) => remoteInfo.user = text,
+                ),
+                TextFormField(
+                  initialValue: remoteInfo.password,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    icon: Icon(Icons.lock),
+                    labelText: 'Password or token',
+                  ),
+                  onChanged: (text) => remoteInfo.password = text,
+                ),
+              ]))),
+    ]);
   }
 }
