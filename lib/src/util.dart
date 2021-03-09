@@ -126,52 +126,89 @@ class CheckboxFormField extends StatelessWidget {
   }
 }
 
-Widget makeLoginDialog(BuildContext context) {
+Widget makeLoginDialog(BuildContext context, String repository, String remote) {
   var username = "";
   var password = "";
   bool saveLogin = false;
+  Future<Tuple2<String, String>> readingRemoteData = PlomGitPrefs.instance
+      .readEncryptedUser(repository, remote)
+      .then((val) {
+        if (val != null) username = val;
+      })
+      .then((_) =>
+          PlomGitPrefs.instance.readEncryptedPassword(repository, remote))
+      .then((val) {
+        if (val != null) password = val;
+        return Tuple2(username, password);
+      });
   final formKey = GlobalKey<FormState>();
-  return AlertDialog(
-    title: Text("Login"),
-    content: Form(
-        key: formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            RemoteUserTextFormField(
-              initialValue: "",
-              onSaved: (val) => username = val,
-            ),
-            RemotePasswordTextFormField(
-              initialValue: "",
-              onSaved: (val) => password = val,
-            ),
-            SizedBox(height: kDefaultPadding),
-            CheckboxFormField(
-              initialValue: saveLogin,
-              message: "Remember login",
-              onSaved: (val) => saveLogin = val,
-            ),
-          ],
-        )),
-    actions: <Widget>[
-      TextButton(
-        child: Text('Cancel'),
-        onPressed: () {
-          Navigator.pop(context, null);
-        },
-      ),
-      TextButton(
-        child: Text('OK'),
-        onPressed: () {
-          if (formKey.currentState.validate()) {
-            formKey.currentState.save();
-            Navigator.pop(context, Tuple2(username, password));
-          }
-        },
-      ),
-    ],
-  );
+  return FutureBuilder(
+      future: readingRemoteData,
+      builder: (context, data) {
+        if (data.hasData) {
+          return AlertDialog(
+            title: Text("Login"),
+            content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    RemoteUserTextFormField(
+                      initialValue: "",
+                      onSaved: (val) => username = val,
+                    ),
+                    RemotePasswordTextFormField(
+                      initialValue: "",
+                      onSaved: (val) => password = val,
+                    ),
+                    SizedBox(height: kDefaultPadding),
+                    CheckboxFormField(
+                      initialValue: saveLogin,
+                      message: "Remember login",
+                      onSaved: (val) => saveLogin = val,
+                    ),
+                  ],
+                )),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.pop(context, null);
+                },
+              ),
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  if (formKey.currentState.validate()) {
+                    formKey.currentState.save();
+                    if (saveLogin) {
+                      PlomGitPrefs.instance
+                          .writeEncryptedUser(repository, remote, username);
+                      PlomGitPrefs.instance
+                          .writeEncryptedPassword(repository, remote, password);
+                    }
+                    Navigator.pop(context, Tuple2(username, password));
+                  }
+                },
+              ),
+            ],
+          );
+        } else {
+          print("waiting");
+          return AlertDialog(
+            title: Text("Login"),
+            content: SizedBox(width: 32, height: 32),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.pop(context, null);
+                },
+              ),
+            ],
+          );
+        }
+      });
 }
 
 Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
@@ -194,7 +231,8 @@ Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
         // Ask for a username and password and pass those values into the function
         return showDialog<Tuple2>(
                 context: context,
-                builder: (context) => makeLoginDialog(context))
+                builder: (context) =>
+                    makeLoginDialog(context, repositoryName, remoteName))
             .then((Tuple2 login) {
           if (login != null) {
             return fn(login.item1, login.item2);

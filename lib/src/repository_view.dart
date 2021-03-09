@@ -207,38 +207,6 @@ class _RepositoryViewState extends State<RepositoryView> {
             });
             entries.add(PopupMenuItem(
                 value: () {
-                  GitIsolate.instance.status(repositoryDir).then((result) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Status successful')));
-                  }).catchError((error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: ' + error.toString())));
-                  });
-                },
-                child: Text('Test status')));
-            entries.add(PopupMenuItem(
-                value: () {
-                  File(repositoryDir + '/test.txt').writeAsString("hello");
-                },
-                child: Text('Test make file')));
-            entries.add(PopupMenuItem(
-                value: () {
-                  showDialog(
-                          context: context,
-                          builder: (context) => makeLoginDialog(context))
-                      .then((result) {
-                    print(result);
-                  });
-                },
-                child: Text('Test dialog')));
-            entries.add(PopupMenuItem(
-                value: () {
-                  showProgressWhileWaitingFor(
-                      context, Future.delayed(Duration(seconds: 3)));
-                },
-                child: Text('Test progress')));
-            entries.add(PopupMenuItem(
-                value: () {
                   _refresh();
                 },
                 child: TextAndIcon(

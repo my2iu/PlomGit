@@ -26,6 +26,8 @@ import 'package:tuple/tuple.dart';
 // TODO: Change default repository branch
 // TODO: Save email and name
 // TODO: Save commit message and set the commit message on a merge
+// TODO: add remote
+// TODO: switch upstream of current branch
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
