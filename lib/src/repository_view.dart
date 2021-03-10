@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:libgit2/libgit2.dart';
 import 'package:path/path.dart' as path;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'commit_view.dart';
@@ -9,6 +10,7 @@ import 'util.dart'
         GitStatusFlags,
         GitRepositoryState,
         TextAndIcon,
+        PlomGitPrefs,
         makeLoginDialog,
         showProgressWhileWaitingFor,
         retryWithAskCredentials;
@@ -186,12 +188,30 @@ class _RepositoryViewState extends State<RepositoryView> {
                                   repositoryDir, remote, username, password),
                           context)
                       .then((result) {
-                    if (result != null)
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(result)));
-                    else
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Merge successful")));
+                    String message;
+                    switch (result) {
+                      case MergeStatus.FAST_FORWARD:
+                        message = "Merge fast-forward";
+                        break;
+                      case MergeStatus.MERGE_FAILED:
+                        message = "Cannot merge";
+                        break;
+                      case MergeStatus.NORMAL_MERGE:
+                        message = "Merge complete, please commit";
+                        break;
+                      case MergeStatus.NO_HEAD:
+                        message = "No HEAD commit to merge";
+                        break;
+                      case MergeStatus.UP_TO_DATE:
+                        message = "Merge already up-to-date";
+                        break;
+                    }
+                    if (result == MergeStatus.NORMAL_MERGE) {
+                      PlomGitPrefs.instance.writeRepositoryCommitMessage(
+                          repositoryName, "Merge");
+                    }
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(message)));
                     _refresh();
                   }).catchError((error) {
                     ScaffoldMessenger.of(context).showSnackBar(

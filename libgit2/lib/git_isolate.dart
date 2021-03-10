@@ -108,9 +108,10 @@ class GitIsolate {
     return _sendRequest(RequestType.commit, [dir, message, name, email]);
   }
 
-  Future<dynamic> mergeWithUpstream(String dir, String remote,
+  Future<MergeStatus> mergeWithUpstream(String dir, String remote,
       [String username = "", String password = ""]) {
-    return _sendRequest(RequestType.merge, [dir, remote, username, password]);
+    return _sendRequest(RequestType.merge, [dir, remote, username, password])
+        .then((mergeStatus) => MergeStatus.values[mergeStatus]);
   }
 
   Future<dynamic> revertFile(String dir, String file) {
@@ -186,7 +187,8 @@ class GitIsolate {
             _isolateResponse(
                 channel,
                 Libgit2.mergeWithUpstream(
-                    event[1], event[2], event[3], event[4]));
+                        event[1], event[2], event[3], event[4])
+                    .index);
             break;
           case RequestType.revertFile:
             Libgit2.revertFile(event[1], event[2]);

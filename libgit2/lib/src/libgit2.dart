@@ -471,7 +471,7 @@ class Libgit2 {
     }
   }
 
-  static String mergeWithUpstream(
+  static MergeStatus mergeWithUpstream(
       String dir, String remoteStr, String username, String password) {
     setupCredentials(username, password);
     Pointer<Pointer<git_annotated_commit>> upstreamToMerge =
@@ -497,9 +497,9 @@ class Libgit2 {
             upstreamToMerge.elementAt(0), repo, upstreamRef.value));
         int analysisResults = _mergeAnalysis(repo, upstreamToMerge);
         if ((analysisResults & 2) != 0) {
-          return "Merge already up-to-date";
+          return MergeStatus.UP_TO_DATE;
         } else if ((analysisResults & (8)) != 0) {
-          return "No HEAD commit to merge";
+          return MergeStatus.NO_HEAD;
         } else if ((analysisResults & (4)) != 0) {
           Pointer<git_oid> upstreamCommitId =
               git.annotated_commit_id(upstreamToMerge[0]);
@@ -526,7 +526,7 @@ class Libgit2 {
             // Move HEAD
             _checkErrors(git.reference_set_target(
                 newHeadRef, headRef.value, upstreamCommitId, nullptr));
-            return "Merge fast-forward";
+            return MergeStatus.FAST_FORWARD;
           } finally {
             calloc.free(checkoutOptions);
             if (upstreamCommit.value != nullptr)
@@ -552,13 +552,13 @@ class Libgit2 {
             _checkErrors(git.merge(
                 repo, upstreamToMerge, 1, mergeOptions, checkoutOptions));
 
-            return "Merge complete, please commit";
+            return MergeStatus.NORMAL_MERGE;
           } finally {
             calloc.free(checkoutOptions);
             calloc.free(mergeOptions);
           }
         }
-        return "Cannot merge";
+        return MergeStatus.MERGE_FAILED;
       });
     } finally {
       if (upstreamToMerge.value != nullptr)
@@ -631,6 +631,14 @@ class Libgit2 {
       calloc.free(upstreamDirectRef);
     }
   }
+}
+
+enum MergeStatus {
+  UP_TO_DATE, // "Merge already up-to-date"
+  NO_HEAD, // "No HEAD commit to merge"
+  FAST_FORWARD, // "Merge fast-forward"
+  NORMAL_MERGE, // "Merge complete, please commit"
+  MERGE_FAILED, // "Cannot merge"
 }
 
 /// Packages up Libgit2 error code and error message in a single class
