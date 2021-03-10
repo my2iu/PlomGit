@@ -37,12 +37,17 @@ class Libgit2 {
         calloc<Pointer<git_repository>>();
     repository.value = nullptr;
     var dirPtr = dir.toNativeUtf8();
+    var mainPtr = "refs/heads/main".toNativeUtf8();
     try {
-      _checkErrors(git.repositoryInit(repository, dirPtr, 0));
+      _checkErrors(git.repository_init(repository, dirPtr, 0));
+      // Using repository_init_ext doesn't seem to change the branch for head
+      // so I'm just manually setting it to main
+      _checkErrors(git.repository_set_head(repository.value, mainPtr));
     } finally {
       calloc.free(dirPtr);
-      if (repository.value != nullptr) git.repositoryFree(repository.value);
+      if (repository.value != nullptr) git.repository_free(repository.value);
       calloc.free(repository);
+      calloc.free(mainPtr);
     }
   }
 
@@ -66,7 +71,7 @@ class Libgit2 {
     } finally {
       calloc.free(dirPtr);
       calloc.free(urlPtr);
-      if (repository.value != nullptr) git.repositoryFree(repository.value);
+      if (repository.value != nullptr) git.repository_free(repository.value);
       calloc.free(repository);
       calloc.free(cloneOptions);
     }
@@ -79,11 +84,11 @@ class Libgit2 {
     repository.value = nullptr;
     var dirPtr = dir.toNativeUtf8();
     try {
-      _checkErrors(git.repositoryOpen(repository, dirPtr));
+      _checkErrors(git.repository_open(repository, dirPtr));
       return fn(repository.value);
     } finally {
       calloc.free(dirPtr);
-      if (repository.value != nullptr) git.repositoryFree(repository.value);
+      if (repository.value != nullptr) git.repository_free(repository.value);
       calloc.free(repository);
     }
   }

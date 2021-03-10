@@ -23,7 +23,6 @@ import 'package:tuple/tuple.dart';
 
 // TODO: Fix-up error checking in modifications to C code
 // TODO: Use ffigen to autogenerate C bindings
-// TODO: Change default repository branch
 // TODO: Save email and name
 // TODO: Save commit message and set the commit message on a merge
 // TODO: add remote

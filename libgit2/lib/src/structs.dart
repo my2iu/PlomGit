@@ -45,6 +45,9 @@ class git_reference extends Struct {}
 // Opaque type
 class git_object extends Struct {}
 
+// Opaque type
+class git_repository_init_options extends Struct {}
+
 typedef git_credentials_acquire_cb = Int32 Function(
     Pointer<Pointer<git_credential>> out,
     Pointer<Utf8> url,
