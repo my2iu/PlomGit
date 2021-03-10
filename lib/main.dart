@@ -26,6 +26,7 @@ import 'package:tuple/tuple.dart';
 // TODO: Save email and name
 // TODO: Save commit message and set the commit message on a merge
 // TODO: add remote
+// TODO: make sure remote name has no / or \
 // TODO: switch upstream of current branch
 
 void main() {
@@ -256,13 +257,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _buildRepositoryList(BuildContext context, AsyncSnapshot snapshot) {
+  Widget _buildRepositoryList(
+      BuildContext context, AsyncSnapshot<List<Directory>> snapshot) {
     if (snapshot.hasData) {
       return Expanded(
           child: ListView.builder(
-              itemCount: snapshot.data.length,
+              itemCount: snapshot.data!.length,
               itemBuilder: (itemBuilderContext, index) {
-                var name = path.basename(snapshot.data[index].path);
+                var name = path.basename(snapshot.data![index].path);
                 return ListTile(
                     title: Text(name),
                     trailing: buildRepositoryOptionsPopupButton(name),
@@ -292,30 +294,27 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title!),
-        ),
-        body: Builder(builder: (BuildContext context) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              FutureBuilder(
-                  future: dirContents,
-                  builder: (futureContext, snapshot) {
-                    return _buildRepositoryList(futureContext, snapshot);
-                  }),
-            ],
-          );
-        }),
-        floatingActionButton: Builder(
-          builder: (BuildContext context) => FloatingActionButton(
-            onPressed: () => _newRepositoryPressed(context),
-            tooltip: 'Increment',
-            child: Icon(Icons.add),
-          ),
-        ));
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title!),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FutureBuilder<List<Directory>>(
+              future: dirContents,
+              builder: (futureContext, snapshot) {
+                return _buildRepositoryList(futureContext, snapshot);
+              }),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _newRepositoryPressed(context),
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ),
+    );
   }
 }
 
@@ -329,23 +328,21 @@ class RepositoryLocationDialog extends StatelessWidget {
         appBar: AppBar(
           title: Text('Repository Configuration'),
         ),
-        body: Builder(builder: (BuildContext context) {
-          return Form(
-              key: _formKey,
-              child: Column(children: [
-                RepositoryNameTextFormField(
-                    initialValue: repositoryName,
-                    onSaved: (text) => repositoryName = text!),
-                ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        Navigator.pop(context, repositoryName);
-                      }
-                    },
-                    child: Text('Create')),
-              ]));
-        }));
+        body: Form(
+            key: _formKey,
+            child: Column(children: [
+              RepositoryNameTextFormField(
+                  initialValue: repositoryName,
+                  onSaved: (text) => repositoryName = text!),
+              ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      Navigator.pop(context, repositoryName);
+                    }
+                  },
+                  child: Text('Create')),
+            ])));
   }
 }
 

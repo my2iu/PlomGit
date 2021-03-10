@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:libgit2/libgit2.dart' show Libgit2Exception;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 
 class TextAndIcon extends StatelessWidget {
@@ -142,10 +143,10 @@ Widget makeLoginDialog(BuildContext context, String repository, String remote) {
         return Tuple2(username, password);
       });
   final formKey = GlobalKey<FormState>();
-  return FutureBuilder(
+  return FutureBuilder<Tuple2<String, String>>(
       future: readingRemoteData,
-      builder: (context, data) {
-        if (data.hasData) {
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
           return AlertDialog(
             title: Text("Login"),
             content: Form(
@@ -323,6 +324,8 @@ class PlomGitPrefs {
   static final PlomGitPrefs instance = PlomGitPrefs._create();
 
   late FlutterSecureStorage storage;
+  late Future<SharedPreferences> sharedPreferences =
+      SharedPreferences.getInstance();
 
   PlomGitPrefs._create() {
     storage = new FlutterSecureStorage();
@@ -330,31 +333,74 @@ class PlomGitPrefs {
 
   Future<void> writeEncryptedUser(
       String repository, String remote, String user) {
-    return storage.write(key: "repo/$repository/$remote/user", value: user);
+    return storage.write(
+        key: "repo/$repository/remote/$remote/user", value: user);
   }
 
   Future<void> writeEncryptedPassword(
       String repository, String remote, String password) {
     return storage.write(
-        key: "repo/$repository/$remote/password", value: password);
+        key: "repo/$repository/remote/$remote/password", value: password);
   }
 
   Future<String?> readEncryptedUser(String repository, String remote) {
-    return storage.read(key: "repo/$repository/$remote/user");
+    return storage.read(key: "repo/$repository/remote/$remote/user");
   }
 
   Future<String?> readEncryptedPassword(String repository, String remote) {
-    return storage.read(key: "repo/$repository/$remote/password");
+    return storage.read(key: "repo/$repository/remote/$remote/password");
+  }
+
+  void writeLastAuthor(String repository, String name, String email) {
+    sharedPreferences.then((prefs) {
+      prefs.setStringList("repo/$repository/author", [name, email]);
+      prefs.setStringList("global/author.last", [name, email]);
+    });
+  }
+
+  Future<List<String>?> _readSuggestedAuthor(String repository) {
+    return sharedPreferences.then((prefs) =>
+        prefs.getStringList("repo/$repository/author") ??
+        prefs.getStringList("global/author.last"));
+  }
+
+  Future<String> readSuggestedAuthorName(String repository) {
+    return _readSuggestedAuthor(repository).then((author) => author?[0] ?? "");
+  }
+
+  Future<String> readSuggestedAuthorEmail(String repository) {
+    return _readSuggestedAuthor(repository).then((author) => author?[1] ?? "");
+  }
+
+  Future<bool> writeRepositoryCommitMessage(
+      String repository, String commitMessage) {
+    return sharedPreferences.then((prefs) =>
+        prefs.setString("repo/$repository/commit.msg", commitMessage));
+  }
+
+  Future<String> readRepositoryCommitMessage(String repository) {
+    return sharedPreferences
+        .then((prefs) => prefs.getString("repo/$repository/commit.msg") ?? "");
   }
 
   Future<void> eraseRepositoryPreferences(String repository) {
-    return storage.readAll().then((map) {
-      map.keys.forEach((key) {
-        if (key.startsWith("repo/$repository/")) {
-          storage.delete(key: key);
-        }
-      });
-    });
+    return storage
+        .readAll()
+        .then((map) {
+          map.keys.forEach((key) {
+            if (key.startsWith("repo/$repository/")) {
+              storage.delete(key: key);
+            }
+          });
+        })
+        .then((_) => sharedPreferences)
+        .then((prefs) {
+          prefs.getKeys().forEach((key) {
+            if (key.startsWith("repo/$repository/")) {
+              prefs.remove(key);
+            }
+          });
+        });
   }
 }
 

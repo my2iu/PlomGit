@@ -23,32 +23,29 @@ class CommitPrepareChangesView extends StatelessWidget {
             Text(repositoryName, style: appBarTextTheme.caption)
           ]),
         ),
-        body: Builder(
-            builder: (BuildContext context) => Column(children: [
-                  Expanded(
-                    child: _CommitFilesView(repositoryName, repositoryUri),
-                  ),
-                  Row(
-                    children: <Widget>[
-                      ElevatedButton(
-                          child: Text('Next'),
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute<String>(
-                                    builder: (BuildContext context) =>
-                                        CommitFinalView(
-                                            repositoryName,
-                                            repositoryUri,
-                                            isMerged))).then((result) {
-                              if (result != null) {
-                                Navigator.pop(context, result);
-                              }
-                            });
-                          })
-                    ],
-                  )
-                ])));
+        body: Column(children: [
+          Expanded(
+            child: _CommitFilesView(repositoryName, repositoryUri),
+          ),
+          Row(
+            children: <Widget>[
+              ElevatedButton(
+                  child: Text('Next'),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute<String>(
+                            builder: (BuildContext context) => CommitFinalView(
+                                repositoryName, repositoryUri, isMerged))).then(
+                        (result) {
+                      if (result != null) {
+                        Navigator.pop(context, result);
+                      }
+                    });
+                  })
+            ],
+          )
+        ]));
   }
 }
 
@@ -59,13 +56,59 @@ class _MessageAndSignatureData {
 }
 
 class CommitFinalView extends StatelessWidget {
-  CommitFinalView(this.repositoryName, this.repositoryUri, this.isMerged);
+  CommitFinalView(this.repositoryName, this.repositoryUri, this.isMerge) {
+    msgSig = _MessageAndSignatureData();
+    initialAuthorName =
+        PlomGitPrefs.instance.readSuggestedAuthorName(repositoryName);
+    initialAuthorEmail =
+        PlomGitPrefs.instance.readSuggestedAuthorEmail(repositoryName);
+    initialCommitMsg =
+        PlomGitPrefs.instance.readRepositoryCommitMessage(repositoryName);
+    loadInitialCommitInfo =
+        Future.wait([initialCommitMsg, initialAuthorName, initialAuthorEmail]);
+  }
 
   final String repositoryName;
   final Uri repositoryUri;
   String get repositoryDir => repositoryUri.toFilePath();
-  final _MessageAndSignatureData msgSig = _MessageAndSignatureData();
-  final bool isMerged;
+  late final _MessageAndSignatureData msgSig;
+  final bool isMerge;
+  final _formKey = GlobalKey<FormState>();
+  late final Future<String> initialAuthorName;
+  late final Future<String> initialAuthorEmail;
+  late final Future<String> initialCommitMsg;
+  late final Future<List<String>> loadInitialCommitInfo;
+
+  void doCommit(context) {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      GitIsolate.instance
+          .commit(repositoryDir, msgSig.message, msgSig.name, msgSig.email)
+          .then((_) {
+        saveCommitInfo(true);
+        Navigator.pop(context, "Commit successful");
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ' + error.toString())));
+      });
+    }
+  }
+
+  void saveCommitInfo(bool isCommit) {
+    if (isCommit) {
+      PlomGitPrefs.instance.writeRepositoryCommitMessage(repositoryName, "");
+    } else {
+      _formKey.currentState!.save();
+      PlomGitPrefs.instance
+          .writeRepositoryCommitMessage(repositoryName, msgSig.message);
+    }
+    loadInitialCommitInfo.then((info) {
+      if (msgSig.email != info[2] || msgSig.name != info[1]) {
+        PlomGitPrefs.instance
+            .writeLastAuthor(repositoryName, msgSig.name, msgSig.email);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,38 +116,44 @@ class CommitFinalView extends StatelessWidget {
         Theme.of(context).primaryTextTheme;
 
     return Scaffold(
-        appBar: AppBar(
-          title:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            isMerged ? Text('Merge Message') : Text('Commit Message'),
-            Text(repositoryName, style: appBarTextTheme.caption)
-          ]),
-        ),
-        body: Builder(
-            builder: (BuildContext context) => Column(children: [
-                  Expanded(
-                      child: _CommitMessageView(
-                          repositoryName, repositoryUri, msgSig)),
-                  Row(
-                    children: <Widget>[
-                      ElevatedButton(
-                          child: Text('Commit'),
-                          onPressed: () {
-                            GitIsolate.instance
-                                .commit(repositoryDir, msgSig.message,
-                                    msgSig.name, msgSig.email)
-                                .then((_) {
-                              Navigator.pop(context, "Commit successful");
-                            }).catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content:
-                                          Text('Error: ' + error.toString())));
-                            });
-                          })
-                    ],
-                  )
-                ])));
+      appBar: AppBar(
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          isMerge ? Text('Merge Message') : Text('Commit Message'),
+          Text(repositoryName, style: appBarTextTheme.caption)
+        ]),
+      ),
+      body: Form(
+          key: _formKey,
+          onWillPop: () {
+            saveCommitInfo(false);
+            return Future.value(true);
+          },
+          child: Column(children: [
+            Expanded(
+              child: FutureBuilder<List<String>>(
+                  future: loadInitialCommitInfo,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      msgSig.message = snapshot.data![0];
+                      msgSig.name = snapshot.data![1];
+                      msgSig.email = snapshot.data![2];
+                      return _CommitMessageView(msgSig);
+                    } else {
+                      return Text('Loading');
+                    }
+                  }),
+            ),
+            Row(
+              children: <Widget>[
+                ElevatedButton(
+                    child: Text('Commit'),
+                    onPressed: () {
+                      doCommit(context);
+                    })
+              ],
+            )
+          ])),
+    );
   }
 }
 
@@ -274,25 +323,10 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
   }
 }
 
-class _CommitMessageView extends StatefulWidget {
-  _CommitMessageView(this.repositoryName, this.repositoryUri, this.msgSig);
+class _CommitMessageView extends StatelessWidget {
+  _CommitMessageView(this.msgSig);
 
-  final String repositoryName;
-  final Uri repositoryUri;
   final _MessageAndSignatureData msgSig;
-
-  @override
-  _CommitMessageViewState createState() =>
-      _CommitMessageViewState(repositoryName, repositoryUri, msgSig);
-}
-
-class _CommitMessageViewState extends State<_CommitMessageView> {
-  _CommitMessageViewState(this.repositoryName, this.repositoryUri, this.msgSig);
-
-  String repositoryName;
-  Uri repositoryUri;
-  String get repositoryDir => repositoryUri.toFilePath();
-  _MessageAndSignatureData msgSig;
 
   @override
   Widget build(BuildContext context) {
@@ -302,50 +336,88 @@ class _CommitMessageViewState extends State<_CommitMessageView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Expanded(
-                  child: Card(
-                      child: Padding(
-                          padding: EdgeInsets.all(kDefaultPadding),
-                          child: TextFormField(
-                              // controller: TextEditingController(text: message),
-                              // minLines: 3,
-                              maxLines: null,
-                              expands: true,
-                              keyboardType: TextInputType.multiline,
-                              initialValue: msgSig.message,
-                              textCapitalization: TextCapitalization.sentences,
-                              decoration: InputDecoration(
-                                // border: OutlineInputBorder(),
-                                icon: Icon(Icons.notes),
-                                // filled: true,
-                                labelText: 'Commit message',
-                              ),
-                              onChanged: (val) => msgSig.message = val)))),
+                child: _CommitMessageCard(
+                  initialValue: msgSig.message,
+                  onSaved: (val) => msgSig.message = val!,
+                ),
+              ),
               SizedBox(height: kDefaultPadding),
-              Card(
-                  child: Padding(
-                      padding: EdgeInsets.all(kDefaultPadding),
-                      child: Column(children: [
-                        TextFormField(
-                            decoration: InputDecoration(
-                              // border: OutlineInputBorder(),
-                              icon: Icon(Icons.person),
-                              // filled: true,
-                              labelText: 'Name',
-                            ),
-                            textCapitalization: TextCapitalization.words,
-                            initialValue: msgSig.name,
-                            onChanged: (val) => msgSig.name = val),
-                        TextFormField(
-                            textCapitalization: TextCapitalization.none,
-                            decoration: InputDecoration(
-                              // border: OutlineInputBorder(),
-                              icon: Icon(Icons.email),
-                              // filled: true,
-                              labelText: 'Email',
-                            ),
-                            initialValue: msgSig.email,
-                            onChanged: (val) => msgSig.email = val)
-                      ]))),
+              _CommitAuthorCard(
+                initialName: msgSig.name,
+                initialEmail: msgSig.email,
+                onNameSaved: (val) => msgSig.name = val!,
+                onEmailSaved: (val) => msgSig.email = val!,
+              ),
             ]));
+  }
+}
+
+class _CommitMessageCard extends StatelessWidget {
+  _CommitMessageCard({this.initialValue, this.onSaved});
+  final String? initialValue;
+  final Function(String?)? onSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+        child: Padding(
+            padding: EdgeInsets.all(kDefaultPadding),
+            child: TextFormField(
+                // controller: TextEditingController(text: message),
+                // minLines: 3,
+                maxLines: null,
+                expands: true,
+                keyboardType: TextInputType.multiline,
+                initialValue: initialValue,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  // border: OutlineInputBorder(),
+                  icon: Icon(Icons.notes),
+                  // filled: true,
+                  labelText: 'Commit message',
+                ),
+                onSaved: onSaved)));
+  }
+}
+
+class _CommitAuthorCard extends StatelessWidget {
+  _CommitAuthorCard(
+      {this.initialName,
+      this.initialEmail,
+      this.onNameSaved,
+      this.onEmailSaved});
+  final String? initialName;
+  final String? initialEmail;
+  final Function(String?)? onNameSaved;
+  final Function(String?)? onEmailSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+        child: Padding(
+            padding: EdgeInsets.all(kDefaultPadding),
+            child: Column(children: [
+              TextFormField(
+                decoration: InputDecoration(
+                  // border: OutlineInputBorder(),
+                  icon: Icon(Icons.person),
+                  // filled: true,
+                  labelText: 'Name',
+                ),
+                textCapitalization: TextCapitalization.words,
+                initialValue: initialName,
+                onSaved: onNameSaved,
+              ),
+              TextFormField(
+                  textCapitalization: TextCapitalization.none,
+                  decoration: InputDecoration(
+                    // border: OutlineInputBorder(),
+                    icon: Icon(Icons.email),
+                    // filled: true,
+                    labelText: 'Email',
+                  ),
+                  initialValue: initialEmail,
+                  onSaved: onEmailSaved)
+            ])));
   }
 }

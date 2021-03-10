@@ -246,7 +246,7 @@ class _RepositoryViewState extends State<RepositoryView> {
     if (isDir) fname += '/';
     var relativePath = path.relative(entry.path, from: repositoryDir);
     if (isDir) relativePath += '/';
-    var icon = FutureBuilder(
+    var icon = FutureBuilder<Map<String, GitStatusFlags>>(
         future: gitStatus,
         builder: (BuildContext context,
             AsyncSnapshot<Map<String, GitStatusFlags>> snapshot) {
@@ -378,7 +378,7 @@ class _RepositoryViewState extends State<RepositoryView> {
           title: title,
           actions: appBarActions,
         ),
-        body: FutureBuilder(
+        body: FutureBuilder<List<FileSystemEntity>>(
             future: dirContents,
             builder: (BuildContext context,
                 AsyncSnapshot<List<FileSystemEntity>> snapshot) {

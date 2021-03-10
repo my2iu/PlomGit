@@ -55,6 +55,9 @@ dependencies:
   # To hold passwords for connecting to remotes
   flutter_secure_storage: ^4.1.0
   
+  # Lock to version 2.0.0 since higher versions have concurrency problems
+  shared_preferences: 2.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
