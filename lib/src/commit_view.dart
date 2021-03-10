@@ -127,7 +127,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
   String repositoryName;
   Uri repositoryUri;
   String get repositoryDir => repositoryUri.toFilePath();
-  Future<dynamic> gitStatus;
+  late Future<dynamic> gitStatus;
 
   void _refresh() {
     setState(() {
@@ -227,7 +227,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                                 builder: (context) => _makeConfirmDialog(
                                     "Revert", "Revert changes?", "Revert"))
                             .then((response) {
-                          if (response) {
+                          if (response ?? false) {
                             GitIsolate.instance
                                 .revertFile(repositoryDir, unstaged[index])
                                 .then((result) => _refresh())

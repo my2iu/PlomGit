@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -80,14 +80,14 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
+  final String? title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<List<Directory>> dirContents;
+  late Future<List<Directory>> dirContents;
 
   _MyHomePageState() {
     dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
@@ -148,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var repositoryPath;
     if (UniversalPlatform.isAndroid) {
       repositoryPath = getExternalStorageDirectory().then((dir) {
-        var uri = dir.uri;
+        var uri = dir!.uri;
         return uri.replace(path: uri.path + 'repositories/');
       });
     } else {
@@ -296,7 +296,7 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
+          title: Text(widget.title!),
         ),
         body: Builder(builder: (BuildContext context) {
           return Column(
@@ -336,11 +336,11 @@ class RepositoryLocationDialog extends StatelessWidget {
               child: Column(children: [
                 RepositoryNameTextFormField(
                     initialValue: repositoryName,
-                    onSaved: (text) => repositoryName = text),
+                    onSaved: (text) => repositoryName = text!),
                 ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
                         Navigator.pop(context, repositoryName);
                       }
                     },
@@ -366,8 +366,8 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
               Form(key: _formKey, child: RemoteConfigurationWidget(remoteInfo)),
               ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      _formKey.currentState.save();
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
                       Navigator.pop(
                           context,
                           Tuple4(remoteInfo.url, remoteInfo.repositoryName,
@@ -400,7 +400,7 @@ class RemoteConfigurationWidget extends StatelessWidget {
               child: Column(children: [
                 RepositoryNameTextFormField(
                     initialValue: remoteInfo.repositoryName,
-                    onSaved: (text) => remoteInfo.repositoryName = text),
+                    onSaved: (text) => remoteInfo.repositoryName = text!),
                 TextFormField(
                   initialValue: remoteInfo.url,
                   decoration: InputDecoration(labelText: 'Remote url'),
@@ -415,11 +415,11 @@ class RemoteConfigurationWidget extends StatelessWidget {
               child: Column(children: [
                 RemoteUserTextFormField(
                   initialValue: remoteInfo.user,
-                  onSaved: (text) => remoteInfo.user = text,
+                  onSaved: (text) => remoteInfo.user = text!,
                 ),
                 RemotePasswordTextFormField(
                   initialValue: remoteInfo.password,
-                  onSaved: (text) => remoteInfo.password = text,
+                  onSaved: (text) => remoteInfo.password = text!,
                 ),
               ]))),
     ]);

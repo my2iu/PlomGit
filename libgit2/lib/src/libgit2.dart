@@ -135,11 +135,10 @@ class Libgit2 {
                       Pointer<NativeType>)>>("git_clone")
           .asFunction();
 
-  static final int Function(Pointer<git_strarray>) _strArrayDispose =
-      nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<git_strarray>)>>(
-              "git_strarray_dispose")
-          .asFunction();
+  static final int Function(Pointer<git_strarray>) _strArrayDispose = nativeGit2
+      .lookup<NativeFunction<Int32 Function(Pointer<git_strarray>)>>(
+          "git_strarray_dispose")
+      .asFunction();
 
   static final int Function(Pointer<git_strarray>, Pointer<NativeType>)
       _remoteList = nativeGit2
@@ -554,8 +553,8 @@ class Libgit2 {
               "git_signature_free")
           .asFunction();
 
-  static final int Function(Pointer<git_oid>, Pointer<git_oid>)
-      _git_oid_cpy = nativeGit2
+  static final int Function(Pointer<git_oid>, Pointer<git_oid>) _git_oid_cpy =
+      nativeGit2
           .lookup<
               NativeFunction<
                   Int32 Function(
@@ -765,7 +764,7 @@ class Libgit2 {
     try {
       return _withRepository(dir, (repo) {
         _checkErrors(_remoteList(remotesStrings, repo));
-        List<String> remotes = List();
+        List<String> remotes = [];
         for (int n = 0; n < remotesStrings.ref.count; n++)
           remotes.add(remotesStrings.ref.strings[n].toDartString());
         _strArrayDispose(remotesStrings);
@@ -954,7 +953,7 @@ class Libgit2 {
   // Since Dart is single-threaded, we can only have one libgit2 call
   // in-flight at once, so it's safe to store data needed for callbacks
   // in static variables
-  static List<Pointer<git_oid> >? mergeHeadsFromCallback;
+  static List<Pointer<git_oid>>? mergeHeadsFromCallback;
   static int mergeHeadsCallback(
       Pointer<git_oid> oid, Pointer<NativeType> payload) {
     Pointer<git_oid> newOid = calloc<git_oid>();

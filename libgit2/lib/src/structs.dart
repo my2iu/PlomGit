@@ -5,7 +5,7 @@ class git_error extends Struct {
   external Pointer<Utf8> message;
 
   @Int32()
-  int klass;
+  external int klass;
 }
 
 class git_strarray extends Struct {
@@ -116,7 +116,7 @@ class git_diff_delta extends Struct {
   @Int32()
   external int old_file_id_2;
 
-  Pointer<Utf8> old_file_path;
+  external Pointer<Utf8> old_file_path;
 
   @Int64()
   external int old_file_size;
@@ -138,7 +138,7 @@ class git_diff_delta extends Struct {
   @Int32()
   external int new_file_id_2;
 
-  Pointer<Utf8> new_file_path;
+  external Pointer<Utf8> new_file_path;
 
   @Int64()
   external int new_file_size;
@@ -155,10 +155,10 @@ class git_diff_delta extends Struct {
 
 class git_status_entry extends Struct {
   @Int32()
-  int status;
+  external int status;
 
-  Pointer<git_diff_delta> head_to_index;
-  Pointer<git_diff_delta> index_to_workdir;
+  external Pointer<git_diff_delta> head_to_index;
+  external Pointer<git_diff_delta> index_to_workdir;
 
   // GIT_STATUS_CURRENT = 0,
 

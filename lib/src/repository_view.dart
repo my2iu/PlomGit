@@ -31,14 +31,14 @@ class _RepositoryViewState extends State<RepositoryView> {
   final Uri repositoryUri;
   final String _path;
   String get repositoryDir => repositoryUri.toFilePath();
-  Future<List<FileSystemEntity>> dirContents;
-  Future<Map<String, GitStatusFlags>> gitStatus;
-  Future<GitRepositoryState> repoStateFuture;
+  late Future<List<FileSystemEntity>> dirContents;
+  late Future<Map<String, GitStatusFlags>> gitStatus;
+  late Future<GitRepositoryState> repoStateFuture;
 
-  List<String> remoteList;
-  GitRepositoryState repoState;
-  int ahead;
-  int behind;
+  List<String> remoteList = [];
+  GitRepositoryState? repoState;
+  int? ahead;
+  int? behind;
 
   _RepositoryViewState(this.repositoryName, this.repositoryUri, this._path) {
     _loadRepositoryInfo();
@@ -59,9 +59,6 @@ class _RepositoryViewState extends State<RepositoryView> {
     gitStatus = dirContents
         .then((_) => GitIsolate.instance.status(repositoryDir))
         .then((entries) => _processGitStatusEntries(entries));
-    GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
-      remoteList = remotes;
-    });
     repoStateFuture = gitStatus
         .catchError((err) {
           // Ignore errors
@@ -85,6 +82,9 @@ class _RepositoryViewState extends State<RepositoryView> {
             behind = diffList[1];
           });
         });
+    GitIsolate.instance.listRemotes(repositoryDir).then((remotes) {
+      remoteList = remotes;
+    });
   }
 
   void _refresh() {
@@ -106,9 +106,8 @@ class _RepositoryViewState extends State<RepositoryView> {
       String parentPath = "";
       parents.forEach((dirname) {
         parentPath += dirname + '/';
-        if (!statusMap.containsKey(parentPath))
-          statusMap[parentPath] = GitStatusFlags();
-        GitStatusFlags parentFlags = statusMap[parentPath];
+        GitStatusFlags parentFlags =
+            statusMap.putIfAbsent(parentPath, () => GitStatusFlags());
         if (flags.isStaged)
           parentFlags.dirHasStagedModifications = true;
         else if (flags.isNew || flags.isModified || flags.isDeleted)
@@ -121,9 +120,9 @@ class _RepositoryViewState extends State<RepositoryView> {
 
   Widget buildActionsPopupMenu(BuildContext context) {
     return PopupMenuButton(
-        onSelected: (fn) => fn(),
+        onSelected: (dynamic fn) => fn(),
         itemBuilder: (BuildContext context) {
-          List<PopupMenuEntry> entries = List();
+          List<PopupMenuEntry> entries = [];
           if (remoteList != null) {
             remoteList.forEach((remote) {
               entries.add(PopupMenuItem(
@@ -252,8 +251,8 @@ class _RepositoryViewState extends State<RepositoryView> {
         builder: (BuildContext context,
             AsyncSnapshot<Map<String, GitStatusFlags>> snapshot) {
           if (snapshot.hasData) {
-            if (snapshot.data.containsKey(relativePath)) {
-              var statusFlags = snapshot.data[relativePath];
+            if (snapshot.data!.containsKey(relativePath)) {
+              GitStatusFlags statusFlags = snapshot.data![relativePath]!;
               if (!isDir) {
                 if (statusFlags.isNew) {
                   if (statusFlags.isStaged)
@@ -329,17 +328,17 @@ class _RepositoryViewState extends State<RepositoryView> {
         });
   }
 
-  Widget _makeStatusBar() {
+  Widget? _makeStatusBar() {
     TextStyle textStyle = (Theme.of(context).appBarTheme.textTheme ??
             Theme.of(context).primaryTextTheme)
-        .subtitle2;
-    double size = textStyle.fontSize;
+        .subtitle2!;
+    double size = textStyle.fontSize!;
     // String repoStateMessage = "";
-    if ((repoState == null || !repoState.normal) &&
+    if ((repoState == null || !repoState!.normal) &&
         (ahead == null || ahead == 0) &&
         (behind == null || behind == 0)) return null;
     List<Widget> children = [];
-    if (repoState != null && repoState.merge) {
+    if (repoState != null && repoState!.merge) {
       children.add(Icon(Icons.call_merge, color: textStyle.color, size: size));
     }
     if (ahead != null && ahead != 0) {
@@ -371,7 +370,7 @@ class _RepositoryViewState extends State<RepositoryView> {
       title = Text(repositoryName);
     }
     List<Widget> appBarActions = [];
-    Widget statusInfo = _makeStatusBar();
+    Widget? statusInfo = _makeStatusBar();
     if (statusInfo != null) appBarActions.add(statusInfo);
     appBarActions.add(buildActionsPopupMenu(context));
     return Scaffold(
@@ -385,9 +384,9 @@ class _RepositoryViewState extends State<RepositoryView> {
                 AsyncSnapshot<List<FileSystemEntity>> snapshot) {
               if (snapshot.hasData) {
                 return ListView.builder(
-                    itemCount: snapshot.data.length,
+                    itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) =>
-                        _makeFileListTile(context, snapshot.data[index]));
+                        _makeFileListTile(context, snapshot.data![index]));
               } else {
                 return Text('Loading');
               }
