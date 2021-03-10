@@ -1,13 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-// import 'package:PlomGit/src/jsgit.dart' show JsForGit;
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
+import 'package:PlomGit/src/remote_view.dart'
+    show RemoteConfigurationWidget, RepositoryRemoteInfo;
 import 'package:PlomGit/src/util.dart'
     show
         RepositoryNameTextFormField,
-        RemoteUserTextFormField,
-        RemotePasswordTextFormField,
         PlomGitPrefs,
         kDefaultPadding,
         kDefaultSectionSpacing,
@@ -23,11 +22,11 @@ import 'package:tuple/tuple.dart';
 
 // TODO: Fix-up error checking in modifications to C code
 // TODO: Use ffigen to autogenerate C bindings
-// TODO: Save email and name
-// TODO: Save commit message and set the commit message on a merge
-// TODO: add remote
-// TODO: make sure remote name has no / or \
 // TODO: switch upstream of current branch
+// TODO: remove default repository name and repository URL
+// TODO: abort a merge
+// TODO: on a merge, replace files with your/their version
+// TODO: checkout branches
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
@@ -311,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _newRepositoryPressed(context),
-        tooltip: 'Increment',
+        tooltip: 'New repository',
         child: Icon(Icons.add),
       ),
     );
@@ -328,21 +327,23 @@ class RepositoryLocationDialog extends StatelessWidget {
         appBar: AppBar(
           title: Text('Repository Configuration'),
         ),
-        body: Form(
-            key: _formKey,
-            child: Column(children: [
-              RepositoryNameTextFormField(
-                  initialValue: repositoryName,
-                  onSaved: (text) => repositoryName = text!),
-              ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      Navigator.pop(context, repositoryName);
-                    }
-                  },
-                  child: Text('Create')),
-            ])));
+        body: Padding(
+            padding: EdgeInsets.all(kDefaultPadding),
+            child: Form(
+                key: _formKey,
+                child: Column(children: [
+                  RepositoryNameTextFormField(
+                      initialValue: repositoryName,
+                      onSaved: (text) => repositoryName = text!),
+                  ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          Navigator.pop(context, repositoryName);
+                        }
+                      },
+                      child: Text('Create')),
+                ]))));
   }
 }
 
@@ -366,58 +367,11 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
                       _formKey.currentState!.save();
                       Navigator.pop(
                           context,
-                          Tuple4(remoteInfo.url, remoteInfo.repositoryName,
+                          Tuple4(remoteInfo.url, remoteInfo.name,
                               remoteInfo.user, remoteInfo.password));
                     }
                   },
                   child: Text('Clone')),
             ])));
-  }
-}
-
-class RepositoryRemoteInfo {
-  String repositoryName = "Test";
-  String url = "https://github.com/my2iu/PlomGit.git";
-  String user = "";
-  String password = "";
-}
-
-class RemoteConfigurationWidget extends StatelessWidget {
-  RemoteConfigurationWidget(this.remoteInfo);
-  final RepositoryRemoteInfo remoteInfo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      Card(
-          child: Padding(
-              padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
-                  kDefaultPadding, kDefaultPadding),
-              child: Column(children: [
-                RepositoryNameTextFormField(
-                    initialValue: remoteInfo.repositoryName,
-                    onSaved: (text) => remoteInfo.repositoryName = text!),
-                TextFormField(
-                  initialValue: remoteInfo.url,
-                  decoration: InputDecoration(labelText: 'Remote url'),
-                  onChanged: (text) => remoteInfo.url = text,
-                ),
-              ]))),
-      SizedBox(height: kDefaultSectionSpacing),
-      Card(
-          child: Padding(
-              padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
-                  kDefaultPadding, kDefaultPadding),
-              child: Column(children: [
-                RemoteUserTextFormField(
-                  initialValue: remoteInfo.user,
-                  onSaved: (text) => remoteInfo.user = text!,
-                ),
-                RemotePasswordTextFormField(
-                  initialValue: remoteInfo.password,
-                  onSaved: (text) => remoteInfo.password = text!,
-                ),
-              ]))),
-    ]);
   }
 }

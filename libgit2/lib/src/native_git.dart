@@ -154,14 +154,6 @@ class git {
           "git_strarray_dispose")
       .asFunction();
 
-  static final int Function(Pointer<git_strarray>, Pointer<NativeType>)
-      remoteList = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_strarray>,
-                      Pointer<NativeType>)>>("git_remote_list")
-          .asFunction();
-
   static final int Function(Pointer<NativeType>, int version)
       fetch_options_init = nativeGit2
           .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
@@ -296,6 +288,34 @@ class git {
                           Pointer<
                               NativeFunction<git_credentials_acquire_cb>>)>>(
               "git_clone_options_set_credentials_cb")
+          .asFunction();
+
+  static final int Function(Pointer<git_strarray>, Pointer<git_repository>)
+      remote_list = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_strarray>,
+                      Pointer<git_repository>)>>("git_remote_list")
+          .asFunction();
+
+  static final int Function(Pointer<Pointer<git_remote>>,
+          Pointer<git_repository>, Pointer<Utf8>, Pointer<Utf8>) remote_create =
+      nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(
+                      Pointer<Pointer<git_remote>>,
+                      Pointer<git_repository>,
+                      Pointer<Utf8>,
+                      Pointer<Utf8>)>>("git_remote_create")
+          .asFunction();
+
+  static final int Function(Pointer<git_repository>, Pointer<Utf8>)
+      remote_delete = nativeGit2
+          .lookup<
+              NativeFunction<
+                  Int32 Function(Pointer<git_repository>,
+                      Pointer<Utf8>)>>("git_remote_delete")
           .asFunction();
 
   static final int Function(

@@ -24,9 +24,24 @@ class RepositoryNameTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return RepositoryOrRemoteNameTextFormField(
+        initialValue: initialValue, onSaved: onSaved, forRemote: false);
+  }
+}
+
+class RepositoryOrRemoteNameTextFormField extends StatelessWidget {
+  RepositoryOrRemoteNameTextFormField(
+      {this.initialValue, this.onSaved, this.forRemote = false});
+  final String? initialValue;
+  final Function(String?)? onSaved;
+  final bool forRemote;
+
+  @override
+  Widget build(BuildContext context) {
     return TextFormField(
       initialValue: initialValue,
-      decoration: InputDecoration(labelText: 'Repository name'),
+      decoration: InputDecoration(
+          labelText: forRemote ? 'Remote name' : 'Repository name'),
       onSaved: onSaved,
       validator: (text) {
         if (text!.isEmpty) return "Please enter a name";

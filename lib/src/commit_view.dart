@@ -103,7 +103,7 @@ class CommitFinalView extends StatelessWidget {
           .writeRepositoryCommitMessage(repositoryName, msgSig.message);
     }
     loadInitialCommitInfo.then((info) {
-      if (msgSig.email != info[2] || msgSig.name != info[1]) {
+      if (msgSig.email != info[2] || msgSig.name != info[1] || isCommit) {
         PlomGitPrefs.instance
             .writeLastAuthor(repositoryName, msgSig.name, msgSig.email);
       }

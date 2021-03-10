@@ -77,8 +77,9 @@ class GitIsolate {
     return _sendRequest(RequestType.clone, [url, dir, username, password]);
   }
 
-  Future<dynamic> listRemotes(String dir) {
-    return _sendRequest(RequestType.listRemotes, [dir]);
+  Future<List<String>> listRemotes(String dir) {
+    return _sendRequest(RequestType.listRemotes, [dir])
+        .then((result) => result);
   }
 
   Future<dynamic> fetch(String dir, String remote,
@@ -108,9 +109,8 @@ class GitIsolate {
     return _sendRequest(RequestType.commit, [dir, message, name, email]);
   }
 
-  Future<MergeStatus> mergeWithUpstream(String dir, String remote,
-      [String username = "", String password = ""]) {
-    return _sendRequest(RequestType.merge, [dir, remote, username, password])
+  Future<MergeStatus> mergeWithUpstream(String dir) {
+    return _sendRequest(RequestType.merge, [dir])
         .then((mergeStatus) => MergeStatus.values[mergeStatus]);
   }
 
@@ -124,6 +124,14 @@ class GitIsolate {
 
   Future<dynamic> aheadBehind(String dir) {
     return _sendRequest(RequestType.aheadBehind, [dir]);
+  }
+
+  Future<dynamic> createRemote(String dir, String name, String url) {
+    return _sendRequest(RequestType.createRemote, [dir, name, url]);
+  }
+
+  Future<dynamic> deleteRemote(String dir, String name) {
+    return _sendRequest(RequestType.deleteRemote, [dir, name]);
   }
 
   // Makes a response to a request from the isolate back to the requester
@@ -185,10 +193,7 @@ class GitIsolate {
             break;
           case RequestType.merge:
             _isolateResponse(
-                channel,
-                Libgit2.mergeWithUpstream(
-                        event[1], event[2], event[3], event[4])
-                    .index);
+                channel, Libgit2.mergeWithUpstream(event[1]).index);
             break;
           case RequestType.revertFile:
             Libgit2.revertFile(event[1], event[2]);
@@ -199,6 +204,14 @@ class GitIsolate {
             break;
           case RequestType.aheadBehind:
             _isolateResponse(channel, Libgit2.aheadBehind(event[1]));
+            break;
+          case RequestType.createRemote:
+            Libgit2.createRemote(event[1], event[2], event[3]);
+            _isolateResponse(channel, "");
+            break;
+          case RequestType.deleteRemote:
+            Libgit2.deleteRemote(event[1], event[2]);
+            _isolateResponse(channel, "");
             break;
         }
       } on Libgit2Exception catch (e) {
@@ -229,5 +242,7 @@ enum RequestType {
   merge,
   revertFile,
   repositoryState,
-  aheadBehind
+  aheadBehind,
+  createRemote,
+  deleteRemote
 }

@@ -5,19 +5,18 @@ import 'package:libgit2/libgit2.dart';
 import 'package:path/path.dart' as path;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'commit_view.dart';
+import 'remote_view.dart' show RemoteListView;
 import 'util.dart'
     show
         GitStatusFlags,
         GitRepositoryState,
         TextAndIcon,
         PlomGitPrefs,
-        makeLoginDialog,
         showProgressWhileWaitingFor,
         retryWithAskCredentials;
 
 class RepositoryView extends StatefulWidget {
   final String repositoryName;
-  // final JsForGit jsGit;
   final Uri repositoryUri;
   final String pathInRepository;
 
@@ -177,53 +176,46 @@ class _RepositoryViewState extends State<RepositoryView> {
                       Icon(Icons.cloud_upload_outlined,
                           color: Theme.of(context).iconTheme.color))));
             });
-            remoteList.forEach((remote) {
-              entries.add(PopupMenuItem(
-                value: () {
-                  retryWithAskCredentials(
-                          repositoryName,
-                          remote,
-                          (username, password) => GitIsolate.instance
-                              .mergeWithUpstream(
-                                  repositoryDir, remote, username, password),
-                          context)
-                      .then((result) {
-                    String message;
-                    switch (result) {
-                      case MergeStatus.FAST_FORWARD:
-                        message = "Merge fast-forward";
-                        break;
-                      case MergeStatus.MERGE_FAILED:
-                        message = "Cannot merge";
-                        break;
-                      case MergeStatus.NORMAL_MERGE:
-                        message = "Merge complete, please commit";
-                        break;
-                      case MergeStatus.NO_HEAD:
-                        message = "No HEAD commit to merge";
-                        break;
-                      case MergeStatus.UP_TO_DATE:
-                        message = "Merge already up-to-date";
-                        break;
-                    }
-                    if (result == MergeStatus.NORMAL_MERGE) {
-                      PlomGitPrefs.instance.writeRepositoryCommitMessage(
-                          repositoryName, "Merge");
-                    }
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(message)));
-                    _refresh();
-                  }).catchError((error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: ' + error.toString())));
-                  });
-                },
-                child: TextAndIcon(
-                    Text('Merge with upstream'),
-                    Icon(Icons.call_merge,
-                        color: Theme.of(context).iconTheme.color)),
-              ));
-            });
+            entries.add(PopupMenuItem(
+              value: () {
+                GitIsolate.instance
+                    .mergeWithUpstream(repositoryDir)
+                    .then((result) {
+                  String message;
+                  switch (result) {
+                    case MergeStatus.FAST_FORWARD:
+                      message = "Merge fast-forward";
+                      break;
+                    case MergeStatus.MERGE_FAILED:
+                      message = "Cannot merge";
+                      break;
+                    case MergeStatus.NORMAL_MERGE:
+                      message = "Merge complete, please commit";
+                      break;
+                    case MergeStatus.NO_HEAD:
+                      message = "No HEAD commit to merge";
+                      break;
+                    case MergeStatus.UP_TO_DATE:
+                      message = "Merge already up-to-date";
+                      break;
+                  }
+                  if (result == MergeStatus.NORMAL_MERGE) {
+                    PlomGitPrefs.instance
+                        .writeRepositoryCommitMessage(repositoryName, "Merge");
+                  }
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(message)));
+                  _refresh();
+                }).catchError((error) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: ' + error.toString())));
+                });
+              },
+              child: TextAndIcon(
+                  Text('Merge with upstream'),
+                  Icon(Icons.call_merge,
+                      color: Theme.of(context).iconTheme.color)),
+            ));
             entries.add(PopupMenuItem(
                 value: () {
                   _refresh();
@@ -253,6 +245,28 @@ class _RepositoryViewState extends State<RepositoryView> {
                 child: TextAndIcon(
                     Text("Commit"),
                     Icon(Icons.save_alt,
+                        color: Theme.of(context).iconTheme.color))));
+            entries.add(PopupMenuDivider());
+            entries.add(PopupMenuItem(
+                value: () {
+                  repoStateFuture
+                      .then((state) => Navigator.push(
+                          context,
+                          MaterialPageRoute<String>(
+                              builder: (BuildContext context) => RemoteListView(
+                                  repositoryName, repositoryUri))))
+                      .then((result) {
+                    _refresh();
+                    if (result != null) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(result)));
+                    }
+                  });
+                  // Show the remote list screen
+                },
+                child: TextAndIcon(
+                    Text("Remotes"),
+                    Icon(Icons.cloud_outlined,
                         color: Theme.of(context).iconTheme.color))));
           }
           return entries;

@@ -129,14 +129,14 @@ class Libgit2 {
     Pointer<git_strarray> remotesStrings = calloc<git_strarray>();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remoteList(remotesStrings, repo));
+        _checkErrors(git.remote_list(remotesStrings, repo));
         List<String> remotes = [];
         for (int n = 0; n < remotesStrings.ref.count; n++)
           remotes.add(remotesStrings.ref.strings[n].toDartString());
-        git.strArrayDispose(remotesStrings);
         return remotes;
       });
     } finally {
+      git.strArrayDispose(remotesStrings);
       calloc.free(remotesStrings);
     }
   }
@@ -471,9 +471,7 @@ class Libgit2 {
     }
   }
 
-  static MergeStatus mergeWithUpstream(
-      String dir, String remoteStr, String username, String password) {
-    setupCredentials(username, password);
+  static MergeStatus mergeWithUpstream(String dir) {
     Pointer<Pointer<git_annotated_commit>> upstreamToMerge =
         calloc.call<Pointer<git_annotated_commit>>(1);
     upstreamToMerge.elementAt(0).value = nullptr;
@@ -629,6 +627,33 @@ class Libgit2 {
       if (upstreamDirectRef.value != nullptr)
         git.reference_free(upstreamDirectRef.value);
       calloc.free(upstreamDirectRef);
+    }
+  }
+
+  static void createRemote(String dir, String remoteName, String url) {
+    Pointer<Utf8> remoteStr = remoteName.toNativeUtf8();
+    Pointer<Utf8> urlStr = url.toNativeUtf8();
+    Pointer<Pointer<git_remote>> remote = calloc<Pointer<git_remote>>();
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(git.remote_create(remote, repo, remoteStr, urlStr));
+      });
+    } finally {
+      if (remote.value != nullptr) git.remote_free(remote.value);
+      calloc.free(remote);
+      calloc.free(remoteStr);
+      calloc.free(urlStr);
+    }
+  }
+
+  static void deleteRemote(String dir, String remote) {
+    Pointer<Utf8> remoteStr = remote.toNativeUtf8();
+    try {
+      return _withRepository(dir, (repo) {
+        _checkErrors(git.remote_delete(repo, remoteStr));
+      });
+    } finally {
+      calloc.free(remoteStr);
     }
   }
 }
