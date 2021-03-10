@@ -159,24 +159,6 @@ class git_status_entry extends Struct {
 
   external Pointer<git_diff_delta> head_to_index;
   external Pointer<git_diff_delta> index_to_workdir;
-
-  // GIT_STATUS_CURRENT = 0,
-
-  // GIT_STATUS_INDEX_NEW        = (1u << 0),
-  // GIT_STATUS_INDEX_MODIFIED   = (1u << 1),
-  // GIT_STATUS_INDEX_DELETED    = (1u << 2),
-  // GIT_STATUS_INDEX_RENAMED    = (1u << 3),
-  // GIT_STATUS_INDEX_TYPECHANGE = (1u << 4),
-
-  // GIT_STATUS_WT_NEW           = (1u << 7),
-  // GIT_STATUS_WT_MODIFIED      = (1u << 8),
-  // GIT_STATUS_WT_DELETED       = (1u << 9),
-  // GIT_STATUS_WT_TYPECHANGE    = (1u << 10),
-  // GIT_STATUS_WT_RENAMED       = (1u << 11),
-  // GIT_STATUS_WT_UNREADABLE    = (1u << 12),
-
-  // GIT_STATUS_IGNORED          = (1u << 14),
-  // GIT_STATUS_CONFLICTED       = (1u << 15),
 }
 
 class git_oid extends Struct {
