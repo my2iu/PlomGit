@@ -445,3 +445,6 @@ Future<U> showProgressWhileWaitingFor<U>(
 
 const double kDefaultPadding = 5;
 const double kDefaultSectionSpacing = 12;
+
+const String DEFAULT_REPO_NAME = "";
+const String DEFAULT_REPO_URL = "";

@@ -10,6 +10,7 @@ import 'package:PlomGit/src/util.dart'
         PlomGitPrefs,
         kDefaultPadding,
         kDefaultSectionSpacing,
+        DEFAULT_REPO_NAME,
         retryWithAskCredentials,
         showProgressWhileWaitingFor;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
@@ -23,7 +24,6 @@ import 'package:tuple/tuple.dart';
 // TODO: Fix-up error checking in modifications to C code
 // TODO: Use ffigen to autogenerate C bindings
 // TODO: switch upstream of current branch
-// TODO: remove default repository name and repository URL
 // TODO: abort a merge
 // TODO: on a merge, replace files with your/their version
 // TODO: checkout branches
@@ -322,7 +322,7 @@ class RepositoryLocationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String repositoryName = "Test";
+    String repositoryName = DEFAULT_REPO_NAME;
     return Scaffold(
         appBar: AppBar(
           title: Text('Repository Configuration'),

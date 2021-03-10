@@ -8,7 +8,9 @@ import 'util.dart'
         RemotePasswordTextFormField,
         kDefaultPadding,
         kDefaultSectionSpacing,
-        showProgressWhileWaitingFor;
+        showProgressWhileWaitingFor,
+        DEFAULT_REPO_NAME,
+        DEFAULT_REPO_URL;
 import 'package:tuple/tuple.dart';
 
 class RemoteListView extends StatefulWidget {
@@ -169,8 +171,8 @@ class NewRemoteDialog extends StatelessWidget {
 }
 
 class RepositoryRemoteInfo {
-  String name = "Test";
-  String url = "https://github.com/my2iu/PlomGit.git";
+  String name = DEFAULT_REPO_NAME;
+  String url = DEFAULT_REPO_URL;
   String user = "";
   String password = "";
 }
