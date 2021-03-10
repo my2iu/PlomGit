@@ -1,6 +1,6 @@
 package dev.plom.plomgit;
 
-import com.example.PlomGit.R;
+import dev.plom.plomgit.R;
 
 import android.database.Cursor;
 import android.database.MatrixCursor;

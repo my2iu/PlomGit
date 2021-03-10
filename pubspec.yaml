@@ -35,8 +35,6 @@ dependencies:
   libgit2:
     path: libgit2/
 
-  #flutter_jscore: ^0.1.1
-
   # Flutter state management stuff
   #provider: ^4.3.3
 
