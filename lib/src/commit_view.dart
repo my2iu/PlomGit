@@ -146,7 +146,7 @@ class CommitFinalView extends StatelessWidget {
                           msgSig.message = snapshot.data![0];
                           msgSig.name = snapshot.data![1];
                           msgSig.email = snapshot.data![2];
-                          return _CommitMessageView(msgSig);
+                          return _CommitMessageView(msgSig, autofocus: true);
                         } else {
                           return Text('Loading');
                         }
@@ -300,9 +300,10 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
 }
 
 class _CommitMessageView extends StatelessWidget {
-  _CommitMessageView(this.msgSig);
+  _CommitMessageView(this.msgSig, {this.autofocus = false});
 
   final _MessageAndSignatureData msgSig;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -311,6 +312,7 @@ class _CommitMessageView extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: _CommitMessageCard(
+              autofocus: autofocus,
               initialValue: msgSig.message,
               onSaved: (val) => msgSig.message = val!,
             ),
@@ -327,9 +329,10 @@ class _CommitMessageView extends StatelessWidget {
 }
 
 class _CommitMessageCard extends StatelessWidget {
-  _CommitMessageCard({this.initialValue, this.onSaved});
+  _CommitMessageCard({this.initialValue, this.onSaved, this.autofocus = false});
   final String? initialValue;
   final Function(String?)? onSaved;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +342,7 @@ class _CommitMessageCard extends StatelessWidget {
             child: TextFormField(
                 // controller: TextEditingController(text: message),
                 // minLines: 3,
+                autofocus: autofocus,
                 maxLines: null,
                 expands: true,
                 keyboardType: TextInputType.multiline,

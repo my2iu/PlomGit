@@ -351,6 +351,7 @@ class RepositoryLocationDialog extends StatelessWidget {
                           padding: EdgeInsets.all(kDefaultPadding),
                           child: Column(children: [
                             RepositoryNameTextFormField(
+                                autofocus: true,
                                 initialValue: repositoryName,
                                 onSaved: (text) => repositoryName = text!),
                           ]))),
@@ -380,7 +381,12 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
         body: Padding(
             padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
-              Form(key: _formKey, child: RemoteConfigurationWidget(remoteInfo)),
+              Form(
+                  key: _formKey,
+                  child: RemoteConfigurationWidget(
+                    remoteInfo,
+                    autofocus: true,
+                  )),
               SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {

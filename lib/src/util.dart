@@ -18,28 +18,38 @@ class TextAndIcon extends StatelessWidget {
 }
 
 class RepositoryNameTextFormField extends StatelessWidget {
-  RepositoryNameTextFormField({this.initialValue, this.onSaved});
+  RepositoryNameTextFormField(
+      {this.initialValue, this.onSaved, this.autofocus = false});
   final String? initialValue;
   final Function(String?)? onSaved;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     return RepositoryOrRemoteNameTextFormField(
-        initialValue: initialValue, onSaved: onSaved, forRemote: false);
+        initialValue: initialValue,
+        onSaved: onSaved,
+        forRemote: false,
+        autofocus: autofocus);
   }
 }
 
 class RepositoryOrRemoteNameTextFormField extends StatelessWidget {
   RepositoryOrRemoteNameTextFormField(
-      {this.initialValue, this.onSaved, this.forRemote = false});
+      {this.initialValue,
+      this.onSaved,
+      this.forRemote = false,
+      this.autofocus = false});
   final String? initialValue;
   final Function(String?)? onSaved;
   final bool forRemote;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       initialValue: initialValue,
+      autofocus: autofocus,
       decoration: InputDecoration(
           labelText: forRemote ? 'Remote name' : 'Repository name'),
       onSaved: onSaved,
@@ -54,14 +64,17 @@ class RepositoryOrRemoteNameTextFormField extends StatelessWidget {
 }
 
 class RemoteUserTextFormField extends StatelessWidget {
-  RemoteUserTextFormField({this.initialValue, this.onSaved});
+  RemoteUserTextFormField(
+      {this.initialValue, this.onSaved, this.autofocus = false});
   final String? initialValue;
   final Function(String?)? onSaved;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       initialValue: initialValue,
+      autofocus: autofocus,
       decoration: InputDecoration(
         icon: Icon(Icons.account_circle),
         labelText: 'User',
@@ -180,9 +193,10 @@ Widget _makeConfirmDialog(
   );
 }
 
-Widget makeLoginDialog(BuildContext context, String repository, String remote) {
-  var username = "";
-  var password = "";
+Widget makeLoginDialog(BuildContext context, String repository, String remote,
+    String initialUser, String initialPassword) {
+  var username = initialUser;
+  var password = initialPassword;
   bool saveLogin = false;
   Future<Tuple2<String, String>> readingRemoteData = PlomGitPrefs.instance
       .readEncryptedUser(repository, remote)
@@ -208,11 +222,12 @@ Widget makeLoginDialog(BuildContext context, String repository, String remote) {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     RemoteUserTextFormField(
-                      initialValue: "",
+                      autofocus: true,
+                      initialValue: username,
                       onSaved: (val) => username = val!,
                     ),
                     RemotePasswordTextFormField(
-                      initialValue: "",
+                      initialValue: password,
                       onSaved: (val) => password = val!,
                     ),
                     SizedBox(height: kDefaultPadding),
@@ -285,8 +300,8 @@ Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
         // Ask for a username and password and pass those values into the function
         return showDialog<Tuple2<String, String>>(
                 context: context,
-                builder: (context) =>
-                    makeLoginDialog(context, repositoryName, remoteName))
+                builder: (context) => makeLoginDialog(
+                    context, repositoryName, remoteName, user, password))
             .then((Tuple2<String, String>? login) {
           if (login != null) {
             return fn(login.item1, login.item2);

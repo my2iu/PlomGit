@@ -153,8 +153,11 @@ class NewRemoteDialog extends StatelessWidget {
             child: Column(children: [
               Form(
                   key: _formKey,
-                  child:
-                      RemoteConfigurationWidget(remoteInfo, forRemote: true)),
+                  child: RemoteConfigurationWidget(
+                    remoteInfo,
+                    forRemote: true,
+                    autofocus: true,
+                  )),
               SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {
@@ -179,9 +182,11 @@ class RepositoryRemoteInfo {
 }
 
 class RemoteConfigurationWidget extends StatelessWidget {
-  RemoteConfigurationWidget(this.remoteInfo, {this.forRemote = false});
+  RemoteConfigurationWidget(this.remoteInfo,
+      {this.forRemote = false, this.autofocus = false});
   final RepositoryRemoteInfo remoteInfo;
   final bool forRemote;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +196,7 @@ class RemoteConfigurationWidget extends StatelessWidget {
               padding: EdgeInsets.all(kDefaultPadding),
               child: Column(children: [
                 RepositoryOrRemoteNameTextFormField(
+                    autofocus: autofocus,
                     initialValue: remoteInfo.name,
                     onSaved: (text) => remoteInfo.name = text!,
                     forRemote: forRemote),
