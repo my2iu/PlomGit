@@ -89,11 +89,13 @@ class _MyHomePageState extends State<MyHomePage> {
   late Future<List<Directory>> dirContents;
 
   _MyHomePageState() {
-    dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
-        .list()
-        .where((entry) => entry is Directory)
-        .map((entry) => entry as Directory)
-        .toList());
+    dirContents = _getRepositoryBaseDir()
+        .then((uri) => Directory.fromUri(uri)
+            .list()
+            .where((entry) => entry is Directory)
+            .map((entry) => entry as Directory)
+            .toList())
+        .catchError((err) => <Directory>[]);
   }
 
   void _newRepositoryPressed(BuildContext context) {
@@ -248,27 +250,33 @@ class _MyHomePageState extends State<MyHomePage> {
   // can then refresh different views, but I'm too lazy to implement that right now
   void _refreshRepositories() {
     setState(() {
-      dirContents = _getRepositoryBaseDir().then((uri) => Directory.fromUri(uri)
-          .list()
-          .where((entry) => entry is Directory)
-          .map((entry) => entry as Directory)
-          .toList());
+      dirContents = _getRepositoryBaseDir()
+          .then((uri) => Directory.fromUri(uri)
+              .list()
+              .where((entry) => entry is Directory)
+              .map((entry) => entry as Directory)
+              .toList())
+          .catchError((err) => <Directory>[]);
     });
   }
 
   Widget _buildRepositoryList(
       BuildContext context, AsyncSnapshot<List<Directory>> snapshot) {
     if (snapshot.hasData) {
-      return Expanded(
-          child: ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (itemBuilderContext, index) {
-                var name = path.basename(snapshot.data![index].path);
-                return ListTile(
-                    title: Text(name),
-                    trailing: buildRepositoryOptionsPopupButton(name),
-                    onTap: () => _showRepository(name, context));
-              }));
+      if (snapshot.data!.length == 0) {
+        return Center(child: Text("You haven't created any repositories yet"));
+      } else {
+        return Expanded(
+            child: ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (itemBuilderContext, index) {
+                  var name = path.basename(snapshot.data![index].path);
+                  return ListTile(
+                      title: Text(name),
+                      trailing: buildRepositoryOptionsPopupButton(name),
+                      onTap: () => _showRepository(name, context));
+                }));
+      }
     } else {
       return SizedBox.shrink();
     }
