@@ -127,15 +127,11 @@ class CheckboxFormField extends StatelessWidget {
               ? Text(message!,
                   style: TextStyle(color: Theme.of(context).errorColor))
               : Text(message!);
-          main = Row(
-            children: <Widget>[
-              Checkbox(
-                value: state.value,
-                onChanged: (bool? newVal) => state.didChange(newVal),
-              ),
-              SizedBox(width: kDefaultPadding),
-              text,
-            ],
+          main = CheckboxListTile(
+            value: state.value,
+            onChanged: (bool? newVal) => state.didChange(newVal),
+            title: text,
+            controlAffinity: ListTileControlAffinity.leading,
           );
         }
         if (state.hasError) {
