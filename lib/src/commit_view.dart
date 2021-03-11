@@ -382,6 +382,7 @@ class _CommitAuthorCard extends StatelessWidget {
                   // filled: true,
                   labelText: 'Name',
                 ),
+                keyboardType: TextInputType.name,
                 textCapitalization: TextCapitalization.words,
                 initialValue: initialName,
                 onSaved: onNameSaved,
@@ -394,6 +395,7 @@ class _CommitAuthorCard extends StatelessWidget {
                     // filled: true,
                     labelText: 'Email',
                   ),
+                  keyboardType: TextInputType.emailAddress,
                   initialValue: initialEmail,
                   onSaved: onEmailSaved)
             ])));

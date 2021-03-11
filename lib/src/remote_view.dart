@@ -203,6 +203,7 @@ class RemoteConfigurationWidget extends StatelessWidget {
                 TextFormField(
                   initialValue: remoteInfo.url,
                   decoration: InputDecoration(labelText: 'Remote url'),
+                  keyboardType: TextInputType.url,
                   onSaved: (text) => remoteInfo.url = text!,
                 ),
               ]))),
