@@ -27,6 +27,7 @@ import 'package:tuple/tuple.dart';
 // TODO: abort a merge
 // TODO: on a merge, replace files with your/their version
 // TODO: checkout branches
+// TODO: fix up padding around buttons
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
