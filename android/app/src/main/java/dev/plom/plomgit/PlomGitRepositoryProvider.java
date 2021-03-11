@@ -44,7 +44,10 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
 
         MatrixCursor.RowBuilder row = cursor.newRow();
         row.add(Document.COLUMN_DOCUMENT_ID, documentId);
-        if (file.isDirectory()) {
+        // Sometimes, we haven't initialized the repository directory yet but still need to
+        // show the roots, so we check if file is a directory or if we're looking for the root
+        // directory (which may not exist yet)
+        if (file.isDirectory() || documentId.equals("/")) {
             row.add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR);
             if (documentId.equals("/"))
                 row.add(Document.COLUMN_FLAGS, 0);
@@ -107,17 +110,18 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
 
         if (!parentDocumentId.startsWith("/"))
             throw new FileNotFoundException();
-        if (parentDocumentId.equals("/"))
-        {
+        File [] dirListing;
+        if (parentDocumentId.equals("/")) {
             // The root is just a list of repositories
-            for (File file : getRepoDir().listFiles())
-            {
-                addFileToCursor(result, parentDocumentId + "/" + file.getName());
-            }
+            dirListing = getRepoDir().listFiles();
         }
         else
         {
-            for (File file : new File(getRepoDir(), parentDocumentId.substring(1)).listFiles())
+            dirListing = new File(getRepoDir(), parentDocumentId.substring(1)).listFiles();
+        }
+        if (dirListing != null)
+        {
+            for (File file : dirListing)
             {
                 addFileToCursor(result, parentDocumentId + "/" + file.getName());
             }
