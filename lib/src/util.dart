@@ -142,6 +142,44 @@ class CheckboxFormField extends StatelessWidget {
   }
 }
 
+Future<bool?> showConfirmDialog(
+    BuildContext context, String title, String message, String actionMessage,
+    [String cancelMessage = "Cancel"]) {
+  return showDialog<bool>(
+      context: context,
+      builder: (context) => _makeConfirmDialog(
+          context, title, message, actionMessage, cancelMessage));
+}
+
+Widget _makeConfirmDialog(
+    BuildContext context, String title, String message, String actionMessage,
+    [String cancelMessage = "Cancel"]) {
+  return AlertDialog(
+    title: Text(title),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(message),
+      ],
+    ),
+    actions: <Widget>[
+      TextButton(
+        child: Text(cancelMessage),
+        onPressed: () {
+          Navigator.pop(context, false);
+        },
+      ),
+      TextButton(
+        child: Text(actionMessage),
+        onPressed: () {
+          Navigator.pop(context, true);
+        },
+      ),
+    ],
+  );
+}
+
 Widget makeLoginDialog(BuildContext context, String repository, String remote) {
   var username = "";
   var password = "";

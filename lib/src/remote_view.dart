@@ -155,6 +155,7 @@ class NewRemoteDialog extends StatelessWidget {
                   key: _formKey,
                   child:
                       RemoteConfigurationWidget(remoteInfo, forRemote: true)),
+              SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
@@ -187,8 +188,7 @@ class RemoteConfigurationWidget extends StatelessWidget {
     return Column(children: [
       Card(
           child: Padding(
-              padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
-                  kDefaultPadding, kDefaultPadding),
+              padding: EdgeInsets.all(kDefaultPadding),
               child: Column(children: [
                 RepositoryOrRemoteNameTextFormField(
                     initialValue: remoteInfo.name,
@@ -203,8 +203,7 @@ class RemoteConfigurationWidget extends StatelessWidget {
       SizedBox(height: kDefaultSectionSpacing),
       Card(
           child: Padding(
-              padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultPadding,
-                  kDefaultPadding, kDefaultPadding),
+              padding: EdgeInsets.all(kDefaultPadding),
               child: Column(children: [
                 RemoteUserTextFormField(
                   initialValue: remoteInfo.user,

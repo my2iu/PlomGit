@@ -12,7 +12,8 @@ import 'package:PlomGit/src/util.dart'
         kDefaultSectionSpacing,
         DEFAULT_REPO_NAME,
         retryWithAskCredentials,
-        showProgressWhileWaitingFor;
+        showProgressWhileWaitingFor,
+        showConfirmDialog;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,7 +28,6 @@ import 'package:tuple/tuple.dart';
 // TODO: abort a merge
 // TODO: on a merge, replace files with your/their version
 // TODO: checkout branches
-// TODO: fix up padding around buttons
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
@@ -237,13 +237,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _deleteRepository(String name, BuildContext context) {
-    _getRepositoryDirForName(name)
-        .then((uri) => Directory.fromUri(uri).delete(recursive: true))
-        .then((_) => PlomGitPrefs.instance.eraseRepositoryPreferences(name))
-        .then((result) {
-      _refreshRepositories();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Repository deleted')));
+    showConfirmDialog(context, "Delete", "Delete repository?", "Delete")
+        .then((response) {
+      if (response ?? false) {
+        _getRepositoryDirForName(name)
+            .then((uri) => Directory.fromUri(uri).delete(recursive: true))
+            .then((_) => PlomGitPrefs.instance.eraseRepositoryPreferences(name))
+            .then((result) {
+          _refreshRepositories();
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Repository deleted')));
+        });
+      }
     });
   }
 
@@ -341,9 +346,15 @@ class RepositoryLocationDialog extends StatelessWidget {
             child: Form(
                 key: _formKey,
                 child: Column(children: [
-                  RepositoryNameTextFormField(
-                      initialValue: repositoryName,
-                      onSaved: (text) => repositoryName = text!),
+                  Card(
+                      child: Padding(
+                          padding: EdgeInsets.all(kDefaultPadding),
+                          child: Column(children: [
+                            RepositoryNameTextFormField(
+                                initialValue: repositoryName,
+                                onSaved: (text) => repositoryName = text!),
+                          ]))),
+                  SizedBox(height: kDefaultSectionSpacing),
                   ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
@@ -370,6 +381,7 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
             padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(key: _formKey, child: RemoteConfigurationWidget(remoteInfo)),
+              SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {

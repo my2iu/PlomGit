@@ -23,29 +23,35 @@ class CommitPrepareChangesView extends StatelessWidget {
             Text(repositoryName, style: appBarTextTheme.caption)
           ]),
         ),
-        body: Column(children: [
-          Expanded(
-            child: _CommitFilesView(repositoryName, repositoryUri),
-          ),
-          Row(
-            children: <Widget>[
-              ElevatedButton(
-                  child: Text('Next'),
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute<String>(
-                            builder: (BuildContext context) => CommitFinalView(
-                                repositoryName, repositoryUri, isMerged))).then(
-                        (result) {
-                      if (result != null) {
-                        Navigator.pop(context, result);
-                      }
-                    });
-                  })
-            ],
-          )
-        ]));
+        body: Padding(
+            padding: EdgeInsets.all(kDefaultPadding),
+            child: Column(children: [
+              Expanded(
+                child: _CommitFilesView(repositoryName, repositoryUri),
+              ),
+              SizedBox(height: kDefaultSectionSpacing),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ElevatedButton(
+                      child: Text('Next'),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute<String>(
+                                builder: (BuildContext context) =>
+                                    CommitFinalView(
+                                        repositoryName,
+                                        repositoryUri,
+                                        isMerged))).then((result) {
+                          if (result != null) {
+                            Navigator.pop(context, result);
+                          }
+                        });
+                      })
+                ],
+              )
+            ])));
   }
 }
 
@@ -116,44 +122,49 @@ class CommitFinalView extends StatelessWidget {
         Theme.of(context).primaryTextTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          isMerge ? Text('Merge Message') : Text('Commit Message'),
-          Text(repositoryName, style: appBarTextTheme.caption)
-        ]),
-      ),
-      body: Form(
+        appBar: AppBar(
+          title:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            isMerge ? Text('Merge Message') : Text('Commit Message'),
+            Text(repositoryName, style: appBarTextTheme.caption)
+          ]),
+        ),
+        body: Form(
           key: _formKey,
           onWillPop: () {
             saveCommitInfo(false);
             return Future.value(true);
           },
-          child: Column(children: [
-            Expanded(
-              child: FutureBuilder<List<String>>(
-                  future: loadInitialCommitInfo,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      msgSig.message = snapshot.data![0];
-                      msgSig.name = snapshot.data![1];
-                      msgSig.email = snapshot.data![2];
-                      return _CommitMessageView(msgSig);
-                    } else {
-                      return Text('Loading');
-                    }
-                  }),
-            ),
-            Row(
-              children: <Widget>[
-                ElevatedButton(
-                    child: Text('Commit'),
-                    onPressed: () {
-                      doCommit(context);
-                    })
-              ],
-            )
-          ])),
-    );
+          child: Padding(
+              padding: EdgeInsets.all(kDefaultPadding),
+              child: Column(children: [
+                Expanded(
+                  child: FutureBuilder<List<String>>(
+                      future: loadInitialCommitInfo,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          msgSig.message = snapshot.data![0];
+                          msgSig.name = snapshot.data![1];
+                          msgSig.email = snapshot.data![2];
+                          return _CommitMessageView(msgSig);
+                        } else {
+                          return Text('Loading');
+                        }
+                      }),
+                ),
+                SizedBox(height: kDefaultSectionSpacing),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    ElevatedButton(
+                        child: Text('Commit'),
+                        onPressed: () {
+                          doCommit(context);
+                        })
+                  ],
+                )
+              ])),
+        ));
   }
 }
 
@@ -184,34 +195,6 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
     });
   }
 
-  Widget _makeConfirmDialog(String title, String message, String actionMessage,
-      [String cancelMessage = "Cancel"]) {
-    return AlertDialog(
-      title: Text(title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(message),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          child: Text(cancelMessage),
-          onPressed: () {
-            Navigator.pop(context, false);
-          },
-        ),
-        TextButton(
-          child: Text(actionMessage),
-          onPressed: () {
-            Navigator.pop(context, true);
-          },
-        ),
-      ],
-    );
-  }
-
   Widget _makeCommitUi(List<dynamic> allChanges) {
     List<String> staged = <String>[];
     List<String> unstaged = <String>[];
@@ -220,93 +203,86 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
       if (gitFlags.staged) staged.add(entry[0] ?? entry[1]);
       if (gitFlags.unstaged) unstaged.add(entry[0] ?? entry[1]);
     });
-    return Padding(
-        padding: EdgeInsets.all(kDefaultPadding),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-            Widget>[
-          // MaterialBanner(content: Text("Staged Changed"), actions: []),
-          Padding(
-              padding: EdgeInsets.fromLTRB(kDefaultPadding,
-                  kDefaultSectionSpacing, kDefaultPadding, kDefaultPadding),
-              child: Text('Staged Changes',
-                  style: Theme.of(context).textTheme.subtitle1)),
-          Expanded(
-              child: Card(
-                  child: ListView.builder(
-            itemCount: staged.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                  title: Text(staged[index]),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(
-                      tooltip: "Remove",
-                      icon: Icon(Icons.remove),
-                      onPressed: () {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+        Widget>[
+      // MaterialBanner(content: Text("Staged Changed"), actions: []),
+      Padding(
+          padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultSectionSpacing,
+              kDefaultPadding, kDefaultPadding),
+          child: Text('Staged Changes',
+              style: Theme.of(context).textTheme.subtitle1)),
+      Expanded(
+          child: Card(
+              child: ListView.builder(
+        itemCount: staged.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+              title: Text(staged[index]),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(
+                  tooltip: "Remove",
+                  icon: Icon(Icons.remove),
+                  onPressed: () {
+                    GitIsolate.instance
+                        .removeFromIndex(repositoryDir, staged[index])
+                        .then((result) => _refresh())
+                        .catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Error: ' + error.toString())));
+                    });
+                  },
+                ),
+              ]));
+        },
+      ))),
+      Padding(
+          padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultSectionSpacing,
+              kDefaultPadding, kDefaultPadding),
+          child: Text('Changes', style: Theme.of(context).textTheme.subtitle1)),
+      Expanded(
+          child: Card(
+              child: ListView.builder(
+        itemCount: unstaged.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+              title: Text(unstaged[index]),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(
+                  tooltip: "Revert",
+                  icon: Icon(Icons.undo),
+                  onPressed: () {
+                    showConfirmDialog(
+                            context, "Revert", "Revert changes?", "Revert")
+                        .then((response) {
+                      if (response ?? false) {
                         GitIsolate.instance
-                            .removeFromIndex(repositoryDir, staged[index])
+                            .revertFile(repositoryDir, unstaged[index])
                             .then((result) => _refresh())
                             .catchError((error) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text('Error: ' + error.toString())));
                         });
-                      },
-                    ),
-                  ]));
-            },
-          ))),
-          Padding(
-              padding: EdgeInsets.fromLTRB(kDefaultPadding,
-                  kDefaultSectionSpacing, kDefaultPadding, kDefaultPadding),
-              child: Text('Changes',
-                  style: Theme.of(context).textTheme.subtitle1)),
-          Expanded(
-              child: Card(
-                  child: ListView.builder(
-            itemCount: unstaged.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                  title: Text(unstaged[index]),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(
-                      tooltip: "Revert",
-                      icon: Icon(Icons.undo),
-                      onPressed: () {
-                        showDialog<bool>(
-                                context: context,
-                                builder: (context) => _makeConfirmDialog(
-                                    "Revert", "Revert changes?", "Revert"))
-                            .then((response) {
-                          if (response ?? false) {
-                            GitIsolate.instance
-                                .revertFile(repositoryDir, unstaged[index])
-                                .then((result) => _refresh())
-                                .catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content:
-                                          Text('Error: ' + error.toString())));
-                            });
-                          }
-                        });
-                      },
-                    ),
-                    IconButton(
-                      tooltip: "Add",
-                      icon: Icon(Icons.add),
-                      onPressed: () {
-                        GitIsolate.instance
-                            .addToIndex(repositoryDir, unstaged[index])
-                            .then((result) => _refresh())
-                            .catchError((error) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('Error: ' + error.toString())));
-                        });
-                      },
-                    ),
-                  ]));
-            },
-          ))),
-        ]));
+                      }
+                    });
+                  },
+                ),
+                IconButton(
+                  tooltip: "Add",
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    GitIsolate.instance
+                        .addToIndex(repositoryDir, unstaged[index])
+                        .then((result) => _refresh())
+                        .catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Error: ' + error.toString())));
+                    });
+                  },
+                ),
+              ]));
+        },
+      ))),
+    ]);
   }
 
   @override
@@ -330,25 +306,23 @@ class _CommitMessageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.all(kDefaultPadding),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: _CommitMessageCard(
-                  initialValue: msgSig.message,
-                  onSaved: (val) => msgSig.message = val!,
-                ),
-              ),
-              SizedBox(height: kDefaultPadding),
-              _CommitAuthorCard(
-                initialName: msgSig.name,
-                initialEmail: msgSig.email,
-                onNameSaved: (val) => msgSig.name = val!,
-                onEmailSaved: (val) => msgSig.email = val!,
-              ),
-            ]));
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: _CommitMessageCard(
+              initialValue: msgSig.message,
+              onSaved: (val) => msgSig.message = val!,
+            ),
+          ),
+          SizedBox(height: kDefaultSectionSpacing),
+          _CommitAuthorCard(
+            initialName: msgSig.name,
+            initialEmail: msgSig.email,
+            onNameSaved: (val) => msgSig.name = val!,
+            onEmailSaved: (val) => msgSig.email = val!,
+          ),
+        ]);
   }
 }
 
