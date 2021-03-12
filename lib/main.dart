@@ -28,6 +28,7 @@ import 'package:tuple/tuple.dart';
 // TODO: abort a merge
 // TODO: on a merge, replace files with your/their version
 // TODO: checkout branches
+// TODO: file status icons in commit view
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PlomGit',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
