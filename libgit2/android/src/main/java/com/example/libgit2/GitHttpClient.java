@@ -73,7 +73,7 @@ public class GitHttpClient
 
     public void setCredentials(String username, String password)
     {
-        Log.v(TAG, "Credentials " + username + " " + password);
+        Log.v(TAG, "Credentials sent");
         connection.setRequestProperty("Authorization", 
             "Basic " + Base64.encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT));
     }
