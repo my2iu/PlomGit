@@ -2,7 +2,7 @@
 
 A very basic Git client that runs on mobile devices. It is built on libgit2 and Flutter. 
 
-Packaged releases of PlomGit can be found through the (https://www.plom.dev/plomgit/)[PlomGit webpage].
+Packaged releases of PlomGit can be found through the [https://www.plom.dev/plomgit/](PlomGit webpage).
 
 ### Alternative Git Engines Exploration
 
