@@ -126,9 +126,12 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
         }
         if (dirListing != null)
         {
+            String idPrefix = parentDocumentId;
+            if (!"/".equals(parentDocumentId))
+                idPrefix = idPrefix + "/";
             for (File file : dirListing)
             {
-                addFileToCursor(result, parentDocumentId + "/" + file.getName());
+                addFileToCursor(result, idPrefix + file.getName());
             }
         }
         return result;
@@ -138,7 +141,7 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
     public Cursor queryDocument (String documentId, String[] projection)
             throws FileNotFoundException
     {
-        Log.v(TAG, "queryDocument" + documentId);
+        Log.v(TAG, "queryDocument " + documentId);
 
         if (projection == null || projection.length == 0)
             projection = DEFAULT_DOCUMENT_PROJECTION;
@@ -193,6 +196,8 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
         if (parentPaths.length > childPaths.length) return false;
         for (int n = 0; n < childPaths.length; n++)
         {
+            if (n >= parentPaths.length) 
+                break;
             if (!childPaths[n].equals(parentPaths[n]))
                 return false;
         }
