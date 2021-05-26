@@ -64,7 +64,10 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
                     | Root.FLAG_SUPPORTS_IS_CHILD);
             row.add(Document.COLUMN_SIZE, file.length());
         }
-        row.add(Document.COLUMN_DISPLAY_NAME, file.getName());
+        if (documentId.equals("/"))
+            row.add(Document.COLUMN_DISPLAY_NAME, "PlomGit");
+        else
+            row.add(Document.COLUMN_DISPLAY_NAME, file.getName());
         row.add(Document.COLUMN_LAST_MODIFIED, file.lastModified());
     }
 
