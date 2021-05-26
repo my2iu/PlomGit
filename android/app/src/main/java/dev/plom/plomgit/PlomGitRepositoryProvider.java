@@ -53,13 +53,15 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
                 row.add(Document.COLUMN_FLAGS, 0);
             else
                 row.add(Document.COLUMN_FLAGS, Document.FLAG_DIR_SUPPORTS_CREATE
-                        | Document.FLAG_SUPPORTS_DELETE | Document.FLAG_SUPPORTS_REMOVE);
+                        | Document.FLAG_SUPPORTS_DELETE | Document.FLAG_SUPPORTS_REMOVE
+                        | Root.FLAG_SUPPORTS_IS_CHILD);
             row.add(Document.COLUMN_SIZE, 0);
         } else  {
             String mimeType = "application/octet-stream";
             row.add(Document.COLUMN_MIME_TYPE, mimeType);
             row.add(Document.COLUMN_FLAGS, Document.FLAG_SUPPORTS_DELETE
-                    | Document.FLAG_SUPPORTS_WRITE | Document.FLAG_SUPPORTS_REMOVE);
+                    | Document.FLAG_SUPPORTS_WRITE | Document.FLAG_SUPPORTS_REMOVE
+                    | Root.FLAG_SUPPORTS_IS_CHILD);
             row.add(Document.COLUMN_SIZE, file.length());
         }
         row.add(Document.COLUMN_DISPLAY_NAME, file.getName());
@@ -87,7 +89,7 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
         MatrixCursor cursor = new MatrixCursor(projection);
         MatrixCursor.RowBuilder row = cursor.newRow();
         row.add(Root.COLUMN_ROOT_ID, PlomGitRepositoryProvider.class.getName() + ".gitrepos");
-        row.add(Root.COLUMN_FLAGS, Root.FLAG_SUPPORTS_CREATE);
+        row.add(Root.COLUMN_FLAGS, Root.FLAG_SUPPORTS_CREATE | Root.FLAG_SUPPORTS_IS_CHILD);
         row.add(Root.COLUMN_TITLE, "PlomGit");
         row.add(Root.COLUMN_SUMMARY, "git repositories");
         row.add(Root.COLUMN_DOCUMENT_ID, "/");
