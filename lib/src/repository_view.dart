@@ -243,7 +243,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                   // Show the commit screen
                 },
                 child: TextAndIcon(
-                    Text("Commit"),
+                    Text("Commit..."),
                     Icon(Icons.save_alt,
                         color: Theme.of(context).iconTheme.color))));
             entries.add(PopupMenuDivider());
@@ -265,7 +265,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                   // Show the remote list screen
                 },
                 child: TextAndIcon(
-                    Text("Remotes"),
+                    Text("Remotes..."),
                     Icon(Icons.cloud_outlined,
                         color: Theme.of(context).iconTheme.color))));
           }

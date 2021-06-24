@@ -13,7 +13,8 @@ import 'package:PlomGit/src/util.dart'
         DEFAULT_REPO_NAME,
         retryWithAskCredentials,
         showProgressWhileWaitingFor,
-        showConfirmDialog;
+        showConfirmDialog,
+        TextAndIcon;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
 import 'package:path_provider/path_provider.dart';
@@ -300,6 +301,19 @@ class _MyHomePageState extends State<MyHomePage> {
             ]);
   }
 
+  PopupMenuButton buildActionsPopupMenu(BuildContext ctx) {
+    return PopupMenuButton(
+        onSelected: (dynamic fn) => fn(),
+        itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                  value: () {},
+                  child: TextAndIcon(
+                      Text("Accounts..."),
+                      Icon(Icons.account_circle,
+                          color: Theme.of(context).iconTheme.color))),
+            ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -313,6 +327,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title!),
+        actions: [buildActionsPopupMenu(context)],
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
