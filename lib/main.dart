@@ -309,7 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: () {},
                   child: TextAndIcon(
                       Text("Accounts..."),
-                      Icon(Icons.account_circle,
+                      Icon(Icons.manage_accounts,
                           color: Theme.of(context).iconTheme.color))),
             ]);
   }

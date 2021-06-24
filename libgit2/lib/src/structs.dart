@@ -15,38 +15,28 @@ class git_strarray extends Struct {
   external int count;
 }
 
-// Opaque type
-class git_remote extends Struct {}
+// Opaque types
+class git_remote extends Opaque {}
 
-// Opaque type
-class git_repository extends Struct {}
+class git_repository extends Opaque {}
 
-// Opaque type
-class git_status_list extends Struct {}
+class git_status_list extends Opaque {}
 
-// Opaque type
-class git_credential extends Struct {}
+class git_credential extends Opaque {}
 
-// Opaque type
-class git_index extends Struct {}
+class git_index extends Opaque {}
 
-// Opaque type
-class git_tree extends Struct {}
+class git_tree extends Opaque {}
 
-// Opaque type
-class git_commit extends Struct {}
+class git_commit extends Opaque {}
 
-// Opaque type
-class git_annotated_commit extends Struct {}
+class git_annotated_commit extends Opaque {}
 
-// Opaque type
-class git_reference extends Struct {}
+class git_reference extends Opaque {}
 
-// Opaque type
-class git_object extends Struct {}
+class git_object extends Opaque {}
 
-// Opaque type
-class git_repository_init_options extends Struct {}
+class git_repository_init_options extends Opaque {}
 
 typedef git_credentials_acquire_cb = Int32 Function(
     Pointer<Pointer<git_credential>> out,
