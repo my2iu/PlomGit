@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
 import 'package:PlomGit/src/remote_view.dart'
     show RemoteConfigurationWidget, RepositoryRemoteInfo;
+import 'package:PlomGit/src/account_credential_view.dart'
+    show AccountCredentialListView;
 import 'package:PlomGit/src/util.dart'
     show
         RepositoryNameTextFormField,
@@ -30,6 +32,7 @@ import 'package:tuple/tuple.dart';
 // TODO: on a merge, replace files with your/their version
 // TODO: checkout branches
 // TODO: file status icons in commit view
+// TODO: change user agent on android http client
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
@@ -306,7 +309,13 @@ class _MyHomePageState extends State<MyHomePage> {
         onSelected: (dynamic fn) => fn(),
         itemBuilder: (BuildContext context) => [
               PopupMenuItem(
-                  value: () {},
+                  value: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute<String>(
+                            builder: (BuildContext context) =>
+                                AccountCredentialListView()));
+                  },
                   child: TextAndIcon(
                       Text("Accounts..."),
                       Icon(Icons.manage_accounts,

@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:libgit2/libgit2.dart' show Libgit2Exception;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
+import 'dart:convert' show jsonDecode, jsonEncode;
 
 class TextAndIcon extends StatelessWidget {
   TextAndIcon(this.text, [this.icon]);
@@ -34,15 +35,28 @@ class RepositoryNameTextFormField extends StatelessWidget {
   }
 }
 
-class RepositoryOrRemoteNameTextFormField extends StatelessWidget {
+class RepositoryOrRemoteNameTextFormField extends ValidatingNameTextFormField {
   RepositoryOrRemoteNameTextFormField(
+      {String? initialValue,
+      Function(String?)? onSaved,
+      bool forRemote = false,
+      bool autofocus = false})
+      : super(
+            initialValue: initialValue,
+            label: forRemote ? 'Remote name' : 'Repository name',
+            onSaved: onSaved,
+            autofocus: autofocus);
+}
+
+class ValidatingNameTextFormField extends StatelessWidget {
+  ValidatingNameTextFormField(
       {this.initialValue,
+      this.label = "Name",
       this.onSaved,
-      this.forRemote = false,
       this.autofocus = false});
   final String? initialValue;
+  final String label;
   final Function(String?)? onSaved;
-  final bool forRemote;
   final bool autofocus;
 
   @override
@@ -50,8 +64,7 @@ class RepositoryOrRemoteNameTextFormField extends StatelessWidget {
     return TextFormField(
       initialValue: initialValue,
       autofocus: autofocus,
-      decoration: InputDecoration(
-          labelText: forRemote ? 'Remote name' : 'Repository name'),
+      decoration: InputDecoration(labelText: label),
       onSaved: onSaved,
       validator: (text) {
         if (text!.isEmpty) return "Please enter a name";
@@ -259,7 +272,6 @@ Widget makeLoginDialog(BuildContext context, String repository, String remote,
             ],
           );
         } else {
-          print("waiting");
           return AlertDialog(
             title: Text("Login"),
             content: SizedBox(width: 32, height: 32),
@@ -383,6 +395,61 @@ class GitStatusFlags {
   }
 }
 
+class AccountCredentialDescription {
+  int id = 0;
+  String name = "";
+
+  AccountCredentialDescription();
+  AccountCredentialDescription.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'] {
+    String type = json['type'];
+    assert(type == 'userpass');
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'type': 'userpass',
+      };
+
+  static int findNextAccountCredentialIdInList(
+      List<AccountCredentialDescription> list) {
+    for (int n = 1;; n++) {
+      if (!list.any((account) => account.id == n)) return n;
+    }
+  }
+
+  void addAccountCredentialToList(List<AccountCredentialDescription> list) {
+    if (id != 0) {
+      int idx = list.indexWhere((entry) => entry.id == id);
+      assert(idx >= 0);
+      list[idx] = this;
+      return;
+    }
+    id = findNextAccountCredentialIdInList(list);
+    list.add(this);
+  }
+}
+
+class AccountSecurityCredentials {
+  String? user = '';
+  String? password = '';
+  AccountSecurityCredentials();
+
+  AccountSecurityCredentials.fromJson(Map<String, dynamic> json) {
+    if (json.containsKey('user')) user = json['user'] as String;
+    if (json.containsKey('password')) password = json['password'] as String;
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> json = {};
+    if (user != null && user!.isNotEmpty) json['user'] = user;
+    if (password != null && password!.isNotEmpty) json['password'] = password;
+    return json;
+  }
+}
+
 class PlomGitPrefs {
   // Singleton instance
   static final PlomGitPrefs instance = PlomGitPrefs._create();
@@ -413,6 +480,21 @@ class PlomGitPrefs {
 
   Future<String?> readEncryptedPassword(String repository, String remote) {
     return storage.read(key: "repo/$repository/remote/$remote/password");
+  }
+
+  Future<void> writeEncryptedAccountSecurityCredentials(
+      int accountId, AccountSecurityCredentials credentials) {
+    return storage.write(
+        key: "account/$accountId/credentials", value: jsonEncode(credentials));
+  }
+
+  Future<AccountSecurityCredentials> readEncryptedAccountSecurityCredentials(
+      int accountId) {
+    return storage
+        .read(key: "account/$accountId/credentials")
+        .then((str) =>
+            AccountSecurityCredentials.fromJson(jsonDecode(str ?? "{}")))
+        .catchError((e) => AccountSecurityCredentials());
   }
 
   void writeLastAuthor(String repository, String name, String email) {
@@ -465,6 +547,47 @@ class PlomGitPrefs {
             }
           });
         });
+  }
+
+  Future<List<AccountCredentialDescription>> readAccountCredentialsList() {
+    return sharedPreferences
+        .then((prefs) => prefs.getString("global/accounts.list") ?? "[]")
+        .then((json) => jsonDecode(json) as List<dynamic>)
+        .then((dynlist) => dynlist
+            .map((dyn) => AccountCredentialDescription.fromJson(
+                dyn as Map<String, dynamic>))
+            .toList());
+  }
+
+  Future<void> writeAccountCredentialsList(
+      List<AccountCredentialDescription> credentials) {
+    return sharedPreferences.then((prefs) =>
+        prefs.setString("global/accounts.list", jsonEncode(credentials)));
+  }
+
+  Future<void> eraseAccountCredential(int credentialId) {
+    Future<void> eraseFuture;
+    if (credentialId > 0) {
+      // TODO: Delete user-password from secure storage
+      eraseFuture = storage
+          .delete(key: "account/$credentialId/credentials")
+          .catchError((e) {
+        // Ignore errors
+      }).then((_) {
+        // TODO: Remove references to the account from repositories
+      });
+    } else {
+      eraseFuture = Future.value();
+    }
+    return eraseFuture
+        .then((_) => readAccountCredentialsList())
+        .then((accounts) {
+      int idx = accounts.indexWhere((acct) => acct.id == credentialId);
+      if (idx >= 0) {
+        accounts.removeAt(idx);
+      }
+      writeAccountCredentialsList(accounts);
+    });
   }
 }
 
