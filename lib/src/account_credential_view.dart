@@ -150,7 +150,7 @@ class AccountCredentialsDialog extends StatelessWidget {
         appBar: AppBar(
           title: Text('Account Credentials'),
         ),
-        body: Padding(
+        body: SingleChildScrollView(
             padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(

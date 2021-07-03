@@ -568,7 +568,7 @@ class PlomGitPrefs {
   Future<void> eraseAccountCredential(int credentialId) {
     Future<void> eraseFuture;
     if (credentialId > 0) {
-      // TODO: Delete user-password from secure storage
+      // Delete user-password from secure storage
       eraseFuture = storage
           .delete(key: "account/$credentialId/credentials")
           .catchError((e) {

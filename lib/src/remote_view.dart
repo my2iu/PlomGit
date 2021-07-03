@@ -148,7 +148,7 @@ class NewRemoteDialog extends StatelessWidget {
         appBar: AppBar(
           title: Text('New Remote'),
         ),
-        body: Padding(
+        body: SingleChildScrollView(
             padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(
@@ -209,6 +209,45 @@ class RemoteConfigurationWidget extends StatelessWidget {
                 ),
               ]))),
       SizedBox(height: kDefaultSectionSpacing),
+      RemoteCredentialsWidget(remoteInfo),
+    ]);
+  }
+}
+
+class RemoteCredentialsWidget extends StatefulWidget {
+  const RemoteCredentialsWidget(this.remoteInfo, {Key? key}) : super(key: key);
+
+  final RepositoryRemoteInfo remoteInfo;
+
+  @override
+  State<RemoteCredentialsWidget> createState() =>
+      _RemoteCredentialsWidgetState(remoteInfo);
+}
+
+/// This is the private State class that goes with MyStatefulWidget.
+class _RemoteCredentialsWidgetState extends State<RemoteCredentialsWidget> {
+  _RemoteCredentialsWidgetState(this.remoteInfo);
+  final RepositoryRemoteInfo remoteInfo;
+  String dropdownValue = 'One';
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      // DropdownButton<String>(
+      //   value: dropdownValue,
+      //   onChanged: (String? newValue) {
+      //     setState(() {
+      //       dropdownValue = newValue!;
+      //     });
+      //   },
+      //   items: <String>['One', 'Two', 'Free', 'Four']
+      //       .map<DropdownMenuItem<String>>((String value) {
+      //     return DropdownMenuItem<String>(
+      //       value: value,
+      //       child: Text(value),
+      //     );
+      //   }).toList(),
+      // ),
       Card(
           child: Padding(
               padding: EdgeInsets.all(kDefaultPadding),

@@ -379,7 +379,7 @@ class RepositoryLocationDialog extends StatelessWidget {
         appBar: AppBar(
           title: Text('Repository Configuration'),
         ),
-        body: Padding(
+        body: SingleChildScrollView(
             padding: EdgeInsets.all(kDefaultPadding),
             child: Form(
                 key: _formKey,
@@ -416,7 +416,7 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
         appBar: AppBar(
           title: Text('Repository Configuration'),
         ),
-        body: Padding(
+        body: SingleChildScrollView(
             padding: EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(
