@@ -260,10 +260,8 @@ Widget makeLoginDialog(BuildContext context, String repository, String remote,
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
                     if (saveLogin) {
-                      PlomGitPrefs.instance
-                          .writeEncryptedUser(repository, remote, username);
-                      PlomGitPrefs.instance
-                          .writeEncryptedPassword(repository, remote, password);
+                      PlomGitPrefs.instance.writeEncryptedUserPassword(
+                          repository, remote, username, password);
                     }
                     Navigator.pop(context, Tuple2(username, password));
                   }
@@ -294,14 +292,28 @@ Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
   String user = "";
   String password = "";
   return PlomGitPrefs.instance
-      .readEncryptedUser(repositoryName, remoteName)
-      .then<void>((val) {
-        if (val != null) user = val;
-      })
-      .then((_) => PlomGitPrefs.instance
-          .readEncryptedPassword(repositoryName, remoteName))
-      .then<void>((val) {
-        if (val != null) password = val;
+      .readRemoteCredentialsInfo(repositoryName, remoteName)
+      .then((credential) {
+        if (credential.type == RemoteCredentialsType.savedCredentials) {
+          return PlomGitPrefs.instance
+              .readEncryptedAccountSecurityCredentials(
+                  credential.savedCredentialsId)
+              .then((accountCredentials) {
+            user = accountCredentials.user ?? "";
+            password = accountCredentials.password ?? "";
+          });
+        } else {
+          return PlomGitPrefs.instance
+              .readEncryptedUser(repositoryName, remoteName)
+              .then<void>((val) {
+                if (val != null) user = val;
+              })
+              .then((_) => PlomGitPrefs.instance
+                  .readEncryptedPassword(repositoryName, remoteName))
+              .then<void>((val) {
+                if (val != null) password = val;
+              });
+        }
       })
       .then((_) => fn(user, password))
       .catchError((error) {
@@ -450,6 +462,56 @@ class AccountSecurityCredentials {
   }
 }
 
+// Whether a repository's remote has a user-password directly stored or whether
+// it refers to a separate account/saved-crecentials
+enum RemoteCredentialsType { userPassword, savedCredentials }
+
+// Describes which security credentials should be used for a repository's remote
+class RemoteCredentialsInfo {
+  RemoteCredentialsType type = RemoteCredentialsType.userPassword;
+
+  // If using saved credentials, this is the id of which account or saved
+  // credentials to use (or -1 for none)
+  int savedCredentialsId = -1;
+
+  RemoteCredentialsInfo();
+
+  static RemoteCredentialsType _stringToCredentialsType(String? str) {
+    switch (str) {
+      case "userpass":
+        return RemoteCredentialsType.userPassword;
+      case "savedcredentials":
+        return RemoteCredentialsType.savedCredentials;
+      default:
+        return RemoteCredentialsType.userPassword;
+    }
+  }
+
+  RemoteCredentialsInfo.fromJson(Map<String, dynamic> json) {
+    if (json.containsKey('type'))
+      type = _stringToCredentialsType(json['type'] as String);
+    if (json.containsKey('savedCredentials'))
+      savedCredentialsId = (json['savedCredentials'] as num).toInt();
+  }
+
+  Map<String, dynamic> toJson() {
+    String typeString;
+    switch (type) {
+      case RemoteCredentialsType.userPassword:
+        typeString = "userpass";
+        break;
+      case RemoteCredentialsType.savedCredentials:
+        typeString = "savedcredentials";
+        break;
+    }
+
+    Map<String, dynamic> json = {};
+    json['type'] = typeString;
+    if (savedCredentialsId >= 0) json['savedCredentials'] = savedCredentialsId;
+    return json;
+  }
+}
+
 class PlomGitPrefs {
   // Singleton instance
   static final PlomGitPrefs instance = PlomGitPrefs._create();
@@ -462,16 +524,17 @@ class PlomGitPrefs {
     storage = new FlutterSecureStorage();
   }
 
-  Future<void> writeEncryptedUser(
-      String repository, String remote, String user) {
-    return storage.write(
-        key: "repo/$repository/remote/$remote/user", value: user);
-  }
-
-  Future<void> writeEncryptedPassword(
-      String repository, String remote, String password) {
-    return storage.write(
-        key: "repo/$repository/remote/$remote/password", value: password);
+  Future<void> writeEncryptedUserPassword(
+      String repository, String remote, String? user, String? password) {
+    return Future.value(null).then((_) {
+      if (user?.isEmpty ?? true) user = null;
+      return storage.write(
+          key: "repo/$repository/remote/$remote/user", value: user);
+    }).then((_) {
+      if (password?.isEmpty ?? true) password = null;
+      return storage.write(
+          key: "repo/$repository/remote/$remote/password", value: password);
+    });
   }
 
   Future<String?> readEncryptedUser(String repository, String remote) {
@@ -495,6 +558,23 @@ class PlomGitPrefs {
         .then((str) =>
             AccountSecurityCredentials.fromJson(jsonDecode(str ?? "{}")))
         .catchError((e) => AccountSecurityCredentials());
+  }
+
+  Future<void> writeRemoteCredentialsInfo(
+      String repository, String remote, RemoteCredentialsInfo info) {
+    return sharedPreferences.then((prefs) {
+      prefs.setString(
+          "repo/$repository/remote/$remote/credentials", jsonEncode(info));
+    });
+  }
+
+  Future<RemoteCredentialsInfo> readRemoteCredentialsInfo(
+      String repository, String remote) {
+    return sharedPreferences
+        .then((prefs) =>
+            prefs.getString("repo/$repository/remote/$remote/credentials"))
+        .then(
+            (json) => RemoteCredentialsInfo.fromJson(jsonDecode(json ?? "{}")));
   }
 
   void writeLastAuthor(String repository, String name, String email) {

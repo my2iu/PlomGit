@@ -9,6 +9,8 @@ import 'package:PlomGit/src/account_credential_view.dart'
 import 'package:PlomGit/src/util.dart'
     show
         RepositoryNameTextFormField,
+        RemoteCredentialsType,
+        RemoteCredentialsInfo,
         PlomGitPrefs,
         kDefaultPadding,
         kDefaultSectionSpacing,
@@ -128,17 +130,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.pop(dialogContext, () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute<Tuple4<String, String, String, String>>(
+                      MaterialPageRoute<RepositoryRemoteInfo>(
                         builder: (BuildContext context) =>
                             RepositoryLocationAndRemoteDialog(),
                       ),
                     ).then((result) {
                       if (result == null) return;
-                      String url = result.item1;
-                      String name = result.item2;
-                      String user = result.item3;
-                      String password = result.item4;
-                      _cloneRepository(context, name, url, user, password);
+                      String url = result.url;
+                      String name = result.name;
+                      _cloneRepository(context, name, url,
+                          result.credentialInfo, result.user, result.password);
                     });
                   });
                 }),
@@ -190,18 +191,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _cloneRepository(BuildContext context, String name, String url,
-      String user, String password) {
-    Future<dynamic> waitWriteCredentials = Future.value(null);
-    if (user.isNotEmpty) {
-      waitWriteCredentials = waitWriteCredentials.then((_) =>
-          PlomGitPrefs.instance.writeEncryptedUser(name, "origin", user));
-    }
-    if (password.isNotEmpty) {
-      waitWriteCredentials = waitWriteCredentials.then((_) => PlomGitPrefs
-          .instance
-          .writeEncryptedPassword(name, "origin", password));
-    }
-    waitWriteCredentials.then((_) {
+      RemoteCredentialsInfo credentialsInfo, String user, String password) {
+    PlomGitPrefs.instance
+        .writeRemoteCredentialsInfo(name, "origin", credentialsInfo)
+        .then((_) {
+      if (credentialsInfo.type == RemoteCredentialsType.userPassword)
+        return PlomGitPrefs.instance
+            .writeEncryptedUserPassword(name, "origin", user, password);
+      else
+        return PlomGitPrefs.instance
+            .writeEncryptedUserPassword(name, "origin", null, null);
+    }).then((_) {
       _getRepositoryDirForName(name).then((pathUri) {
         showProgressWhileWaitingFor(
                 context,
@@ -430,10 +430,7 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      Navigator.pop(
-                          context,
-                          Tuple4(remoteInfo.url, remoteInfo.name,
-                              remoteInfo.user, remoteInfo.password));
+                      Navigator.pop(context, remoteInfo);
                     }
                   },
                   child: Text('Clone')),

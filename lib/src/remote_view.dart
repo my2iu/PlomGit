@@ -6,12 +6,14 @@ import 'util.dart'
         RepositoryOrRemoteNameTextFormField,
         RemoteUserTextFormField,
         RemotePasswordTextFormField,
+        RemoteCredentialsType,
+        RemoteCredentialsInfo,
+        AccountCredentialDescription,
         kDefaultPadding,
         kDefaultSectionSpacing,
         showProgressWhileWaitingFor,
         DEFAULT_REPO_NAME,
         DEFAULT_REPO_URL;
-import 'package:tuple/tuple.dart';
 
 class RemoteListView extends StatefulWidget {
   RemoteListView(this.repositoryName, this.repositoryUri);
@@ -66,33 +68,26 @@ class _RemoteListViewState extends State<RemoteListView> {
   void _newRemotePressed(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Tuple4<String, String, String, String>>(
-        builder: (BuildContext context) => NewRemoteDialog(),
+      MaterialPageRoute<RepositoryRemoteInfo>(
+        builder: (BuildContext context) =>
+            NewRemoteDialog(RepositoryRemoteInfo()),
       ),
     ).then((result) {
       if (result == null) return;
-      String url = result.item1;
-      String name = result.item2;
-      String user = result.item3;
-      String password = result.item4;
-      Future<dynamic> waitWriteCredentials = Future.value(null);
+      String url = result.url;
+      String name = result.name;
 
       showProgressWhileWaitingFor(context,
               GitIsolate.instance.createRemote(repositoryDir, name, url))
+          .then((_) => PlomGitPrefs.instance.writeRemoteCredentialsInfo(
+              repositoryName, name, result.credentialInfo))
           .then((_) {
-        if (user.isNotEmpty) {
-          return PlomGitPrefs.instance.writeEncryptedUser(name, name, user);
-        } else {
-          return Future.value();
-        }
-      }).then((_) {
-        if (password.isNotEmpty) {
-          waitWriteCredentials = waitWriteCredentials.then((_) => PlomGitPrefs
-              .instance
-              .writeEncryptedPassword(name, name, password));
-        } else {
-          return Future.value();
-        }
+        if (result.credentialInfo.type == RemoteCredentialsType.userPassword)
+          return PlomGitPrefs.instance.writeEncryptedUserPassword(
+              name, name, result.user, result.password);
+        else
+          return PlomGitPrefs.instance
+              .writeEncryptedUserPassword(repositoryName, name, null, null);
       }).then((_) {
         _refresh();
         ScaffoldMessenger.of(context)
@@ -139,7 +134,8 @@ class _RemoteListViewState extends State<RemoteListView> {
 }
 
 class NewRemoteDialog extends StatelessWidget {
-  final RepositoryRemoteInfo remoteInfo = RepositoryRemoteInfo();
+  NewRemoteDialog(this.remoteInfo);
+  final RepositoryRemoteInfo remoteInfo;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -163,10 +159,7 @@ class NewRemoteDialog extends StatelessWidget {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      Navigator.pop(
-                          context,
-                          Tuple4(remoteInfo.url, remoteInfo.name,
-                              remoteInfo.user, remoteInfo.password));
+                      Navigator.pop(context, remoteInfo);
                     }
                   },
                   child: Text('Create')),
@@ -179,6 +172,7 @@ class RepositoryRemoteInfo {
   String url = DEFAULT_REPO_URL;
   String user = "";
   String password = "";
+  RemoteCredentialsInfo credentialInfo = RemoteCredentialsInfo();
 }
 
 class RemoteConfigurationWidget extends StatelessWidget {
@@ -224,43 +218,100 @@ class RemoteCredentialsWidget extends StatefulWidget {
       _RemoteCredentialsWidgetState(remoteInfo);
 }
 
-/// This is the private State class that goes with MyStatefulWidget.
 class _RemoteCredentialsWidgetState extends State<RemoteCredentialsWidget> {
   _RemoteCredentialsWidgetState(this.remoteInfo);
   final RepositoryRemoteInfo remoteInfo;
-  String dropdownValue = 'One';
+
+  Widget buildUserPasswordCard(BuildContext context) {
+    return Card(
+        child: Padding(
+            padding: EdgeInsets.all(kDefaultPadding),
+            child: Column(children: [
+              RemoteUserTextFormField(
+                initialValue: remoteInfo.user,
+                onSaved: (text) => remoteInfo.user = text!,
+              ),
+              RemotePasswordTextFormField(
+                initialValue: remoteInfo.password,
+                onSaved: (text) => remoteInfo.password = text!,
+              ),
+            ])));
+  }
+
+  Widget buildSavedCredentialsCard(BuildContext context) {
+    return Card(
+        child: Padding(
+            padding: EdgeInsets.all(kDefaultPadding),
+            child: FutureBuilder<List<AccountCredentialDescription>>(
+                future: PlomGitPrefs.instance.readAccountCredentialsList(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<AccountCredentialDescription>>
+                        snapshot) {
+                  if (snapshot.hasData) {
+                    int? idx = snapshot.data?.indexWhere((cred) =>
+                        cred.id ==
+                        remoteInfo.credentialInfo.savedCredentialsId);
+                    AccountCredentialDescription? selectedCredential =
+                        idx == null || idx < 0 ? null : snapshot.data![idx];
+                    // Force a selection if there are options available and none
+                    // are selected
+                    if (selectedCredential == null &&
+                        snapshot.data != null &&
+                        snapshot.data!.isNotEmpty) {
+                      selectedCredential = snapshot.data!.first;
+                      remoteInfo.credentialInfo.savedCredentialsId =
+                          selectedCredential.id;
+                    }
+                    return DropdownButton<AccountCredentialDescription>(
+                      isExpanded: true,
+                      value: selectedCredential,
+                      onChanged: (AccountCredentialDescription? newValue) {
+                        setState(() {
+                          remoteInfo.credentialInfo.savedCredentialsId =
+                              newValue!.id;
+                        });
+                      },
+                      items: snapshot.data
+                          ?.map((credential) => DropdownMenuItem(
+                              value: credential, child: Text(credential.name)))
+                          .toList(),
+                    );
+                  } else {
+                    return Text('Loading');
+                  }
+                })));
+  }
 
   @override
   Widget build(BuildContext context) {
+    Widget credentialsWidget;
+    switch (remoteInfo.credentialInfo.type) {
+      case RemoteCredentialsType.userPassword:
+        credentialsWidget = buildUserPasswordCard(context);
+        break;
+      case RemoteCredentialsType.savedCredentials:
+        credentialsWidget = buildSavedCredentialsCard(context);
+        break;
+    }
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      // DropdownButton<String>(
-      //   value: dropdownValue,
-      //   onChanged: (String? newValue) {
-      //     setState(() {
-      //       dropdownValue = newValue!;
-      //     });
-      //   },
-      //   items: <String>['One', 'Two', 'Free', 'Four']
-      //       .map<DropdownMenuItem<String>>((String value) {
-      //     return DropdownMenuItem<String>(
-      //       value: value,
-      //       child: Text(value),
-      //     );
-      //   }).toList(),
-      // ),
-      Card(
-          child: Padding(
-              padding: EdgeInsets.all(kDefaultPadding),
-              child: Column(children: [
-                RemoteUserTextFormField(
-                  initialValue: remoteInfo.user,
-                  onSaved: (text) => remoteInfo.user = text!,
-                ),
-                RemotePasswordTextFormField(
-                  initialValue: remoteInfo.password,
-                  onSaved: (text) => remoteInfo.password = text!,
-                ),
-              ]))),
+      DropdownButton<RemoteCredentialsType>(
+          value: remoteInfo.credentialInfo.type,
+          onChanged: (RemoteCredentialsType? newValue) {
+            setState(() {
+              remoteInfo.credentialInfo.type = newValue!;
+            });
+          },
+          items: [
+            DropdownMenuItem<RemoteCredentialsType>(
+              value: RemoteCredentialsType.userPassword,
+              child: Text("Optional Password Login"),
+            ),
+            DropdownMenuItem<RemoteCredentialsType>(
+              value: RemoteCredentialsType.savedCredentials,
+              child: Text("Saved Credentials"),
+            ),
+          ]),
+      credentialsWidget,
     ]);
   }
 }
