@@ -165,6 +165,20 @@ class _RemoteCredentialsWidgetState extends State<RemoteCredentialsWidget> {
               remoteInfo.credentialInfo.savedCredentialsId =
                   selectedCredential.id;
             }
+            if (snapshot.data?.isEmpty ?? true) {
+              return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      "No saved credentials",
+                      style: TextStyle(
+                        color: Theme.of(context).disabledColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    )
+                  ]);
+            }
             return DropdownButton<AccountCredentialDescription>(
               isExpanded: true,
               value: selectedCredential,
@@ -471,8 +485,6 @@ Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
                     makeLoginDialog(context, repositoryName, remoteName, login))
             .then((RepositoryRemoteLoginInfo? newLogin) {
           if (newLogin != null) {
-            print(newLogin.user);
-            print(newLogin.password);
             return fn(newLogin.user, newLogin.password);
           }
           throw "Cancelled";
@@ -802,14 +814,30 @@ class PlomGitPrefs {
 
   Future<void> eraseAccountCredential(int credentialId) {
     Future<void> eraseFuture;
-    if (credentialId > 0) {
+    if (credentialId >= 0) {
       // Delete user-password from secure storage
       eraseFuture = storage
           .delete(key: "account/$credentialId/credentials")
           .catchError((e) {
         // Ignore errors
       }).then((_) {
-        // TODO: Remove references to the account from repositories
+        // Remove references to the account from repositories
+        RegExp hasCredential =
+            RegExp("repo/([^/]*)/remote/([^/]*)/credentials");
+
+        return sharedPreferences.then((prefs) {
+          Future.forEach(prefs.getKeys(), (String key) {
+            var match = hasCredential.firstMatch(key);
+            if (match == null) return null;
+            return readRemoteCredentialsInfo(match.group(1)!, match.group(2)!)
+                .then((credentials) {
+              if (credentials.type == RemoteCredentialsType.savedCredentials &&
+                  credentials.savedCredentialsId == credentialId) {
+                return prefs.remove(key);
+              }
+            });
+          });
+        });
       });
     } else {
       eraseFuture = Future.value();
