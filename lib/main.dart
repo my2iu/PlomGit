@@ -9,8 +9,8 @@ import 'package:PlomGit/src/account_credential_view.dart'
 import 'package:PlomGit/src/util.dart'
     show
         RepositoryNameTextFormField,
-        RemoteCredentialsType,
         RemoteCredentialsInfo,
+        RepositoryRemoteLoginInfo,
         PlomGitPrefs,
         kDefaultPadding,
         kDefaultSectionSpacing,
@@ -18,6 +18,7 @@ import 'package:PlomGit/src/util.dart'
         retryWithAskCredentials,
         showProgressWhileWaitingFor,
         showConfirmDialog,
+        writeLoginInfo,
         TextAndIcon;
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'package:universal_platform/universal_platform.dart';
@@ -25,7 +26,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart' as log;
 import 'package:path/path.dart' as path;
 import 'dart:developer' as developer;
-import 'package:tuple/tuple.dart';
 
 // TODO: Fix-up error checking in modifications to C code
 // TODO: Use ffigen to autogenerate C bindings
@@ -138,8 +138,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       if (result == null) return;
                       String url = result.url;
                       String name = result.name;
-                      _cloneRepository(context, name, url,
-                          result.credentialInfo, result.user, result.password);
+                      _cloneRepository(
+                          context,
+                          name,
+                          url,
+                          result.login.credentialInfo,
+                          result.login.user,
+                          result.login.password);
                     });
                   });
                 }),
@@ -192,16 +197,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _cloneRepository(BuildContext context, String name, String url,
       RemoteCredentialsInfo credentialsInfo, String user, String password) {
-    PlomGitPrefs.instance
-        .writeRemoteCredentialsInfo(name, "origin", credentialsInfo)
-        .then((_) {
-      if (credentialsInfo.type == RemoteCredentialsType.userPassword)
-        return PlomGitPrefs.instance
-            .writeEncryptedUserPassword(name, "origin", user, password);
-      else
-        return PlomGitPrefs.instance
-            .writeEncryptedUserPassword(name, "origin", null, null);
-    }).then((_) {
+    RepositoryRemoteLoginInfo login = RepositoryRemoteLoginInfo();
+    login.credentialInfo = credentialsInfo;
+    login.user = user;
+    login.password = password;
+    writeLoginInfo(name, "origin", login).then((_) {
       _getRepositoryDirForName(name).then((pathUri) {
         showProgressWhileWaitingFor(
                 context,

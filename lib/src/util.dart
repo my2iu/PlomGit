@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:libgit2/libgit2.dart' show Libgit2Exception;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tuple/tuple.dart';
 import 'dart:convert' show jsonDecode, jsonEncode;
 
 class TextAndIcon extends StatelessWidget {
@@ -116,6 +115,115 @@ class RemotePasswordTextFormField extends StatelessWidget {
   }
 }
 
+class RemoteCredentialsWidget extends StatefulWidget {
+  const RemoteCredentialsWidget(this.remoteInfo,
+      {Key? key, this.wrapInCard = true})
+      : super(key: key);
+
+  final RepositoryRemoteLoginInfo remoteInfo;
+  final bool wrapInCard;
+
+  @override
+  State<RemoteCredentialsWidget> createState() =>
+      _RemoteCredentialsWidgetState(remoteInfo, wrapInCard);
+}
+
+class _RemoteCredentialsWidgetState extends State<RemoteCredentialsWidget> {
+  _RemoteCredentialsWidgetState(this.remoteInfo, this.wrapInCard);
+  final RepositoryRemoteLoginInfo remoteInfo;
+  final bool wrapInCard;
+
+  Widget buildUserPasswordCard(BuildContext context) {
+    return Column(children: [
+      RemoteUserTextFormField(
+        initialValue: remoteInfo.user,
+        onSaved: (text) => remoteInfo.user = text!,
+      ),
+      RemotePasswordTextFormField(
+        initialValue: remoteInfo.password,
+        onSaved: (text) => remoteInfo.password = text!,
+      ),
+    ]);
+  }
+
+  Widget buildSavedCredentialsCard(BuildContext context) {
+    return FutureBuilder<List<AccountCredentialDescription>>(
+        future: PlomGitPrefs.instance.readAccountCredentialsList(),
+        builder: (BuildContext context,
+            AsyncSnapshot<List<AccountCredentialDescription>> snapshot) {
+          if (snapshot.hasData) {
+            int? idx = snapshot.data?.indexWhere((cred) =>
+                cred.id == remoteInfo.credentialInfo.savedCredentialsId);
+            AccountCredentialDescription? selectedCredential =
+                idx == null || idx < 0 ? null : snapshot.data![idx];
+            // Force a selection if there are options available and none
+            // are selected
+            if (selectedCredential == null &&
+                snapshot.data != null &&
+                snapshot.data!.isNotEmpty) {
+              selectedCredential = snapshot.data!.first;
+              remoteInfo.credentialInfo.savedCredentialsId =
+                  selectedCredential.id;
+            }
+            return DropdownButton<AccountCredentialDescription>(
+              isExpanded: true,
+              value: selectedCredential,
+              onChanged: (AccountCredentialDescription? newValue) {
+                setState(() {
+                  remoteInfo.credentialInfo.savedCredentialsId = newValue!.id;
+                });
+              },
+              items: snapshot.data
+                  ?.map((credential) => DropdownMenuItem(
+                      value: credential, child: Text(credential.name)))
+                  .toList(),
+            );
+          } else {
+            return Text('Loading');
+          }
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget credentialsWidget;
+    switch (remoteInfo.credentialInfo.type) {
+      case RemoteCredentialsType.userPassword:
+        credentialsWidget = buildUserPasswordCard(context);
+        break;
+      case RemoteCredentialsType.savedCredentials:
+        credentialsWidget = buildSavedCredentialsCard(context);
+        break;
+    }
+    if (wrapInCard)
+      credentialsWidget = Card(
+          child: Padding(
+              padding: EdgeInsets.all(kDefaultPadding),
+              child: credentialsWidget));
+
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      DropdownButton<RemoteCredentialsType>(
+          value: remoteInfo.credentialInfo.type,
+          onChanged: (RemoteCredentialsType? newValue) {
+            setState(() {
+              remoteInfo.credentialInfo.type = newValue!;
+            });
+          },
+          items: [
+            DropdownMenuItem<RemoteCredentialsType>(
+              value: RemoteCredentialsType.userPassword,
+              child: Text("Optional Password Login"),
+            ),
+            DropdownMenuItem<RemoteCredentialsType>(
+              value: RemoteCredentialsType.savedCredentials,
+              child: Text("Saved Credentials"),
+            ),
+          ]),
+      credentialsWidget,
+    ]);
+  }
+}
+
 class CheckboxFormField extends StatelessWidget {
   CheckboxFormField(
       {this.initialValue = false, this.message, this.validator, this.onSaved});
@@ -203,128 +311,169 @@ Widget _makeConfirmDialog(
 }
 
 Widget makeLoginDialog(BuildContext context, String repository, String remote,
-    String initialUser, String initialPassword) {
-  var username = initialUser;
-  var password = initialPassword;
+    RepositoryRemoteLoginInfo login) {
+  // var username = initialLogin.user;
+  // var password = initialLogin.password;
   bool saveLogin = false;
-  Future<Tuple2<String, String>> readingRemoteData = PlomGitPrefs.instance
-      .readEncryptedUser(repository, remote)
-      .then<void>((val) {
-        if (val != null) username = val;
-      })
-      .then((_) =>
-          PlomGitPrefs.instance.readEncryptedPassword(repository, remote))
-      .then((val) {
-        if (val != null) password = val;
-        return Tuple2(username, password);
-      });
+  // Future<Tuple2<String, String>> readingRemoteData = PlomGitPrefs.instance
+  //     .readEncryptedUser(repository, remote)
+  //     .then<void>((val) {
+  //       if (val != null) username = val;
+  //     })
+  //     .then((_) =>
+  //         PlomGitPrefs.instance.readEncryptedPassword(repository, remote))
+  //     .then((val) {
+  //       if (val != null) password = val;
+  //       return Tuple2(username, password);
+  //     });
   final formKey = GlobalKey<FormState>();
-  return FutureBuilder<Tuple2<String, String>>(
-      future: readingRemoteData,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return AlertDialog(
-            title: Text("Login"),
-            content: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    RemoteUserTextFormField(
-                      autofocus: true,
-                      initialValue: username,
-                      onSaved: (val) => username = val!,
-                    ),
-                    RemotePasswordTextFormField(
-                      initialValue: password,
-                      onSaved: (val) => password = val!,
-                    ),
-                    SizedBox(height: kDefaultPadding),
-                    CheckboxFormField(
-                      initialValue: saveLogin,
-                      message: "Remember login",
-                      onSaved: (val) => saveLogin = val!,
-                    ),
-                  ],
-                )),
-            actions: <Widget>[
-              TextButton(
-                child: Text('Cancel'),
-                onPressed: () {
-                  Navigator.pop(context, null);
-                },
-              ),
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    if (saveLogin) {
-                      PlomGitPrefs.instance.writeEncryptedUserPassword(
-                          repository, remote, username, password);
-                    }
-                    Navigator.pop(context, Tuple2(username, password));
-                  }
-                },
-              ),
-            ],
-          );
-        } else {
-          return AlertDialog(
-            title: Text("Login"),
-            content: SizedBox(width: 32, height: 32),
-            actions: <Widget>[
-              TextButton(
-                child: Text('Cancel'),
-                onPressed: () {
-                  Navigator.pop(context, null);
-                },
-              ),
-            ],
-          );
-        }
+  // return
+  // FutureBuilder<Tuple2<String, String>>(
+  //     future: readingRemoteData,
+  //     builder: (context, snapshot) {
+  //       if (snapshot.hasData) {
+  return AlertDialog(
+    title: Text("Login"),
+    content: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            RemoteCredentialsWidget(login, wrapInCard: false),
+            // RemoteUserTextFormField(
+            //   autofocus: true,
+            //   initialValue: username,
+            //   onSaved: (val) => username = val!,
+            // ),
+            // RemotePasswordTextFormField(
+            //   initialValue: password,
+            //   onSaved: (val) => password = val!,
+            // ),
+            SizedBox(height: kDefaultPadding),
+            CheckboxFormField(
+              initialValue: saveLogin,
+              message: "Remember login",
+              onSaved: (val) => saveLogin = val!,
+            ),
+          ],
+        )),
+    actions: <Widget>[
+      TextButton(
+        child: Text('Cancel'),
+        onPressed: () {
+          Navigator.pop(context, null);
+        },
+      ),
+      TextButton(
+        child: Text('OK'),
+        onPressed: () {
+          if (formKey.currentState!.validate()) {
+            formKey.currentState!.save();
+            if (saveLogin) {
+              writeLoginInfo(repository, remote, login);
+            }
+            if (login.credentialInfo.type ==
+                RemoteCredentialsType.savedCredentials) {
+              PlomGitPrefs.instance
+                  .readEncryptedAccountSecurityCredentials(
+                      login.credentialInfo.savedCredentialsId)
+                  .then((accountCredentials) {
+                login.user = accountCredentials.user ?? "";
+                login.password = accountCredentials.password ?? "";
+                Navigator.pop(context, login);
+              });
+            } else {
+              Navigator.pop(context, login);
+            }
+          }
+        },
+      ),
+    ],
+  );
+  //   } else {
+  //     return AlertDialog(
+  //       title: Text("Login"),
+  //       content: SizedBox(width: 32, height: 32),
+  //       actions: <Widget>[
+  //         TextButton(
+  //           child: Text('Cancel'),
+  //           onPressed: () {
+  //             Navigator.pop(context, null);
+  //           },
+  //         ),
+  //       ],
+  //     );
+  //   }
+  // });
+}
+
+Future<RepositoryRemoteLoginInfo> readLoginInfo(
+    String repositoryName, String remoteName) {
+  return PlomGitPrefs.instance
+      .readRemoteCredentialsInfo(repositoryName, remoteName)
+      .then((credential) {
+    RepositoryRemoteLoginInfo login = RepositoryRemoteLoginInfo();
+    login.credentialInfo = credential;
+    if (credential.type == RemoteCredentialsType.savedCredentials) {
+      return PlomGitPrefs.instance
+          .readEncryptedAccountSecurityCredentials(
+              credential.savedCredentialsId)
+          .then((accountCredentials) {
+        login.user = accountCredentials.user ?? "";
+        login.password = accountCredentials.password ?? "";
+        return login;
       });
+    } else {
+      return PlomGitPrefs.instance
+          .readEncryptedUser(repositoryName, remoteName)
+          .then<void>((val) {
+            if (val != null) login.user = val;
+          })
+          .then((_) => PlomGitPrefs.instance
+              .readEncryptedPassword(repositoryName, remoteName))
+          .then((val) {
+            if (val != null) login.password = val;
+            return login;
+          });
+    }
+  });
+}
+
+Future<void> writeLoginInfo(
+    String repositoryName, String remoteName, RepositoryRemoteLoginInfo login) {
+  return PlomGitPrefs.instance
+      .writeRemoteCredentialsInfo(
+          repositoryName, remoteName, login.credentialInfo)
+      .then((_) {
+    if (login.credentialInfo.type == RemoteCredentialsType.userPassword)
+      return PlomGitPrefs.instance.writeEncryptedUserPassword(
+          repositoryName, remoteName, login.user, login.password);
+    else
+      return PlomGitPrefs.instance
+          .writeEncryptedUserPassword(repositoryName, remoteName, null, null);
+  });
 }
 
 Future<T> retryWithAskCredentials<T>(String repositoryName, String remoteName,
     Future<T> Function(String, String) fn, BuildContext context) {
   // Check if we have any saved credentials
-  String user = "";
-  String password = "";
-  return PlomGitPrefs.instance
-      .readRemoteCredentialsInfo(repositoryName, remoteName)
-      .then((credential) {
-        if (credential.type == RemoteCredentialsType.savedCredentials) {
-          return PlomGitPrefs.instance
-              .readEncryptedAccountSecurityCredentials(
-                  credential.savedCredentialsId)
-              .then((accountCredentials) {
-            user = accountCredentials.user ?? "";
-            password = accountCredentials.password ?? "";
-          });
-        } else {
-          return PlomGitPrefs.instance
-              .readEncryptedUser(repositoryName, remoteName)
-              .then<void>((val) {
-                if (val != null) user = val;
-              })
-              .then((_) => PlomGitPrefs.instance
-                  .readEncryptedPassword(repositoryName, remoteName))
-              .then<void>((val) {
-                if (val != null) password = val;
-              });
-        }
+  RepositoryRemoteLoginInfo login = RepositoryRemoteLoginInfo();
+  return readLoginInfo(repositoryName, remoteName)
+      .then((savedLogin) {
+        login = savedLogin;
       })
-      .then((_) => fn(user, password))
+      .then((_) => fn(login.user, login.password))
       .catchError((error) {
         // Ask for a username and password and pass those values into the function
-        return showDialog<Tuple2<String, String>>(
+        return showDialog<RepositoryRemoteLoginInfo>(
                 context: context,
-                builder: (context) => makeLoginDialog(
-                    context, repositoryName, remoteName, user, password))
-            .then((Tuple2<String, String>? login) {
-          if (login != null) {
-            return fn(login.item1, login.item2);
+                builder: (context) =>
+                    makeLoginDialog(context, repositoryName, remoteName, login))
+            .then((RepositoryRemoteLoginInfo? newLogin) {
+          if (newLogin != null) {
+            print(newLogin.user);
+            print(newLogin.password);
+            return fn(newLogin.user, newLogin.password);
           }
           throw "Cancelled";
         });
@@ -510,6 +659,12 @@ class RemoteCredentialsInfo {
     if (savedCredentialsId >= 0) json['savedCredentials'] = savedCredentialsId;
     return json;
   }
+}
+
+class RepositoryRemoteLoginInfo {
+  RemoteCredentialsInfo credentialInfo = RemoteCredentialsInfo();
+  String user = "";
+  String password = "";
 }
 
 class PlomGitPrefs {
