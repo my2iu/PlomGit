@@ -38,9 +38,7 @@ class git {
       ? DynamicLibrary.open("libgit2.so")
       : DynamicLibrary.process();
 
-  static final NativeLibrary git2 = NativeLibrary(Platform.isAndroid
-      ? DynamicLibrary.open("libgit2.so")
-      : DynamicLibrary.process());
+  static final NativeLibrary git2 = NativeLibrary(nativeGit2);
 
   static int queryFeatures() {
     return git2.git_libgit2_features();
@@ -78,11 +76,11 @@ class git {
     return git2.git_repository_init_ext(out, repo_path, opts);
   }
 
-  static final void Function(Pointer<NativeType>)
-      repository_init_options_config = nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
-              "git_repository_init_options_config")
-          .asFunction();
+  static final Pointer<Int8> _mainString = "main".toNativeUtf8().cast<Int8>();
+  static void repository_init_options_config(
+      Pointer<git_repository_init_options> opts) {
+    opts.ref.initial_head = _mainString;
+  }
 
   static int repository_open(
     Pointer<Pointer<git_repository>> out,
@@ -142,76 +140,36 @@ class git {
     git2.git_strarray_dispose(array);
   }
 
-  static final int Function(Pointer<NativeType>, int version)
-      fetch_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_fetch_options_init")
-          .asFunction();
+  static int fetch_options_init(Pointer<git_fetch_options> opts, int version) {
+    return git2.git_fetch_options_init(opts, version);
+  }
 
-  static final int Function(Pointer<NativeType>, int version)
-      push_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_push_options_init")
-          .asFunction();
+  static int push_options_init(Pointer<git_push_options> opts, int version) {
+    return git2.git_push_options_init(opts, version);
+  }
 
-  static final int Function(Pointer<NativeType>, int version)
-      status_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_status_options_init")
-          .asFunction();
+  static int status_options_init(
+      Pointer<git_status_options> opts, int version) {
+    return git2.git_status_options_init(opts, version);
+  }
 
-  static final int Function(Pointer<NativeType>, int version)
-      clone_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_clone_options_init")
-          .asFunction();
+  static int clone_options_init(Pointer<git_clone_options> opts, int version) {
+    return git2.git_clone_options_init(opts, version);
+  }
 
-  static final int Function(Pointer<NativeType>, int version)
-      checkout_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_checkout_options_init")
-          .asFunction();
+  static int checkout_options_init(
+      Pointer<git_checkout_options> opts, int version) {
+    return git2.git_checkout_options_init(opts, version);
+  }
 
-  static final int Function(Pointer<NativeType>, int version)
-      merge_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_merge_options_init")
-          .asFunction();
+  static int merge_options_init(Pointer<git_merge_options> opts, int version) {
+    return git2.git_merge_options_init(opts, version);
+  }
 
-  static final int Function(Pointer<NativeType>, int version)
-      repository_init_options_init = nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<NativeType>, Int32)>>(
-              "git_repository_init_options_init")
-          .asFunction();
-
-  static final int Function() fetch_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_size")
-      .asFunction();
-
-  static final int Function() push_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_push_options_size")
-      .asFunction();
-
-  static final int Function() status_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_status_options_size")
-      .asFunction();
-
-  static final int Function() clone_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_clone_options_size")
-      .asFunction();
-
-  static final int Function() checkout_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_checkout_options_size")
-      .asFunction();
-
-  static final int Function() merge_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_merge_options_size")
-      .asFunction();
-
-  static final int Function() repository_init_options_size = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>(
-          "git_repository_init_options_size")
-      .asFunction();
+  static int repository_init_options_init(
+      Pointer<git_repository_init_options> opts, int version) {
+    return git2.git_repository_init_options_init(opts, version);
+  }
 
   static int fetch_options_version() {
     return GIT_FETCH_OPTIONS_VERSION;
@@ -242,35 +200,20 @@ class git {
   //         "git_repository_init_options_version")
   //     .asFunction();
 
-  static final void Function(Pointer<NativeType>,
-          Pointer<NativeFunction<git_credential_acquire_cb>>)
-      fetch_options_set_credentials_cb = nativeGit2
-          .lookup<
-                  NativeFunction<
-                      Void Function(Pointer<NativeType>,
-                          Pointer<NativeFunction<git_credential_acquire_cb>>)>>(
-              "git_fetch_options_set_credentials_cb")
-          .asFunction();
+  static void fetch_options_set_credentials_cb(Pointer<git_fetch_options> opts,
+      Pointer<NativeFunction<git_credential_acquire_cb>> credentials_cb) {
+    opts.ref.callbacks.credentials = credentials_cb;
+  }
 
-  static final void Function(Pointer<NativeType>,
-          Pointer<NativeFunction<git_credential_acquire_cb>>)
-      push_options_set_credentials_cb = nativeGit2
-          .lookup<
-                  NativeFunction<
-                      Void Function(Pointer<NativeType>,
-                          Pointer<NativeFunction<git_credential_acquire_cb>>)>>(
-              "git_push_options_set_credentials_cb")
-          .asFunction();
+  static void push_options_set_credentials_cb(Pointer<git_push_options> opts,
+      Pointer<NativeFunction<git_credential_acquire_cb>> credentials_cb) {
+    opts.ref.callbacks.credentials = credentials_cb;
+  }
 
-  static final void Function(Pointer<NativeType>,
-          Pointer<NativeFunction<git_credential_acquire_cb>>)
-      clone_options_set_credentials_cb = nativeGit2
-          .lookup<
-                  NativeFunction<
-                      Void Function(Pointer<NativeType>,
-                          Pointer<NativeFunction<git_credential_acquire_cb>>)>>(
-              "git_clone_options_set_credentials_cb")
-          .asFunction();
+  static void clone_options_set_credentials_cb(Pointer<git_clone_options> opts,
+      Pointer<NativeFunction<git_credential_acquire_cb>> credentials_cb) {
+    opts.ref.fetch_opts.callbacks.credentials = credentials_cb;
+  }
 
   static int remote_list(
       Pointer<git_strarray> out, Pointer<git_repository> repo) {
@@ -335,13 +278,17 @@ class git {
   }
 
   // The second parameter can be null or a pointer to a pointer of a string
-  static final void Function(Pointer<NativeType>, Pointer<Pointer<Utf8>>)
-      status_options_config = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Void Function(Pointer<NativeType>,
-                      Pointer<Pointer<Utf8>>)>>("git_status_options_config")
-          .asFunction();
+  static void status_options_config(
+      Pointer<git_status_options> opts, Pointer<Pointer<Int8>> path) {
+    if (path != nullptr) {
+      opts.ref.pathspec.count = 1;
+      opts.ref.pathspec.strings = path;
+    }
+    opts.ref.show_1 = git_status_show_t.GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+    opts.ref.flags = git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED |
+        git_status_opt_t.GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
+        git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNMODIFIED;
+  }
 
   static int credential_userpass_plaintext_new(
       Pointer<Pointer<git_credential>> out,
@@ -391,26 +338,29 @@ class git {
   }
 
   // The second parameter can be null or a pointer to a pointer of a string
-  static final void Function(Pointer<NativeType>, Pointer<Pointer<Utf8>>)
-      checkout_options_config_for_revert = nativeGit2
-          .lookup<
-                  NativeFunction<
-                      Void Function(
-                          Pointer<NativeType>, Pointer<Pointer<Utf8>>)>>(
-              "git_checkout_options_config_for_revert")
-          .asFunction();
+  static void checkout_options_config_for_revert(
+      Pointer<git_checkout_options> opts, Pointer<Pointer<Int8>> path) {
+    opts.ref.checkout_strategy = git_checkout_strategy_t.GIT_CHECKOUT_FORCE |
+        git_checkout_strategy_t.GIT_CHECKOUT_REMOVE_UNTRACKED |
+        git_checkout_strategy_t.GIT_CHECKOUT_RECREATE_MISSING;
+    if (path != nullptr) {
+      opts.ref.checkout_strategy |=
+          git_checkout_strategy_t.GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
+      opts.ref.paths.count = 1;
+      opts.ref.paths.strings = path;
+    }
+  }
 
-  static final void Function(Pointer<NativeType>)
-      checkout_options_config_for_fastforward = nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
-              "git_checkout_options_config_for_fastforward")
-          .asFunction();
+  static void checkout_options_config_for_fastforward(
+      Pointer<git_checkout_options> opts) {
+    opts.ref.checkout_strategy = git_checkout_strategy_t.GIT_CHECKOUT_SAFE;
+  }
 
-  static final void Function(Pointer<NativeType>)
-      checkout_options_config_for_merge = nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<NativeType>)>>(
-              "git_checkout_options_config_for_merge")
-          .asFunction();
+  static void checkout_options_config_for_merge(
+      Pointer<git_checkout_options> opts) {
+    opts.ref.checkout_strategy = git_checkout_strategy_t.GIT_CHECKOUT_FORCE |
+        git_checkout_strategy_t.GIT_CHECKOUT_ALLOW_CONFLICTS;
+  }
 
   static void tree_free(Pointer<git_tree> tree) {
     git2.git_tree_free(tree);

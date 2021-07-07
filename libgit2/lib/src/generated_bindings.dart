@@ -167,6 +167,31 @@ class NativeLibrary {
   late final _dart_git_repository_init _git_repository_init =
       _git_repository_init_ptr.asFunction<_dart_git_repository_init>();
 
+  /// Initialize git_repository_init_options structure
+  ///
+  /// Initializes a `git_repository_init_options` with default values. Equivalent to
+  /// creating an instance with `GIT_REPOSITORY_INIT_OPTIONS_INIT`.
+  ///
+  /// @param opts The `git_repository_init_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_REPOSITORY_INIT_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_repository_init_options_init(
+    ffi.Pointer<git_repository_init_options> opts,
+    int version,
+  ) {
+    return _git_repository_init_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_repository_init_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_init_options_init>>(
+          'git_repository_init_options_init');
+  late final _dart_git_repository_init_options_init
+      _git_repository_init_options_init = _git_repository_init_options_init_ptr
+          .asFunction<_dart_git_repository_init_options_init>();
+
   /// Create a new Git repository in the given folder with extended controls.
   ///
   /// This will initialize a new git repository (creating the repo_path
@@ -741,6 +766,31 @@ class NativeLibrary {
   late final _dart_git_branch_upstream _git_branch_upstream =
       _git_branch_upstream_ptr.asFunction<_dart_git_branch_upstream>();
 
+  /// Initialize git_checkout_options structure
+  ///
+  /// Initializes a `git_checkout_options` with default values. Equivalent to creating
+  /// an instance with GIT_CHECKOUT_OPTIONS_INIT.
+  ///
+  /// @param opts The `git_checkout_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_CHECKOUT_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_checkout_options_init(
+    ffi.Pointer<git_checkout_options> opts,
+    int version,
+  ) {
+    return _git_checkout_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_checkout_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_checkout_options_init>>(
+          'git_checkout_options_init');
+  late final _dart_git_checkout_options_init _git_checkout_options_init =
+      _git_checkout_options_init_ptr
+          .asFunction<_dart_git_checkout_options_init>();
+
   /// Updates files in the index and the working tree to match the content of
   /// the commit pointed at by HEAD.
   ///
@@ -925,6 +975,30 @@ class NativeLibrary {
           'git_index_remove_bypath');
   late final _dart_git_index_remove_bypath _git_index_remove_bypath =
       _git_index_remove_bypath_ptr.asFunction<_dart_git_index_remove_bypath>();
+
+  /// Initialize git_merge_options structure
+  ///
+  /// Initializes a `git_merge_options` with default values. Equivalent to
+  /// creating an instance with `GIT_MERGE_OPTIONS_INIT`.
+  ///
+  /// @param opts The `git_merge_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_MERGE_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_merge_options_init(
+    ffi.Pointer<git_merge_options> opts,
+    int version,
+  ) {
+    return _git_merge_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_merge_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_merge_options_init>>(
+          'git_merge_options_init');
+  late final _dart_git_merge_options_init _git_merge_options_init =
+      _git_merge_options_init_ptr.asFunction<_dart_git_merge_options_init>();
 
   /// Analyzes the given branch(es) and determines the opportunities for
   /// merging them into the HEAD of the repository.
@@ -1112,6 +1186,54 @@ class NativeLibrary {
   late final _dart_git_remote_list _git_remote_list =
       _git_remote_list_ptr.asFunction<_dart_git_remote_list>();
 
+  /// Initialize git_fetch_options structure
+  ///
+  /// Initializes a `git_fetch_options` with default values. Equivalent to
+  /// creating an instance with `GIT_FETCH_OPTIONS_INIT`.
+  ///
+  /// @param opts The `git_fetch_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_FETCH_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_fetch_options_init(
+    ffi.Pointer<git_fetch_options> opts,
+    int version,
+  ) {
+    return _git_fetch_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_fetch_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_fetch_options_init>>(
+          'git_fetch_options_init');
+  late final _dart_git_fetch_options_init _git_fetch_options_init =
+      _git_fetch_options_init_ptr.asFunction<_dart_git_fetch_options_init>();
+
+  /// Initialize git_push_options structure
+  ///
+  /// Initializes a `git_push_options` with default values. Equivalent to
+  /// creating an instance with `GIT_PUSH_OPTIONS_INIT`.
+  ///
+  /// @param opts The `git_push_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_PUSH_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_push_options_init(
+    ffi.Pointer<git_push_options> opts,
+    int version,
+  ) {
+    return _git_push_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_push_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_push_options_init>>(
+          'git_push_options_init');
+  late final _dart_git_push_options_init _git_push_options_init =
+      _git_push_options_init_ptr.asFunction<_dart_git_push_options_init>();
+
   /// Download new data and update tips
   ///
   /// Convenience function to connect to a remote, download the data,
@@ -1190,6 +1312,30 @@ class NativeLibrary {
       _lookup<ffi.NativeFunction<_c_git_remote_delete>>('git_remote_delete');
   late final _dart_git_remote_delete _git_remote_delete =
       _git_remote_delete_ptr.asFunction<_dart_git_remote_delete>();
+
+  /// Initialize git_clone_options structure
+  ///
+  /// Initializes a `git_clone_options` with default values. Equivalent to creating
+  /// an instance with GIT_CLONE_OPTIONS_INIT.
+  ///
+  /// @param opts The `git_clone_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_CLONE_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_clone_options_init(
+    ffi.Pointer<git_clone_options> opts,
+    int version,
+  ) {
+    return _git_clone_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_clone_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_clone_options_init>>(
+          'git_clone_options_init');
+  late final _dart_git_clone_options_init _git_clone_options_init =
+      _git_clone_options_init_ptr.asFunction<_dart_git_clone_options_init>();
 
   /// Clone a remote repository.
   ///
@@ -1393,6 +1539,30 @@ class NativeLibrary {
       _lookup<ffi.NativeFunction<_c_git_error_set_str>>('git_error_set_str');
   late final _dart_git_error_set_str _git_error_set_str =
       _git_error_set_str_ptr.asFunction<_dart_git_error_set_str>();
+
+  /// Initialize git_status_options structure
+  ///
+  /// Initializes a `git_status_options` with default values. Equivalent to
+  /// creating an instance with `GIT_STATUS_OPTIONS_INIT`.
+  ///
+  /// @param opts The `git_status_options` struct to initialize.
+  /// @param version The struct version; pass `GIT_STATUS_OPTIONS_VERSION`.
+  /// @return Zero on success; -1 on failure.
+  int git_status_options_init(
+    ffi.Pointer<git_status_options> opts,
+    int version,
+  ) {
+    return _git_status_options_init(
+      opts,
+      version,
+    );
+  }
+
+  late final _git_status_options_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_status_options_init>>(
+          'git_status_options_init');
+  late final _dart_git_status_options_init _git_status_options_init =
+      _git_status_options_init_ptr.asFunction<_dart_git_status_options_init>();
 
   /// Gather file status information and populate the `git_status_list`.
   ///
@@ -1843,7 +2013,26 @@ class git_repository extends ffi.Opaque {}
 /// * origin_url - If this is non-NULL, then after the rest of the
 /// repository initialization is completed, an "origin" remote
 /// will be added pointing to this URL.
-class git_repository_init_options extends ffi.Opaque {}
+class git_repository_init_options extends ffi.Struct {
+  @ffi.Uint32()
+  external int version;
+
+  @ffi.Uint32()
+  external int flags;
+
+  @ffi.Uint32()
+  external int mode;
+
+  external ffi.Pointer<ffi.Int8> workdir_path;
+
+  external ffi.Pointer<ffi.Int8> description;
+
+  external ffi.Pointer<ffi.Int8> template_path;
+
+  external ffi.Pointer<ffi.Int8> initial_head;
+
+  external ffi.Pointer<ffi.Int8> origin_url;
+}
 
 class git_reference extends ffi.Opaque {}
 
@@ -1962,16 +2151,341 @@ class git_diff_delta extends ffi.Struct {
   external git_diff_file new_file;
 }
 
+/// Checkout behavior flags
+///
+/// In libgit2, checkout is used to update the working directory and index
+/// to match a target tree.  Unlike git checkout, it does not move the HEAD
+/// commit for you - use `git_repository_set_head` or the like to do that.
+///
+/// Checkout looks at (up to) four things: the "target" tree you want to
+/// check out, the "baseline" tree of what was checked out previously, the
+/// working directory for actual files, and the index for staged changes.
+///
+/// You give checkout one of three strategies for update:
+///
+/// - `GIT_CHECKOUT_NONE` is a dry-run strategy that checks for conflicts,
+/// etc., but doesn't make any actual changes.
+///
+/// - `GIT_CHECKOUT_FORCE` is at the opposite extreme, taking any action to
+/// make the working directory match the target (including potentially
+/// discarding modified files).
+///
+/// - `GIT_CHECKOUT_SAFE` is between these two options, it will only make
+/// modifications that will not lose changes.
+///
+/// |  target == baseline   |  target != baseline  |
+/// ---------------------|-----------------------|----------------------|
+/// workdir == baseline |       no action       |  create, update, or  |
+/// |                       |     delete file      |
+/// ---------------------|-----------------------|----------------------|
+/// workdir exists and  |       no action       |   conflict (notify   |
+/// is != baseline    | notify dirty MODIFIED | and cancel checkout) |
+/// ---------------------|-----------------------|----------------------|
+/// workdir missing,   | notify dirty DELETED  |     create file      |
+/// baseline present   |                       |                      |
+/// ---------------------|-----------------------|----------------------|
+///
+/// To emulate `git checkout`, use `GIT_CHECKOUT_SAFE` with a checkout
+/// notification callback (see below) that displays information about dirty
+/// files.  The default behavior will cancel checkout on conflicts.
+///
+/// To emulate `git checkout-index`, use `GIT_CHECKOUT_SAFE` with a
+/// notification callback that cancels the operation if a dirty-but-existing
+/// file is found in the working directory.  This core git command isn't
+/// quite "force" but is sensitive about some types of changes.
+///
+/// To emulate `git checkout -f`, use `GIT_CHECKOUT_FORCE`.
+///
+///
+/// There are some additional flags to modify the behavior of checkout:
+///
+/// - GIT_CHECKOUT_ALLOW_CONFLICTS makes SAFE mode apply safe file updates
+/// even if there are conflicts (instead of cancelling the checkout).
+///
+/// - GIT_CHECKOUT_REMOVE_UNTRACKED means remove untracked files (i.e. not
+/// in target, baseline, or index, and not ignored) from the working dir.
+///
+/// - GIT_CHECKOUT_REMOVE_IGNORED means remove ignored files (that are also
+/// untracked) from the working directory as well.
+///
+/// - GIT_CHECKOUT_UPDATE_ONLY means to only update the content of files that
+/// already exist.  Files will not be created nor deleted.  This just skips
+/// applying adds, deletes, and typechanges.
+///
+/// - GIT_CHECKOUT_DONT_UPDATE_INDEX prevents checkout from writing the
+/// updated files' information to the index.
+///
+/// - Normally, checkout will reload the index and git attributes from disk
+/// before any operations.  GIT_CHECKOUT_NO_REFRESH prevents this reload.
+///
+/// - Unmerged index entries are conflicts.  GIT_CHECKOUT_SKIP_UNMERGED skips
+/// files with unmerged index entries instead.  GIT_CHECKOUT_USE_OURS and
+/// GIT_CHECKOUT_USE_THEIRS to proceed with the checkout using either the
+/// stage 2 ("ours") or stage 3 ("theirs") version of files in the index.
+///
+/// - GIT_CHECKOUT_DONT_OVERWRITE_IGNORED prevents ignored files from being
+/// overwritten.  Normally, files that are ignored in the working directory
+/// are not considered "precious" and may be overwritten if the checkout
+/// target contains that file.
+///
+/// - GIT_CHECKOUT_DONT_REMOVE_EXISTING prevents checkout from removing
+/// files or folders that fold to the same name on case insensitive
+/// filesystems.  This can cause files to retain their existing names
+/// and write through existing symbolic links.
+abstract class git_checkout_strategy_t {
+  /// < default is a dry run, no actual updates
+  static const int GIT_CHECKOUT_NONE = 0;
+
+  /// Allow safe updates that cannot overwrite uncommitted data.
+  /// If the uncommitted changes don't conflict with the checked out files,
+  /// the checkout will still proceed, leaving the changes intact.
+  ///
+  /// Mutually exclusive with GIT_CHECKOUT_FORCE.
+  /// GIT_CHECKOUT_FORCE takes precedence over GIT_CHECKOUT_SAFE.
+  static const int GIT_CHECKOUT_SAFE = 1;
+
+  /// Allow all updates to force working directory to look like index.
+  ///
+  /// Mutually exclusive with GIT_CHECKOUT_SAFE.
+  /// GIT_CHECKOUT_FORCE takes precedence over GIT_CHECKOUT_SAFE.
+  static const int GIT_CHECKOUT_FORCE = 2;
+
+  /// Allow checkout to recreate missing files
+  static const int GIT_CHECKOUT_RECREATE_MISSING = 4;
+
+  /// Allow checkout to make safe updates even if conflicts are found
+  static const int GIT_CHECKOUT_ALLOW_CONFLICTS = 16;
+
+  /// Remove untracked files not in index (that are not ignored)
+  static const int GIT_CHECKOUT_REMOVE_UNTRACKED = 32;
+
+  /// Remove ignored files not in index
+  static const int GIT_CHECKOUT_REMOVE_IGNORED = 64;
+
+  /// Only update existing files, don't create new ones
+  static const int GIT_CHECKOUT_UPDATE_ONLY = 128;
+
+  /// Normally checkout updates index entries as it goes; this stops that.
+  /// Implies `GIT_CHECKOUT_DONT_WRITE_INDEX`.
+  static const int GIT_CHECKOUT_DONT_UPDATE_INDEX = 256;
+
+  /// Don't refresh index/config/etc before doing checkout
+  static const int GIT_CHECKOUT_NO_REFRESH = 512;
+
+  /// Allow checkout to skip unmerged files
+  static const int GIT_CHECKOUT_SKIP_UNMERGED = 1024;
+
+  /// For unmerged files, checkout stage 2 from index
+  static const int GIT_CHECKOUT_USE_OURS = 2048;
+
+  /// For unmerged files, checkout stage 3 from index
+  static const int GIT_CHECKOUT_USE_THEIRS = 4096;
+
+  /// Treat pathspec as simple list of exact match file paths
+  static const int GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH = 8192;
+
+  /// Ignore directories in use, they will be left empty
+  static const int GIT_CHECKOUT_SKIP_LOCKED_DIRECTORIES = 262144;
+
+  /// Don't overwrite ignored files that exist in the checkout target
+  static const int GIT_CHECKOUT_DONT_OVERWRITE_IGNORED = 524288;
+
+  /// Write normal merge files for conflicts
+  static const int GIT_CHECKOUT_CONFLICT_STYLE_MERGE = 1048576;
+
+  /// Include common ancestor data in diff3 format files for conflicts
+  static const int GIT_CHECKOUT_CONFLICT_STYLE_DIFF3 = 2097152;
+
+  /// Don't overwrite existing files or folders
+  static const int GIT_CHECKOUT_DONT_REMOVE_EXISTING = 4194304;
+
+  /// Normally checkout writes the index upon completion; this prevents that.
+  static const int GIT_CHECKOUT_DONT_WRITE_INDEX = 8388608;
+
+  /// Recursively checkout submodules with same options (NOT IMPLEMENTED)
+  static const int GIT_CHECKOUT_UPDATE_SUBMODULES = 65536;
+
+  /// Recursively checkout submodules if HEAD moved in super repo (NOT IMPLEMENTED)
+  static const int GIT_CHECKOUT_UPDATE_SUBMODULES_IF_CHANGED = 131072;
+}
+
+/// Checkout performance-reporting structure
+class git_checkout_perfdata extends ffi.Opaque {}
+
 /// Checkout options structure
 ///
 /// Initialize with `GIT_CHECKOUT_OPTIONS_INIT`. Alternatively, you can
 /// use `git_checkout_options_init`.
-class git_checkout_options extends ffi.Opaque {}
+class git_checkout_options extends ffi.Struct {
+  /// < The version
+  @ffi.Uint32()
+  external int version;
+
+  /// < default will be a safe checkout
+  @ffi.Uint32()
+  external int checkout_strategy;
+
+  /// < don't apply filters like CRLF conversion
+  @ffi.Int32()
+  external int disable_filters;
+
+  /// < default is 0755
+  @ffi.Uint32()
+  external int dir_mode;
+
+  /// < default is 0644 or 0755 as dictated by blob
+  @ffi.Uint32()
+  external int file_mode;
+
+  /// < default is O_CREAT | O_TRUNC | O_WRONLY
+  @ffi.Int32()
+  external int file_open_flags;
+
+  /// < see `git_checkout_notify_t` above
+  @ffi.Uint32()
+  external int notify_flags;
+
+  /// Optional callback to get notifications on specific file states.
+  /// @see git_checkout_notify_t
+  external ffi.Pointer<ffi.NativeFunction<git_checkout_notify_cb>> notify_cb;
+
+  /// Payload passed to notify_cb
+  external ffi.Pointer<ffi.Void> notify_payload;
+
+  /// Optional callback to notify the consumer of checkout progress.
+  external ffi.Pointer<ffi.NativeFunction<git_checkout_progress_cb>>
+      progress_cb;
+
+  /// Payload passed to progress_cb
+  external ffi.Pointer<ffi.Void> progress_payload;
+
+  /// A list of wildmatch patterns or paths.
+  ///
+  /// By default, all paths are processed. If you pass an array of wildmatch
+  /// patterns, those will be used to filter which paths should be taken into
+  /// account.
+  ///
+  /// Use GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH to treat as a simple list.
+  external git_strarray paths;
+
+  /// The expected content of the working directory; defaults to HEAD.
+  ///
+  /// If the working directory does not match this baseline information,
+  /// that will produce a checkout conflict.
+  external ffi.Pointer<git_tree> baseline;
+
+  /// Like `baseline` above, though expressed as an index.  This
+  /// option overrides `baseline`.
+  external ffi.Pointer<git_index> baseline_index;
+
+  /// < alternative checkout path to workdir
+  external ffi.Pointer<ffi.Int8> target_directory;
+
+  /// < the name of the common ancestor side of conflicts
+  external ffi.Pointer<ffi.Int8> ancestor_label;
+
+  /// < the name of the "our" side of conflicts
+  external ffi.Pointer<ffi.Int8> our_label;
+
+  /// < the name of the "their" side of conflicts
+  external ffi.Pointer<ffi.Int8> their_label;
+
+  /// Optional callback to notify the consumer of performance data.
+  external ffi.Pointer<ffi.NativeFunction<git_checkout_perfdata_cb>>
+      perfdata_cb;
+
+  /// Payload passed to perfdata_cb
+  external ffi.Pointer<ffi.Void> perfdata_payload;
+}
 
 class git_object extends ffi.Opaque {}
 
+/// Pluggable similarity metric
+class git_diff_similarity_metric extends ffi.Opaque {}
+
 /// Merging options
-class git_merge_options extends ffi.Opaque {}
+class git_merge_options extends ffi.Struct {
+  @ffi.Uint32()
+  external int version;
+
+  /// See `git_merge_flag_t` above
+  @ffi.Uint32()
+  external int flags;
+
+  /// Similarity to consider a file renamed (default 50).  If
+  /// `GIT_MERGE_FIND_RENAMES` is enabled, added files will be compared
+  /// with deleted files to determine their similarity.  Files that are
+  /// more similar than the rename threshold (percentage-wise) will be
+  /// treated as a rename.
+  @ffi.Uint32()
+  external int rename_threshold;
+
+  /// Maximum similarity sources to examine for renames (default 200).
+  /// If the number of rename candidates (add / delete pairs) is greater
+  /// than this value, inexact rename detection is aborted.
+  ///
+  /// This setting overrides the `merge.renameLimit` configuration value.
+  @ffi.Uint32()
+  external int target_limit;
+
+  /// Pluggable similarity metric; pass NULL to use internal metric
+  external ffi.Pointer<git_diff_similarity_metric> metric;
+
+  /// Maximum number of times to merge common ancestors to build a
+  /// virtual merge base when faced with criss-cross merges.  When this
+  /// limit is reached, the next ancestor will simply be used instead of
+  /// attempting to merge it.  The default is unlimited.
+  @ffi.Uint32()
+  external int recursion_limit;
+
+  /// Default merge driver to be used when both sides of a merge have
+  /// changed.  The default is the `text` driver.
+  external ffi.Pointer<ffi.Int8> default_driver;
+
+  /// Flags for handling conflicting content, to be used with the standard
+  /// (`text`) merge driver.
+  @ffi.Int32()
+  external int file_favor;
+
+  /// see `git_merge_file_flag_t` above
+  @ffi.Uint32()
+  external int file_flags;
+}
+
+/// Options for connecting through a proxy
+///
+/// Note that not all types may be supported, depending on the platform
+/// and compilation options.
+class git_proxy_options extends ffi.Struct {
+  @ffi.Uint32()
+  external int version;
+
+  /// The type of proxy to use, by URL, auto-detect.
+  @ffi.Int32()
+  external int type;
+
+  /// The URL of the proxy.
+  external ffi.Pointer<ffi.Int8> url;
+
+  /// This will be called if the remote host requires
+  /// authentication in order to connect to it.
+  ///
+  /// Returning GIT_PASSTHROUGH will make libgit2 behave as
+  /// though this field isn't set.
+  external ffi.Pointer<ffi.NativeFunction<git_credential_acquire_cb>>
+      credentials;
+
+  /// If cert verification fails, this will be called to let the
+  /// user make the final decision of whether to allow the
+  /// connection to proceed. Returns 0 to allow the connection
+  /// or a negative value to indicate an error.
+  external ffi.Pointer<ffi.NativeFunction<git_transport_certificate_check_cb>>
+      certificate_check;
+
+  /// Payload to be provided to the credentials and certificate
+  /// check callbacks.
+  external ffi.Pointer<ffi.Void> payload;
+}
 
 /// Fetch options structure.
 ///
@@ -1979,16 +2493,113 @@ class git_merge_options extends ffi.Opaque {}
 /// correctly set the `version` field.  E.g.
 ///
 /// git_fetch_options opts = GIT_FETCH_OPTIONS_INIT;
-class git_fetch_options extends ffi.Opaque {}
+class git_fetch_options extends ffi.Struct {
+  @ffi.Int32()
+  external int version;
+
+  /// Callbacks to use for this fetch operation
+  external git_remote_callbacks callbacks;
+
+  /// Whether to perform a prune after the fetch
+  @ffi.Int32()
+  external int prune;
+
+  /// Whether to write the results to FETCH_HEAD. Defaults to
+  /// on. Leave this default in order to behave like git.
+  @ffi.Int32()
+  external int update_fetchhead;
+
+  /// Determines how to behave regarding tags on the remote, such
+  /// as auto-downloading tags for objects we're downloading or
+  /// downloading all of them.
+  ///
+  /// The default is to auto-follow tags.
+  @ffi.Int32()
+  external int download_tags;
+
+  /// Proxy options to use, by default no proxy is used.
+  external git_proxy_options proxy_opts;
+
+  /// Extra headers for this fetch operation
+  external git_strarray custom_headers;
+}
 
 /// Controls the behavior of a git_push object.
-class git_push_options extends ffi.Opaque {}
+class git_push_options extends ffi.Struct {
+  @ffi.Uint32()
+  external int version;
+
+  /// If the transport being used to push to the remote requires the creation
+  /// of a pack file, this controls the number of worker threads used by
+  /// the packbuilder when creating that pack file to be sent to the remote.
+  ///
+  /// If set to 0, the packbuilder will auto-detect the number of threads
+  /// to create. The default value is 1.
+  @ffi.Uint32()
+  external int pb_parallelism;
+
+  /// Callbacks to use for this push operation
+  external git_remote_callbacks callbacks;
+
+  /// Proxy options to use, by default no proxy is used.
+  external git_proxy_options proxy_opts;
+
+  /// Extra headers for this push operation
+  external git_strarray custom_headers;
+}
 
 /// Clone options structure
 ///
 /// Initialize with `GIT_CLONE_OPTIONS_INIT`. Alternatively, you can
 /// use `git_clone_options_init`.
-class git_clone_options extends ffi.Opaque {}
+class git_clone_options extends ffi.Struct {
+  @ffi.Uint32()
+  external int version;
+
+  /// These options are passed to the checkout step. To disable
+  /// checkout, set the `checkout_strategy` to
+  /// `GIT_CHECKOUT_NONE`.
+  external git_checkout_options checkout_opts;
+
+  /// Options which control the fetch, including callbacks.
+  ///
+  /// The callbacks are used for reporting fetch progress, and for acquiring
+  /// credentials in the event they are needed.
+  external git_fetch_options fetch_opts;
+
+  /// Set to zero (false) to create a standard repo, or non-zero
+  /// for a bare repo
+  @ffi.Int32()
+  external int bare;
+
+  /// Whether to use a fetch or copy the object database.
+  @ffi.Int32()
+  external int local;
+
+  /// The name of the branch to checkout. NULL means use the
+  /// remote's default branch.
+  external ffi.Pointer<ffi.Int8> checkout_branch;
+
+  /// A callback used to create the new repository into which to
+  /// clone. If NULL, the 'bare' field will be used to determine
+  /// whether to create a bare repository.
+  external ffi.Pointer<ffi.NativeFunction<git_repository_create_cb>>
+      repository_cb;
+
+  /// An opaque payload to pass to the git_repository creation callback.
+  /// This parameter is ignored unless repository_cb is non-NULL.
+  external ffi.Pointer<ffi.Void> repository_cb_payload;
+
+  /// A callback used to create the git_remote, prior to its being
+  /// used to perform the clone operation. See the documentation for
+  /// git_remote_create_cb for details. This parameter may be NULL,
+  /// indicating that git_clone should provide default behavior.
+  external ffi.Pointer<ffi.NativeFunction<git_remote_create_cb>> remote_cb;
+
+  /// An opaque payload to pass to the git_remote creation callback.
+  /// This parameter is ignored unless remote_cb is non-NULL.
+  external ffi.Pointer<ffi.Void> remote_cb_payload;
+}
 
 class git_commit extends ffi.Opaque {}
 
@@ -2001,6 +2612,123 @@ class git_error extends ffi.Struct {
 
   @ffi.Int32()
   external int klass;
+}
+
+/// Select the files on which to report status.
+///
+/// With `git_status_foreach_ext`, this will control which changes get
+/// callbacks.  With `git_status_list_new`, these will control which
+/// changes are included in the list.
+///
+/// - GIT_STATUS_SHOW_INDEX_AND_WORKDIR is the default.  This roughly
+/// matches `git status --porcelain` regarding which files are
+/// included and in what order.
+/// - GIT_STATUS_SHOW_INDEX_ONLY only gives status based on HEAD to index
+/// comparison, not looking at working directory changes.
+/// - GIT_STATUS_SHOW_WORKDIR_ONLY only gives status based on index to
+/// working directory comparison, not comparing the index to the HEAD.
+abstract class git_status_show_t {
+  static const int GIT_STATUS_SHOW_INDEX_AND_WORKDIR = 0;
+  static const int GIT_STATUS_SHOW_INDEX_ONLY = 1;
+  static const int GIT_STATUS_SHOW_WORKDIR_ONLY = 2;
+}
+
+/// Flags to control status callbacks
+///
+/// - GIT_STATUS_OPT_INCLUDE_UNTRACKED says that callbacks should be made
+/// on untracked files.  These will only be made if the workdir files are
+/// included in the status "show" option.
+/// - GIT_STATUS_OPT_INCLUDE_IGNORED says that ignored files get callbacks.
+/// Again, these callbacks will only be made if the workdir files are
+/// included in the status "show" option.
+/// - GIT_STATUS_OPT_INCLUDE_UNMODIFIED indicates that callback should be
+/// made even on unmodified files.
+/// - GIT_STATUS_OPT_EXCLUDE_SUBMODULES indicates that submodules should be
+/// skipped.  This only applies if there are no pending typechanges to
+/// the submodule (either from or to another type).
+/// - GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS indicates that all files in
+/// untracked directories should be included.  Normally if an entire
+/// directory is new, then just the top-level directory is included (with
+/// a trailing slash on the entry name).  This flag says to include all
+/// of the individual files in the directory instead.
+/// - GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH indicates that the given path
+/// should be treated as a literal path, and not as a pathspec pattern.
+/// - GIT_STATUS_OPT_RECURSE_IGNORED_DIRS indicates that the contents of
+/// ignored directories should be included in the status.  This is like
+/// doing `git ls-files -o -i --exclude-standard` with core git.
+/// - GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX indicates that rename detection
+/// should be processed between the head and the index and enables
+/// the GIT_STATUS_INDEX_RENAMED as a possible status flag.
+/// - GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR indicates that rename
+/// detection should be run between the index and the working directory
+/// and enabled GIT_STATUS_WT_RENAMED as a possible status flag.
+/// - GIT_STATUS_OPT_SORT_CASE_SENSITIVELY overrides the native case
+/// sensitivity for the file system and forces the output to be in
+/// case-sensitive order
+/// - GIT_STATUS_OPT_SORT_CASE_INSENSITIVELY overrides the native case
+/// sensitivity for the file system and forces the output to be in
+/// case-insensitive order
+/// - GIT_STATUS_OPT_RENAMES_FROM_REWRITES indicates that rename detection
+/// should include rewritten files
+/// - GIT_STATUS_OPT_NO_REFRESH bypasses the default status behavior of
+/// doing a "soft" index reload (i.e. reloading the index data if the
+/// file on disk has been modified outside libgit2).
+/// - GIT_STATUS_OPT_UPDATE_INDEX tells libgit2 to refresh the stat cache
+/// in the index for files that are unchanged but have out of date stat
+/// information in the index.  It will result in less work being done on
+/// subsequent calls to get status.  This is mutually exclusive with the
+/// NO_REFRESH option.
+///
+/// Calling `git_status_foreach()` is like calling the extended version
+/// with: GIT_STATUS_OPT_INCLUDE_IGNORED, GIT_STATUS_OPT_INCLUDE_UNTRACKED,
+/// and GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS.  Those options are bundled
+/// together as `GIT_STATUS_OPT_DEFAULTS` if you want them as a baseline.
+abstract class git_status_opt_t {
+  static const int GIT_STATUS_OPT_INCLUDE_UNTRACKED = 1;
+  static const int GIT_STATUS_OPT_INCLUDE_IGNORED = 2;
+  static const int GIT_STATUS_OPT_INCLUDE_UNMODIFIED = 4;
+  static const int GIT_STATUS_OPT_EXCLUDE_SUBMODULES = 8;
+  static const int GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS = 16;
+  static const int GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH = 32;
+  static const int GIT_STATUS_OPT_RECURSE_IGNORED_DIRS = 64;
+  static const int GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX = 128;
+  static const int GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR = 256;
+  static const int GIT_STATUS_OPT_SORT_CASE_SENSITIVELY = 512;
+  static const int GIT_STATUS_OPT_SORT_CASE_INSENSITIVELY = 1024;
+  static const int GIT_STATUS_OPT_RENAMES_FROM_REWRITES = 2048;
+  static const int GIT_STATUS_OPT_NO_REFRESH = 4096;
+  static const int GIT_STATUS_OPT_UPDATE_INDEX = 8192;
+  static const int GIT_STATUS_OPT_INCLUDE_UNREADABLE = 16384;
+  static const int GIT_STATUS_OPT_INCLUDE_UNREADABLE_AS_UNTRACKED = 32768;
+}
+
+/// Options to control how `git_status_foreach_ext()` will issue callbacks.
+///
+/// Initialize with `GIT_STATUS_OPTIONS_INIT`. Alternatively, you can
+/// use `git_status_options_init`.
+class git_status_options extends ffi.Struct {
+  /// < The version
+  @ffi.Uint32()
+  external int version;
+
+  /// The `show` value is one of the `git_status_show_t` constants that
+  /// control which files to scan and in what order.
+  @ffi.Int32()
+  external int show_1;
+
+  /// The `flags` value is an OR'ed combination of the `git_status_opt_t`
+  /// values above.
+  @ffi.Uint32()
+  external int flags;
+
+  /// The `pathspec` is an array of path patterns to match (using
+  /// fnmatch-style matching), or just an array of paths to match exactly if
+  /// `GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH` is specified in the flags.
+  external git_strarray pathspec;
+
+  /// The `baseline` is the tree to be used for comparison to the working directory
+  /// and index; defaults to HEAD.
+  external ffi.Pointer<git_tree> baseline;
 }
 
 /// A status entry, providing the differences between the file as it exists
@@ -2025,12 +2753,6 @@ class git_status_entry extends ffi.Struct {
 }
 
 class git_status_list extends ffi.Opaque {}
-
-/// Options to control how `git_status_foreach_ext()` will issue callbacks.
-///
-/// Initialize with `GIT_STATUS_OPTIONS_INIT`. Alternatively, you can
-/// use `git_status_options_init`.
-class git_status_options extends ffi.Opaque {}
 
 const int GIT_REPOSITORY_INIT_OPTIONS_VERSION = 1;
 
@@ -2096,6 +2818,16 @@ typedef _dart_git_repository_init = int Function(
   ffi.Pointer<ffi.Pointer<git_repository>> out,
   ffi.Pointer<ffi.Int8> path,
   int is_bare,
+);
+
+typedef _c_git_repository_init_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_repository_init_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_repository_init_options_init = int Function(
+  ffi.Pointer<git_repository_init_options> opts,
+  int version,
 );
 
 typedef _c_git_repository_init_ext = ffi.Int32 Function(
@@ -2329,6 +3061,16 @@ typedef _dart_git_branch_upstream = int Function(
   ffi.Pointer<git_reference> branch,
 );
 
+typedef _c_git_checkout_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_checkout_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_checkout_options_init = int Function(
+  ffi.Pointer<git_checkout_options> opts,
+  int version,
+);
+
 typedef _c_git_checkout_head = ffi.Int32 Function(
   ffi.Pointer<git_repository> repo,
   ffi.Pointer<git_checkout_options> opts,
@@ -2395,6 +3137,16 @@ typedef _c_git_index_remove_bypath = ffi.Int32 Function(
 typedef _dart_git_index_remove_bypath = int Function(
   ffi.Pointer<git_index> index,
   ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _c_git_merge_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_merge_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_merge_options_init = int Function(
+  ffi.Pointer<git_merge_options> opts,
+  int version,
 );
 
 typedef _c_git_merge_analysis = ffi.Int32 Function(
@@ -2485,6 +3237,26 @@ typedef _dart_git_remote_list = int Function(
   ffi.Pointer<git_repository> repo,
 );
 
+typedef _c_git_fetch_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_fetch_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_fetch_options_init = int Function(
+  ffi.Pointer<git_fetch_options> opts,
+  int version,
+);
+
+typedef _c_git_push_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_push_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_push_options_init = int Function(
+  ffi.Pointer<git_push_options> opts,
+  int version,
+);
+
 typedef _c_git_remote_fetch = ffi.Int32 Function(
   ffi.Pointer<git_remote> remote,
   ffi.Pointer<git_strarray> refspecs,
@@ -2519,6 +3291,16 @@ typedef _c_git_remote_delete = ffi.Int32 Function(
 typedef _dart_git_remote_delete = int Function(
   ffi.Pointer<git_repository> repo,
   ffi.Pointer<ffi.Int8> name,
+);
+
+typedef _c_git_clone_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_clone_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_clone_options_init = int Function(
+  ffi.Pointer<git_clone_options> opts,
+  int version,
 );
 
 typedef _c_git_clone = ffi.Int32 Function(
@@ -2593,6 +3375,16 @@ typedef _c_git_error_set_str = ffi.Int32 Function(
 typedef _dart_git_error_set_str = int Function(
   int error_class,
   ffi.Pointer<ffi.Int8> string,
+);
+
+typedef _c_git_status_options_init = ffi.Int32 Function(
+  ffi.Pointer<git_status_options> opts,
+  ffi.Uint32 version,
+);
+
+typedef _dart_git_status_options_init = int Function(
+  ffi.Pointer<git_status_options> opts,
+  int version,
 );
 
 typedef _c_git_status_list_new = ffi.Int32 Function(
@@ -2755,5 +3547,41 @@ typedef git_url_resolve_cb = ffi.Int32 Function(
   ffi.Pointer<git_buf>,
   ffi.Pointer<ffi.Int8>,
   ffi.Int32,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_checkout_notify_cb = ffi.Int32 Function(
+  ffi.Int32,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<git_diff_file>,
+  ffi.Pointer<git_diff_file>,
+  ffi.Pointer<git_diff_file>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_checkout_progress_cb = ffi.Void Function(
+  ffi.Pointer<ffi.Int8>,
+  ffi.IntPtr,
+  ffi.IntPtr,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_checkout_perfdata_cb = ffi.Void Function(
+  ffi.Pointer<git_checkout_perfdata>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_repository_create_cb = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_repository>>,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Int32,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_remote_create_cb = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_remote>>,
+  ffi.Pointer<git_repository>,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<ffi.Int8>,
   ffi.Pointer<ffi.Void>,
 );

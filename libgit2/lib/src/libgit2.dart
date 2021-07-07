@@ -56,8 +56,7 @@ class Libgit2 {
     Pointer<Pointer<git_repository>> repository =
         calloc<Pointer<git_repository>>();
     repository.value = nullptr;
-    Pointer<git_clone_options> cloneOptions =
-        calloc.call<Int8>(git.clone_options_size()).cast<git_clone_options>();
+    Pointer<git_clone_options> cloneOptions = calloc<git_clone_options>();
     var dirPtr = dir.toNativeUtf8();
     var urlPtr = url.toNativeUtf8();
     try {
@@ -147,8 +146,7 @@ class Libgit2 {
   static void fetch(
       String dir, String remoteStr, String username, String password) {
     setupCredentials(username, password);
-    Pointer<git_fetch_options> fetchOptions =
-        calloc.call<Int8>(git.fetch_options_size()).cast<git_fetch_options>();
+    Pointer<git_fetch_options> fetchOptions = calloc<git_fetch_options>();
     try {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
         _checkErrors(
@@ -217,8 +215,7 @@ class Libgit2 {
   static void push(
       String dir, String remoteStr, String username, String password) {
     setupCredentials(username, password);
-    Pointer<git_push_options> pushOptions =
-        calloc.call<Int8>(git.push_options_size()).cast<git_push_options>();
+    Pointer<git_push_options> pushOptions = calloc<git_push_options>();
     Pointer<git_strarray> refStrings = calloc<git_strarray>();
     refStrings.ref.count = 1;
     refStrings.ref.strings = calloc.call<Pointer<Int8>>(1);
@@ -248,8 +245,7 @@ class Libgit2 {
   }
 
   static dynamic status(String dir) {
-    Pointer<git_status_options> statusOptions =
-        calloc.call<Int8>(git.status_options_size()).cast<git_status_options>();
+    Pointer<git_status_options> statusOptions = calloc<git_status_options>();
     Pointer<Pointer<git_status_list>> statusList =
         calloc<Pointer<git_status_list>>();
     statusList.value = nullptr;
@@ -442,11 +438,10 @@ class Libgit2 {
 
   static void revertFile(String dir, String file) {
     var filePtr = file.toNativeUtf8();
-    Pointer<git_checkout_options> checkoutOptions = calloc
-        .call<Int8>(git.checkout_options_size())
-        .cast<git_checkout_options>();
-    Pointer<Pointer<Utf8>> fileStrStr = calloc.call<Pointer<Utf8>>(1);
-    fileStrStr[0] = file.toNativeUtf8();
+    Pointer<git_checkout_options> checkoutOptions =
+        calloc<git_checkout_options>();
+    Pointer<Pointer<Int8>> fileStrStr = calloc.call<Pointer<Int8>>(1);
+    fileStrStr[0] = file.toNativeUtf8().cast<Int8>();
     try {
       _withRepository(dir, (repo) {
         _checkErrors(git.checkout_options_init(
@@ -509,9 +504,8 @@ class Libgit2 {
         } else if ((analysisResults & (4)) != 0) {
           Pointer<git_oid> upstreamCommitId =
               git.annotated_commit_id(upstreamToMerge[0]);
-          Pointer<git_checkout_options> checkoutOptions = calloc
-              .call<Int8>(git.checkout_options_size())
-              .cast<git_checkout_options>();
+          Pointer<git_checkout_options> checkoutOptions =
+              calloc<git_checkout_options>();
           Pointer<Pointer<git_commit>> upstreamCommit =
               calloc<Pointer<git_commit>>();
           upstreamCommit.value = nullptr;
@@ -544,12 +538,9 @@ class Libgit2 {
             calloc.free(newHeadRef);
           }
         } else if ((analysisResults & 1) != 0) {
-          Pointer<git_checkout_options> checkoutOptions = calloc
-              .call<Int8>(git.checkout_options_size())
-              .cast<git_checkout_options>();
-          Pointer<git_merge_options> mergeOptions = calloc
-              .call<Int8>(git.merge_options_size())
-              .cast<git_merge_options>();
+          Pointer<git_checkout_options> checkoutOptions =
+              calloc<git_checkout_options>();
+          Pointer<git_merge_options> mergeOptions = calloc<git_merge_options>();
 
           try {
             _checkErrors(git.checkout_options_init(
