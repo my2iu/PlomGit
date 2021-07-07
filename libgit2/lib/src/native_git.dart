@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'generated_bindings.dart';
 import 'structs.dart';
 import 'package:ffi/ffi.dart';
 
@@ -9,13 +10,17 @@ class git {
       ? DynamicLibrary.open("libgit2.so")
       : DynamicLibrary.process();
 
-  static final int Function() queryFeatures = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_features")
-      .asFunction();
+  static final NativeLibrary git2 = NativeLibrary(Platform.isAndroid
+      ? DynamicLibrary.open("libgit2.so")
+      : DynamicLibrary.process());
 
-  static final int Function() init = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_init")
-      .asFunction();
+  static int queryFeatures() {
+    return git2.git_libgit2_features();
+  }
+
+  static int init() {
+    return git2.git_libgit2_init();
+  }
 
   static final int Function() shutdown = nativeGit2
       .lookup<NativeFunction<Int32 Function()>>("git_libgit2_shutdown")

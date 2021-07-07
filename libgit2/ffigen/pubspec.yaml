@@ -1,0 +1,37 @@
+name: libgit2_ffigen
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
+dev_dependencies:
+  ffigen:
+
+ffigen:
+  name: NativeLibrary
+  description: 'Bindings for libgit2'
+  output: '../lib/src/generated_bindings.dart'
+  llvm-path:
+   - '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr'
+  compiler-opts:
+   - '-I../ios/libgit2-1.1.0/include'
+   - '-Wno-nullability-completeness'
+  headers:
+    entry-points:
+      - '../ios/libgit2-1.1.0/include/git2.h'
+  functions:
+    include:
+     - git_libgit2_features
+     - git_libgit2_init
+  structs:
+    dependency-only: opaque
+    exclude:
+     - .*
+  enums:
+    exclude:
+     - .*
+  macros:
+    exclude:
+     - .*
+  globals:
+    exclude:
+    - .*

@@ -1,4 +1,3 @@
-import 'package:PlomGit/src/util.dart';
 import 'package:flutter/material.dart';
 import 'package:libgit2/git_isolate.dart' show GitIsolate;
 import 'util.dart';

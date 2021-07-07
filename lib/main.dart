@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:PlomGit/src/repository_view.dart' show RepositoryView;
-import 'package:PlomGit/src/remote_view.dart'
+import 'package:plomgit/src/repository_view.dart' show RepositoryView;
+import 'package:plomgit/src/remote_view.dart'
     show RemoteConfigurationWidget, RepositoryRemoteInfo;
-import 'package:PlomGit/src/account_credential_view.dart'
+import 'package:plomgit/src/account_credential_view.dart'
     show AccountCredentialListView;
-import 'package:PlomGit/src/util.dart'
+import 'package:plomgit/src/util.dart'
     show
         RepositoryNameTextFormField,
         RemoteCredentialsInfo,
