@@ -45,6 +45,197 @@ class NativeLibrary {
   late final _dart_git_libgit2_features _git_libgit2_features =
       _git_libgit2_features_ptr.asFunction<_dart_git_libgit2_features>();
 
+  /// Open a git repository.
+  ///
+  /// The 'path' argument must point to either a git repository
+  /// folder, or an existing work dir.
+  ///
+  /// The method will automatically detect if 'path' is a normal
+  /// or bare repository or fail is 'path' is neither.
+  ///
+  /// @param out pointer to the repo which will be opened
+  /// @param path the path to the repository
+  /// @return 0 or an error code
+  int git_repository_open(
+    ffi.Pointer<ffi.Pointer<git_repository>> out,
+    ffi.Pointer<ffi.Int8> path,
+  ) {
+    return _git_repository_open(
+      out,
+      path,
+    );
+  }
+
+  late final _git_repository_open_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_open>>(
+          'git_repository_open');
+  late final _dart_git_repository_open _git_repository_open =
+      _git_repository_open_ptr.asFunction<_dart_git_repository_open>();
+
+  /// Free a previously allocated repository
+  ///
+  /// Note that after a repository is free'd, all the objects it has spawned
+  /// will still exist until they are manually closed by the user
+  /// with `git_object_free`, but accessing any of the attributes of
+  /// an object without a backing repository will result in undefined
+  /// behavior
+  ///
+  /// @param repo repository handle to close. If NULL nothing occurs.
+  void git_repository_free(
+    ffi.Pointer<git_repository> repo,
+  ) {
+    return _git_repository_free(
+      repo,
+    );
+  }
+
+  late final _git_repository_free_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_free>>(
+          'git_repository_free');
+  late final _dart_git_repository_free _git_repository_free =
+      _git_repository_free_ptr.asFunction<_dart_git_repository_free>();
+
+  /// Creates a new Git repository in the given folder.
+  ///
+  /// TODO:
+  /// - Reinit the repository
+  ///
+  /// @param out pointer to the repo which will be created or reinitialized
+  /// @param path the path to the repository
+  /// @param is_bare if true, a Git repository without a working directory is
+  /// created at the pointed path. If false, provided path will be
+  /// considered as the working directory into which the .git directory
+  /// will be created.
+  ///
+  /// @return 0 or an error code
+  int git_repository_init(
+    ffi.Pointer<ffi.Pointer<git_repository>> out,
+    ffi.Pointer<ffi.Int8> path,
+    int is_bare,
+  ) {
+    return _git_repository_init(
+      out,
+      path,
+      is_bare,
+    );
+  }
+
+  late final _git_repository_init_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_init>>(
+          'git_repository_init');
+  late final _dart_git_repository_init _git_repository_init =
+      _git_repository_init_ptr.asFunction<_dart_git_repository_init>();
+
+  /// Create a new Git repository in the given folder with extended controls.
+  ///
+  /// This will initialize a new git repository (creating the repo_path
+  /// if requested by flags) and working directory as needed.  It will
+  /// auto-detect the case sensitivity of the file system and if the
+  /// file system supports file mode bits correctly.
+  ///
+  /// @param out Pointer to the repo which will be created or reinitialized.
+  /// @param repo_path The path to the repository.
+  /// @param opts Pointer to git_repository_init_options struct.
+  /// @return 0 or an error code on failure.
+  int git_repository_init_ext(
+    ffi.Pointer<ffi.Pointer<git_repository>> out,
+    ffi.Pointer<ffi.Int8> repo_path,
+    ffi.Pointer<git_repository_init_options> opts,
+  ) {
+    return _git_repository_init_ext(
+      out,
+      repo_path,
+      opts,
+    );
+  }
+
+  late final _git_repository_init_ext_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_init_ext>>(
+          'git_repository_init_ext');
+  late final _dart_git_repository_init_ext _git_repository_init_ext =
+      _git_repository_init_ext_ptr.asFunction<_dart_git_repository_init_ext>();
+
+  /// Check if the current branch is unborn
+  ///
+  /// An unborn branch is one named from HEAD but which doesn't exist in
+  /// the refs namespace, because it doesn't have any commit to point to.
+  ///
+  /// @param repo Repo to test
+  /// @return 1 if the current branch is unborn, 0 if it's not; error
+  /// code if there was an error
+  int git_repository_head_unborn(
+    ffi.Pointer<git_repository> repo,
+  ) {
+    return _git_repository_head_unborn(
+      repo,
+    );
+  }
+
+  late final _git_repository_head_unborn_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_head_unborn>>(
+          'git_repository_head_unborn');
+  late final _dart_git_repository_head_unborn _git_repository_head_unborn =
+      _git_repository_head_unborn_ptr
+          .asFunction<_dart_git_repository_head_unborn>();
+
+  /// Remove all the metadata associated with an ongoing command like merge,
+  /// revert, cherry-pick, etc.  For example: MERGE_HEAD, MERGE_MSG, etc.
+  ///
+  /// @param repo A repository object
+  /// @return 0 on success, or error
+  int git_repository_state_cleanup(
+    ffi.Pointer<git_repository> repo,
+  ) {
+    return _git_repository_state_cleanup(
+      repo,
+    );
+  }
+
+  late final _git_repository_state_cleanup_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_state_cleanup>>(
+          'git_repository_state_cleanup');
+  late final _dart_git_repository_state_cleanup _git_repository_state_cleanup =
+      _git_repository_state_cleanup_ptr
+          .asFunction<_dart_git_repository_state_cleanup>();
+
+  /// Determines the status of a git repository - ie, whether an operation
+  /// (merge, cherry-pick, etc) is in progress.
+  ///
+  /// @param repo Repository pointer
+  /// @return The state of the repository
+  int git_repository_state(
+    ffi.Pointer<git_repository> repo,
+  ) {
+    return _git_repository_state(
+      repo,
+    );
+  }
+
+  late final _git_repository_state_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_state>>(
+          'git_repository_state');
+  late final _dart_git_repository_state _git_repository_state =
+      _git_repository_state_ptr.asFunction<_dart_git_repository_state>();
+
+  /// Get the full name of a reference.
+  ///
+  /// See `git_reference_symbolic_create()` for rules about valid names.
+  ///
+  /// @param ref The reference
+  /// @return the full name for the ref
+  ffi.Pointer<ffi.Int8> git_reference_name(
+    ffi.Pointer<git_reference> ref,
+  ) {
+    return _git_reference_name(
+      ref,
+    );
+  }
+
+  late final _git_reference_name_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_name>>('git_reference_name');
+  late final _dart_git_reference_name _git_reference_name =
+      _git_reference_name_ptr.asFunction<_dart_git_reference_name>();
+
   /// Return the last `git_error` object that was generated for the
   /// current thread.
   ///
@@ -132,6 +323,82 @@ class NativeLibrary {
       _git_libgit2_shutdown_ptr.asFunction<_dart_git_libgit2_shutdown>();
 }
 
+/// A data buffer for exporting data from libgit2
+///
+/// Sometimes libgit2 wants to return an allocated data buffer to the
+/// caller and have the caller take responsibility for freeing that memory.
+/// This can be awkward if the caller does not have easy access to the same
+/// allocation functions that libgit2 is using.  In those cases, libgit2
+/// will fill in a `git_buf` and the caller can use `git_buf_dispose()` to
+/// release it when they are done.
+///
+/// A `git_buf` may also be used for the caller to pass in a reference to
+/// a block of memory they hold.  In this case, libgit2 will not resize or
+/// free the memory, but will read from it as needed.
+///
+/// Some APIs may occasionally do something slightly unusual with a buffer,
+/// such as setting `ptr` to a value that was passed in by the user.  In
+/// those cases, the behavior will be clearly documented by the API.
+class git_buf extends ffi.Struct {
+  /// The buffer contents.
+  ///
+  /// `ptr` points to the start of the allocated memory.  If it is NULL,
+  /// then the `git_buf` is considered empty and libgit2 will feel free
+  /// to overwrite it with new data.
+  external ffi.Pointer<ffi.Int8> ptr;
+
+  /// `asize` holds the known total amount of allocated memory if the `ptr`
+  /// was allocated by libgit2.  It may be larger than `size`.  If `ptr`
+  /// was not allocated by libgit2 and should not be resized and/or freed,
+  /// then `asize` will be set to zero.
+  @ffi.IntPtr()
+  external int asize;
+
+  /// `size` holds the size (in bytes) of the data that is actually used.
+  @ffi.IntPtr()
+  external int size;
+}
+
+class git_repository extends ffi.Opaque {}
+
+/// Extended options structure for `git_repository_init_ext`.
+///
+/// This contains extra options for `git_repository_init_ext` that enable
+/// additional initialization features.  The fields are:
+///
+/// * flags - Combination of GIT_REPOSITORY_INIT flags above.
+/// * mode  - Set to one of the standard GIT_REPOSITORY_INIT_SHARED_...
+/// constants above, or to a custom value that you would like.
+/// * workdir_path - The path to the working dir or NULL for default (i.e.
+/// repo_path parent on non-bare repos).  IF THIS IS RELATIVE PATH,
+/// IT WILL BE EVALUATED RELATIVE TO THE REPO_PATH.  If this is not
+/// the "natural" working directory, a .git gitlink file will be
+/// created here linking to the repo_path.
+/// * description - If set, this will be used to initialize the "description"
+/// file in the repository, instead of using the template content.
+/// * template_path - When GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE is set,
+/// this contains the path to use for the template directory.  If
+/// this is NULL, the config or default directory options will be
+/// used instead.
+/// * initial_head - The name of the head to point HEAD at.  If NULL, then
+/// this will be treated as "master" and the HEAD ref will be set
+/// to "refs/heads/master".  If this begins with "refs/" it will be
+/// used verbatim; otherwise "refs/heads/" will be prefixed.
+/// * origin_url - If this is non-NULL, then after the rest of the
+/// repository initialization is completed, an "origin" remote
+/// will be added pointing to this URL.
+class git_repository_init_options extends ffi.Opaque {}
+
+/// Array of strings
+class git_strarray extends ffi.Struct {
+  external ffi.Pointer<ffi.Pointer<ffi.Int8>> strings;
+
+  @ffi.IntPtr()
+  external int count;
+}
+
+class git_reference extends ffi.Opaque {}
+
 /// Structure to store extra details of the last error that occurred.
 ///
 /// This is kept on a per-thread basis if GIT_THREADS was defined when the
@@ -143,9 +410,95 @@ class git_error extends ffi.Struct {
   external int klass;
 }
 
+const int GIT_CHECKOUT_OPTIONS_VERSION = 1;
+
+const int GIT_MERGE_OPTIONS_VERSION = 1;
+
+const int GIT_FETCH_OPTIONS_VERSION = 1;
+
+const int GIT_PUSH_OPTIONS_VERSION = 1;
+
+const int GIT_CLONE_OPTIONS_VERSION = 1;
+
+const int GIT_STATUS_OPTIONS_VERSION = 1;
+
 typedef _c_git_libgit2_features = ffi.Int32 Function();
 
 typedef _dart_git_libgit2_features = int Function();
+
+typedef _c_git_repository_open = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _dart_git_repository_open = int Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _c_git_repository_free = ffi.Void Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _dart_git_repository_free = void Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _c_git_repository_init = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> path,
+  ffi.Uint32 is_bare,
+);
+
+typedef _dart_git_repository_init = int Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> path,
+  int is_bare,
+);
+
+typedef _c_git_repository_init_ext = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> repo_path,
+  ffi.Pointer<git_repository_init_options> opts,
+);
+
+typedef _dart_git_repository_init_ext = int Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> repo_path,
+  ffi.Pointer<git_repository_init_options> opts,
+);
+
+typedef _c_git_repository_head_unborn = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _dart_git_repository_head_unborn = int Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _c_git_repository_state_cleanup = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _dart_git_repository_state_cleanup = int Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _c_git_repository_state = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _dart_git_repository_state = int Function(
+  ffi.Pointer<git_repository> repo,
+);
+
+typedef _c_git_reference_name = ffi.Pointer<ffi.Int8> Function(
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _dart_git_reference_name = ffi.Pointer<ffi.Int8> Function(
+  ffi.Pointer<git_reference> ref,
+);
 
 typedef _c_git_error_last = ffi.Pointer<git_error> Function();
 

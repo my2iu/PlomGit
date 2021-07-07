@@ -12,6 +12,7 @@
 #include "git2/status.h"
 #include "git2/checkout.h"
 #include "git2/clone.h"
+#include "git2/merge.h"
 
 @implementation Libgit2Plugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -64,7 +65,7 @@ GIT_EXTERN(int) git_checkout_options_version(void) {
 }
 
 GIT_EXTERN(int) git_merge_options_version(void) {
-  return GIT_CHECKOUT_OPTIONS_VERSION;
+  return GIT_MERGE_OPTIONS_VERSION;
 }
 
 GIT_EXTERN(void) git_fetch_options_set_credentials_cb(git_fetch_options *opts, git_credential_acquire_cb *credentials_cb) {

@@ -8,17 +8,17 @@ import 'package:ffi/ffi.dart';
 //   external int klass;
 // }
 
-class git_strarray extends Struct {
-  external Pointer<Pointer<Utf8>> strings;
+// class git_strarray extends Struct {
+//   external Pointer<Pointer<Utf8>> strings;
 
-  @IntPtr()
-  external int count;
-}
+//   @IntPtr()
+//   external int count;
+// }
 
 // Opaque types
 class git_remote extends Opaque {}
 
-class git_repository extends Opaque {}
+// class git_repository extends Opaque {}
 
 class git_status_list extends Opaque {}
 
@@ -32,11 +32,11 @@ class git_commit extends Opaque {}
 
 class git_annotated_commit extends Opaque {}
 
-class git_reference extends Opaque {}
+// class git_reference extends Opaque {}
 
 class git_object extends Opaque {}
 
-class git_repository_init_options extends Opaque {}
+// class git_repository_init_options extends Opaque {}
 
 typedef git_credentials_acquire_cb = Int32 Function(
     Pointer<Pointer<git_credential>> out,
@@ -174,10 +174,10 @@ class git_signature extends Struct {
   external int when_sign;
 }
 
-class git_buf extends Struct {
-  external Pointer<Utf8> ptr;
-  @IntPtr()
-  external int asize;
-  @IntPtr()
-  external int size;
-}
+// class git_buf extends Struct {
+//   external Pointer<Utf8> ptr;
+//   @IntPtr()
+//   external int asize;
+//   @IntPtr()
+//   external int size;
+// }

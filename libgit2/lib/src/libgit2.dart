@@ -39,7 +39,7 @@ class Libgit2 {
     var dirPtr = dir.toNativeUtf8();
     var mainPtr = "refs/heads/main".toNativeUtf8();
     try {
-      _checkErrors(git.repository_init(repository, dirPtr, 0));
+      _checkErrors(git.repository_init(repository, dirPtr.cast<Int8>(), 0));
       // Using repository_init_ext doesn't seem to change the branch for head
       // so I'm just manually setting it to main
       _checkErrors(git.repository_set_head(repository.value, mainPtr));
@@ -84,7 +84,7 @@ class Libgit2 {
     repository.value = nullptr;
     var dirPtr = dir.toNativeUtf8();
     try {
-      _checkErrors(git.repository_open(repository, dirPtr));
+      _checkErrors(git.repository_open(repository, dirPtr.cast<Int8>()));
       return fn(repository.value);
     } finally {
       calloc.free(dirPtr);
@@ -132,7 +132,8 @@ class Libgit2 {
         _checkErrors(git.remote_list(remotesStrings, repo));
         List<String> remotes = [];
         for (int n = 0; n < remotesStrings.ref.count; n++)
-          remotes.add(remotesStrings.ref.strings[n].toDartString());
+          remotes
+              .add(remotesStrings.ref.strings[n].cast<Utf8>().toDartString());
         return remotes;
       });
     } finally {
@@ -217,7 +218,7 @@ class Libgit2 {
         calloc.call<Int8>(git.push_options_size());
     Pointer<git_strarray> refStrings = calloc<git_strarray>();
     refStrings.ref.count = 1;
-    refStrings.ref.strings = calloc.call<Pointer<Utf8>>(1);
+    refStrings.ref.strings = calloc.call<Pointer<Int8>>(1);
     Pointer<Pointer<git_reference>> headRef = calloc<Pointer<git_reference>>();
     headRef.value = nullptr;
     try {

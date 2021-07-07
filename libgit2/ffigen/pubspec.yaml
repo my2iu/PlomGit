@@ -25,16 +25,33 @@ ffigen:
      - git_libgit2_shutdown
      - git_error_last
      - git_error_set_str
+     - git_repository_init
+     - git_repository_init_ext
+     - git_repository_open
+     - git_repository_state
+     - git_repository_state_cleanup
+     - git_repository_free
+     - git_repository_head_unborn
+     - git_reference_name
   structs:
     dependency-only: opaque
     include:
      - git_error
+     - git_strarray
+     - git_buf
   enums:
     exclude:
      - .*
   macros:
-    exclude:
-     - .*
+    include:
+     - GIT_FETCH_OPTIONS_VERSION
+     - GIT_PUSH_OPTIONS_VERSION
+     - GIT_STATUS_OPTIONS_VERSION
+     - GIT_CLONE_OPTIONS_VERSION
+     - GIT_CHECKOUT_OPTIONS_VERSION
+     - GIT_MERGE_OPTIONS_VERSION
   globals:
     exclude:
     - .*
+  typedef-map:
+    'size_t': 'IntPtr'

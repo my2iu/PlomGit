@@ -5,6 +5,14 @@ import 'generated_bindings.dart';
 import 'structs.dart';
 import 'package:ffi/ffi.dart';
 
+export 'generated_bindings.dart'
+    show
+        git_repository,
+        git_repository_init_options,
+        git_strarray,
+        git_reference,
+        git_buf;
+
 class git {
   static final DynamicLibrary nativeGit2 = Platform.isAndroid
       ? DynamicLibrary.open("libgit2.so")
@@ -34,26 +42,21 @@ class git {
     return git2.git_error_set_str(errorClass, str);
   }
 
-  static final int Function(
-          Pointer<Pointer<git_repository>>, Pointer<Utf8>, int)
-      repository_init = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<Pointer<git_repository>>,
-                      Pointer<Utf8>, Uint32)>>("git_repository_init")
-          .asFunction();
+  static int repository_init(
+    Pointer<Pointer<git_repository>> out,
+    Pointer<Int8> path,
+    int is_bare,
+  ) {
+    return git2.git_repository_init(out, path, is_bare);
+  }
 
-  static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>,
-          Pointer<git_repository_init_options>) repository_init_ext =
-      nativeGit2
-          .lookup<
-                  NativeFunction<
-                      Int32 Function(
-                          Pointer<Pointer<git_repository>>,
-                          Pointer<Utf8>,
-                          Pointer<git_repository_init_options>)>>(
-              "git_repository_init_ext")
-          .asFunction();
+  static int repository_init_ext(
+    Pointer<Pointer<git_repository>> out,
+    Pointer<Int8> repo_path,
+    Pointer<git_repository_init_options> opts,
+  ) {
+    return git2.git_repository_init_ext(out, repo_path, opts);
+  }
 
   static final void Function(Pointer<NativeType>)
       repository_init_options_config = nativeGit2
@@ -61,25 +64,20 @@ class git {
               "git_repository_init_options_config")
           .asFunction();
 
-  static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>)
-      repository_open = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<Pointer<git_repository>>,
-                      Pointer<Utf8>)>>("git_repository_open")
-          .asFunction();
+  static int repository_open(
+    Pointer<Pointer<git_repository>> out,
+    Pointer<Int8> path,
+  ) {
+    return git2.git_repository_open(out, path);
+  }
 
-  static final int Function(Pointer<git_repository>) repository_state =
-      nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
-              "git_repository_state")
-          .asFunction();
+  static int repository_state(Pointer<git_repository> repo) {
+    return git2.git_repository_state(repo);
+  }
 
-  static final int Function(Pointer<git_repository>) repository_state_cleanup =
-      nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
-              "git_repository_state_cleanup")
-          .asFunction();
+  static int repository_state_cleanup(Pointer<git_repository> repo) {
+    return git2.git_repository_state_cleanup(repo);
+  }
 
   static final int Function(
           Pointer<git_repository>,
@@ -99,17 +97,13 @@ class git {
                       Pointer<NativeType>)>>("git_repository_mergehead_foreach")
           .asFunction();
 
-  static final void Function(Pointer<git_repository>) repository_free =
-      nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<git_repository>)>>(
-              "git_repository_free")
-          .asFunction();
+  static void repository_free(Pointer<git_repository> repo) {
+    git2.git_repository_free(repo);
+  }
 
-  static final int Function(Pointer<git_repository>) repository_head_unborn =
-      nativeGit2
-          .lookup<NativeFunction<Int32 Function(Pointer<git_repository>)>>(
-              "git_repository_head_unborn")
-          .asFunction();
+  static int repository_head_unborn(Pointer<git_repository> repo) {
+    return git2.git_repository_head_unborn(repo);
+  }
 
   static final int Function(
           Pointer<Pointer<git_reference>>, Pointer<git_repository>)
@@ -229,34 +223,34 @@ class git {
           "git_repository_init_options_size")
       .asFunction();
 
-  static final int Function() fetch_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_fetch_options_version")
-      .asFunction();
+  static int fetch_options_version() {
+    return GIT_FETCH_OPTIONS_VERSION;
+  }
 
-  static final int Function() push_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_push_options_version")
-      .asFunction();
+  static int push_options_version() {
+    return GIT_PUSH_OPTIONS_VERSION;
+  }
 
-  static final int Function() status_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_status_options_version")
-      .asFunction();
+  static int status_options_version() {
+    return GIT_STATUS_OPTIONS_VERSION;
+  }
 
-  static final int Function() clone_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_clone_options_version")
-      .asFunction();
+  static int clone_options_version() {
+    return GIT_CLONE_OPTIONS_VERSION;
+  }
 
-  static final int Function() checkout_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_checkout_options_version")
-      .asFunction();
+  static int checkout_options_version() {
+    return GIT_CHECKOUT_OPTIONS_VERSION;
+  }
 
-  static final int Function() merge_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_merge_options_version")
-      .asFunction();
+  static int merge_options_version() {
+    return GIT_MERGE_OPTIONS_VERSION;
+  }
 
-  static final int Function() repository_init_options_version = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>(
-          "git_repository_init_options_version")
-      .asFunction();
+  // static final int Function() repository_init_options_version = nativeGit2
+  //     .lookup<NativeFunction<Int32 Function()>>(
+  //         "git_repository_init_options_version")
+  //     .asFunction();
 
   static final void Function(Pointer<NativeType>,
           Pointer<NativeFunction<git_credentials_acquire_cb>>)
@@ -504,12 +498,9 @@ class git {
       .lookup<NativeFunction<Void Function(Pointer<git_tree>)>>("git_tree_free")
       .asFunction();
 
-  static final Pointer<Utf8> Function(
-      Pointer<
-          git_reference>) reference_name = nativeGit2
-      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<git_reference>)>>(
-          "git_reference_name")
-      .asFunction();
+  static Pointer<Int8> reference_name(Pointer<git_reference> ref) {
+    return git2.git_reference_name(ref);
+  }
 
   static final int Function(
           Pointer<git_oid>, Pointer<git_repository>, Pointer<Utf8>)
