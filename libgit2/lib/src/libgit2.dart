@@ -1,9 +1,15 @@
 import 'dart:ffi';
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 import 'native_git.dart';
+import 'generated_bindings.dart';
+
+final NativeLibrary _git = NativeLibrary(Platform.isAndroid
+    ? DynamicLibrary.open("libgit2.so")
+    : DynamicLibrary.process());
 
 class Libgit2 {
   // I don't really need this MethodChannel stuff since I don't need
@@ -17,11 +23,11 @@ class Libgit2 {
   }
 
   static void init() {
-    git.init();
+    _git.libgit2_init();
   }
 
   static int queryFeatures() {
-    return git.queryFeatures();
+    return _git.libgit2_features();
   }
 
   /// Checks the return code for errors and if so, convert it to a thrown
@@ -38,14 +44,14 @@ class Libgit2 {
     var dirPtr = dir.toNativeUtf8();
     var mainPtr = "refs/heads/main".toNativeUtf8();
     try {
-      _checkErrors(git.repository_init(repository, dirPtr.cast<Int8>(), 0));
+      _checkErrors(_git.repository_init(repository, dirPtr.cast<Int8>(), 0));
       // Using repository_init_ext doesn't seem to change the branch for head
       // so I'm just manually setting it to main
       _checkErrors(
-          git.repository_set_head(repository.value, mainPtr.cast<Int8>()));
+          _git.repository_set_head(repository.value, mainPtr.cast<Int8>()));
     } finally {
       calloc.free(dirPtr);
-      if (repository.value != nullptr) git.repository_free(repository.value);
+      if (repository.value != nullptr) _git.repository_free(repository.value);
       calloc.free(repository);
       calloc.free(mainPtr);
     }
@@ -60,18 +66,18 @@ class Libgit2 {
     var dirPtr = dir.toNativeUtf8();
     var urlPtr = url.toNativeUtf8();
     try {
-      _checkErrors(
-          git.clone_options_init(cloneOptions, git.clone_options_version()));
-      git.clone_options_set_credentials_cb(
+      _checkErrors(_git.clone_options_init(
+          cloneOptions, gitHelpers.clone_options_version()));
+      gitHelpers.clone_options_set_credentials_cb(
           cloneOptions,
           Pointer.fromFunction<git_credential_acquire_cb>(
               credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
-      _checkErrors(git.clone(
+      _checkErrors(_git.clone(
           repository, urlPtr.cast<Int8>(), dirPtr.cast<Int8>(), cloneOptions));
     } finally {
       calloc.free(dirPtr);
       calloc.free(urlPtr);
-      if (repository.value != nullptr) git.repository_free(repository.value);
+      if (repository.value != nullptr) _git.repository_free(repository.value);
       calloc.free(repository);
       calloc.free(cloneOptions);
     }
@@ -84,11 +90,11 @@ class Libgit2 {
     repository.value = nullptr;
     var dirPtr = dir.toNativeUtf8();
     try {
-      _checkErrors(git.repository_open(repository, dirPtr.cast<Int8>()));
+      _checkErrors(_git.repository_open(repository, dirPtr.cast<Int8>()));
       return fn(repository.value);
     } finally {
       calloc.free(dirPtr);
-      if (repository.value != nullptr) git.repository_free(repository.value);
+      if (repository.value != nullptr) _git.repository_free(repository.value);
       calloc.free(repository);
     }
   }
@@ -101,12 +107,12 @@ class Libgit2 {
     try {
       return _withRepository(dir, (repo) {
         _checkErrors(
-            git.remote_lookup(remote, repo, remoteStrPtr.cast<Int8>()));
+            _git.remote_lookup(remote, repo, remoteStrPtr.cast<Int8>()));
         return fn(repo, remote.value);
       });
     } finally {
       calloc.free(remoteStrPtr);
-      if (remote.value != nullptr) git.remote_free(remote.value);
+      if (remote.value != nullptr) _git.remote_free(remote.value);
       calloc.free(remote);
     }
   }
@@ -117,11 +123,11 @@ class Libgit2 {
     index.value = nullptr;
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.repository_index(index, repo));
+        _checkErrors(_git.repository_index(index, repo));
         return fn(repo, index.value);
       });
     } finally {
-      if (index.value != nullptr) git.index_free(index.value);
+      if (index.value != nullptr) _git.index_free(index.value);
       calloc.free(index);
     }
   }
@@ -130,7 +136,7 @@ class Libgit2 {
     Pointer<git_strarray> remotesStrings = calloc<git_strarray>();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remote_list(remotesStrings, repo));
+        _checkErrors(_git.remote_list(remotesStrings, repo));
         List<String> remotes = [];
         for (int n = 0; n < remotesStrings.ref.count; n++)
           remotes
@@ -138,7 +144,7 @@ class Libgit2 {
         return remotes;
       });
     } finally {
-      git.strArrayDispose(remotesStrings);
+      _git.strarray_dispose(remotesStrings);
       calloc.free(remotesStrings);
     }
   }
@@ -149,13 +155,13 @@ class Libgit2 {
     Pointer<git_fetch_options> fetchOptions = calloc<git_fetch_options>();
     try {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
-        _checkErrors(
-            git.fetch_options_init(fetchOptions, git.fetch_options_version()));
-        git.fetch_options_set_credentials_cb(
+        _checkErrors(_git.fetch_options_init(
+            fetchOptions, gitHelpers.fetch_options_version()));
+        gitHelpers.fetch_options_set_credentials_cb(
             fetchOptions,
             Pointer.fromFunction<git_credential_acquire_cb>(
                 credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
-        _checkErrors(git.remote_fetch(remote, nullptr, fetchOptions, nullptr));
+        _checkErrors(_git.remote_fetch(remote, nullptr, fetchOptions, nullptr));
       });
     } finally {
       calloc.free(fetchOptions);
@@ -180,7 +186,7 @@ class Libgit2 {
     String currentUrl = url.cast<Utf8>().toDartString();
     if (currentUrl == _lastUrlCredentialCheck) {
       Pointer<Utf8> msg = "Security credentials not accepted".toNativeUtf8();
-      git.error_set_str(0, msg.cast<Int8>());
+      _git.error_set_str(0, msg.cast<Int8>());
       calloc.free(msg);
       return Libgit2Exception.GIT_EUSER;
     }
@@ -196,7 +202,7 @@ class Libgit2 {
       Pointer<Utf8> username = _credentialUsername.toNativeUtf8();
       Pointer<Utf8> password = _credentialPassword.toNativeUtf8();
       try {
-        return git.credential_userpass_plaintext_new(
+        return _git.credential_userpass_plaintext_new(
             out, username.cast<Int8>(), password.cast<Int8>());
       } finally {
         calloc.free(username);
@@ -224,20 +230,20 @@ class Libgit2 {
     try {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
         // Just push head to wherever for now
-        _checkErrors(git.repository_head(headRef, repo));
-        refStrings.ref.strings[0] = git.reference_name(headRef.value);
+        _checkErrors(_git.repository_head(headRef, repo));
+        refStrings.ref.strings[0] = _git.reference_name(headRef.value);
 
-        _checkErrors(
-            git.push_options_init(pushOptions, git.push_options_version()));
-        git.push_options_set_credentials_cb(
+        _checkErrors(_git.push_options_init(
+            pushOptions, gitHelpers.push_options_version()));
+        gitHelpers.push_options_set_credentials_cb(
             pushOptions,
             Pointer.fromFunction<git_credential_acquire_cb>(
                 credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
-        _checkErrors(git.remote_push(remote, refStrings, pushOptions));
+        _checkErrors(_git.remote_push(remote, refStrings, pushOptions));
       });
     } finally {
       calloc.free(pushOptions);
-      if (headRef.value != nullptr) git.reference_free(headRef.value);
+      if (headRef.value != nullptr) _git.reference_free(headRef.value);
       calloc.free(headRef);
       calloc.free(refStrings.ref.strings);
       calloc.free(refStrings);
@@ -253,16 +259,16 @@ class Libgit2 {
     // path.value = "*".toNativeUtf8();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.status_options_init(
-            statusOptions, git.status_options_version()));
-        git.status_options_config(statusOptions, nullptr);
-        _checkErrors(git.status_list_new(statusList, repo, statusOptions));
-        int numStatuses = git.status_list_entrycount(statusList.value);
+        _checkErrors(_git.status_options_init(
+            statusOptions, gitHelpers.status_options_version()));
+        gitHelpers.status_options_config(statusOptions, nullptr);
+        _checkErrors(_git.status_list_new(statusList, repo, statusOptions));
+        int numStatuses = _git.status_list_entrycount(statusList.value);
         if (numStatuses > 0) {
           var statusEntries = [];
           for (int n = 0; n < numStatuses; n++) {
             Pointer<git_status_entry> entry =
-                git.status_byindex(statusList.value, n);
+                _git.status_byindex(statusList.value, n);
             var entryData = [];
             if (entry.ref.index_to_workdir != nullptr &&
                 entry.ref.index_to_workdir.ref.new_file.path != nullptr)
@@ -287,7 +293,7 @@ class Libgit2 {
       });
     } finally {
       calloc.free(statusOptions);
-      if (statusList.value != nullptr) git.status_list_free(statusList.value);
+      if (statusList.value != nullptr) _git.status_list_free(statusList.value);
       calloc.free(statusList);
       // calloc.free(path.value);
       // calloc.free(path);
@@ -298,8 +304,8 @@ class Libgit2 {
     var filePtr = file.toNativeUtf8();
     try {
       _withRepositoryAndIndex(dir, (repo, index) {
-        _checkErrors(git.index_add_bypath(index, filePtr.cast<Int8>()));
-        _checkErrors(git.index_write(index));
+        _checkErrors(_git.index_add_bypath(index, filePtr.cast<Int8>()));
+        _checkErrors(_git.index_write(index));
       });
     } finally {
       calloc.free(filePtr);
@@ -310,8 +316,8 @@ class Libgit2 {
     var filePtr = file.toNativeUtf8();
     try {
       _withRepositoryAndIndex(dir, (repo, index) {
-        _checkErrors(git.index_remove_bypath(index, filePtr.cast<Int8>()));
-        _checkErrors(git.index_write(index));
+        _checkErrors(_git.index_remove_bypath(index, filePtr.cast<Int8>()));
+        _checkErrors(_git.index_write(index));
       });
     } finally {
       calloc.free(filePtr);
@@ -324,7 +330,7 @@ class Libgit2 {
   static List<Pointer<git_oid>>? mergeHeadsFromCallback;
   static int mergeHeadsCallback(Pointer<git_oid> oid, Pointer<Void> payload) {
     Pointer<git_oid> newOid = calloc<git_oid>();
-    git.oid_cpy(newOid, oid);
+    _git.oid_cpy(newOid, oid);
     mergeHeadsFromCallback!.add(newOid);
     return 0;
   }
@@ -347,17 +353,17 @@ class Libgit2 {
     try {
       _withRepositoryAndIndex(dir, (repo, index) {
         // Check if we're in the middle of a merge
-        int repoState = git.repository_state(repo);
+        int repoState = _git.repository_state(repo);
 
         // Check if there is a head
-        var hasNoHead = git.repository_head_unborn(repo);
+        var hasNoHead = _git.repository_head_unborn(repo);
         _checkErrors(hasNoHead);
 
         // Figure out the different heads that we're merging
         mergeHeadsFromCallback = [];
         try {
           if (repoState == 1) {
-            git.repository_mergehead_foreach(
+            _git.repository_mergehead_foreach(
                 repo,
                 Pointer.fromFunction<
                         Int32 Function(Pointer<git_oid>, Pointer<Void>)>(
@@ -372,8 +378,8 @@ class Libgit2 {
 
           // Convert merge heads to annotated_commits
           for (int n = 0; n < mergeHeadsFromCallback!.length; n++) {
-            _checkErrors(git.commit_lookup(parentCommits.elementAt(n + 1), repo,
-                mergeHeadsFromCallback![n]));
+            _checkErrors(_git.commit_lookup(parentCommits.elementAt(n + 1),
+                repo, mergeHeadsFromCallback![n]));
           }
         } finally {
           mergeHeadsFromCallback!.forEach((oid) {
@@ -383,25 +389,25 @@ class Libgit2 {
         }
 
         // Convert index to a tree
-        _checkErrors(git.index_write_tree(treeOid, index));
-        _checkErrors(git.tree_lookup(indexTree, repo, treeOid));
+        _checkErrors(_git.index_write_tree(treeOid, index));
+        _checkErrors(_git.tree_lookup(indexTree, repo, treeOid));
 
         // If the repository has no head, then this initial commit has nothing
         // to branch off of
         if (hasNoHead == 0) {
           // Get head commit that we're branching off of
           _checkErrors(
-              git.reference_name_to_id(headOid, repo, headStr.cast<Int8>()));
+              _git.reference_name_to_id(headOid, repo, headStr.cast<Int8>()));
           _checkErrors(
-              git.commit_lookup(parentCommits.elementAt(0), repo, headOid));
+              _git.commit_lookup(parentCommits.elementAt(0), repo, headOid));
         }
 
         // Use the same info for author and commiter signature
-        _checkErrors(git.signature_now(
+        _checkErrors(_git.signature_now(
             authorSig, nameStr.cast<Int8>(), emailStr.cast<Int8>()));
 
         // Perform the commit
-        _checkErrors(git.commit_create(
+        _checkErrors(_git.commit_create(
             finalCommitOid,
             repo,
             headStr.cast<Int8>(),
@@ -413,25 +419,25 @@ class Libgit2 {
             numParentCommits,
             parentCommits));
 
-        _checkErrors(git.repository_state_cleanup(repo));
+        _checkErrors(_git.repository_state_cleanup(repo));
       });
     } finally {
       calloc.free(finalCommitOid);
       calloc.free(headOid);
       calloc.free(treeOid);
       calloc.free(headStr);
-      if (indexTree.value != nullptr) git.tree_free(indexTree.value);
+      if (indexTree.value != nullptr) _git.tree_free(indexTree.value);
       calloc.free(indexTree);
       if (parentCommits != nullptr) {
         for (int n = 0; n < numParentCommits; n++) {
-          if (parentCommits[n] != nullptr) git.commit_free(parentCommits[n]);
+          if (parentCommits[n] != nullptr) _git.commit_free(parentCommits[n]);
         }
         calloc.free(parentCommits);
       }
       calloc.free(messageStr);
       calloc.free(nameStr);
       calloc.free(emailStr);
-      if (authorSig.value != nullptr) git.signature_free(authorSig.value);
+      if (authorSig.value != nullptr) _git.signature_free(authorSig.value);
       calloc.free(authorSig);
     }
   }
@@ -444,10 +450,11 @@ class Libgit2 {
     fileStrStr[0] = file.toNativeUtf8().cast<Int8>();
     try {
       _withRepository(dir, (repo) {
-        _checkErrors(git.checkout_options_init(
-            checkoutOptions, git.checkout_options_version()));
-        git.checkout_options_config_for_revert(checkoutOptions, fileStrStr);
-        _checkErrors(git.checkout_head(repo, checkoutOptions));
+        _checkErrors(_git.checkout_options_init(
+            checkoutOptions, gitHelpers.checkout_options_version()));
+        gitHelpers.checkout_options_config_for_revert(
+            checkoutOptions, fileStrStr);
+        _checkErrors(_git.checkout_head(repo, checkoutOptions));
       });
     } finally {
       calloc.free(checkoutOptions);
@@ -464,7 +471,7 @@ class Libgit2 {
     Pointer<Int32> mergePreferences = calloc<Int32>();
     mergePreferences.value = 0;
     try {
-      _checkErrors(git.merge_analysis(
+      _checkErrors(_git.merge_analysis(
           mergeAnalysis, mergePreferences, repo, upstreamToMerge, 1));
       int toReturn = mergeAnalysis.value;
       return toReturn;
@@ -483,7 +490,7 @@ class Libgit2 {
         calloc<Pointer<git_reference>>();
     headRefToMergeWith.value = nullptr;
     Pointer<Utf8> headRefString = "HEAD".toNativeUtf8();
-    Pointer<git_buf> buf = git.allocateGitBuf();
+    Pointer<git_buf> buf = gitHelpers.allocateGitBuf();
 
     Pointer<Pointer<git_reference>> headRef = calloc<Pointer<git_reference>>();
     headRef.value = nullptr;
@@ -492,9 +499,9 @@ class Libgit2 {
     upstreamRef.value = nullptr;
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.repository_head(headRef, repo));
-        _checkErrors(git.branch_upstream(upstreamRef, headRef.value));
-        _checkErrors(git.annotated_commit_from_ref(
+        _checkErrors(_git.repository_head(headRef, repo));
+        _checkErrors(_git.branch_upstream(upstreamRef, headRef.value));
+        _checkErrors(_git.annotated_commit_from_ref(
             upstreamToMerge.elementAt(0), repo, upstreamRef.value));
         int analysisResults = _mergeAnalysis(repo, upstreamToMerge);
         if ((analysisResults & 2) != 0) {
@@ -503,7 +510,7 @@ class Libgit2 {
           return MergeStatus.NO_HEAD;
         } else if ((analysisResults & (4)) != 0) {
           Pointer<git_oid> upstreamCommitId =
-              git.annotated_commit_id(upstreamToMerge[0]);
+              _git.annotated_commit_id(upstreamToMerge[0]);
           Pointer<git_checkout_options> checkoutOptions =
               calloc<git_checkout_options>();
           Pointer<Pointer<git_commit>> upstreamCommit =
@@ -515,26 +522,26 @@ class Libgit2 {
           try {
             // Get the commit to merge to
             _checkErrors(
-                git.commit_lookup(upstreamCommit, repo, upstreamCommitId));
+                _git.commit_lookup(upstreamCommit, repo, upstreamCommitId));
 
             // Checkout upstream to fast-forward
-            _checkErrors(git.checkout_options_init(
-                checkoutOptions, git.checkout_options_version()));
-            git.checkout_options_config_for_fastforward(checkoutOptions);
-            _checkErrors(git.checkout_tree(repo,
+            _checkErrors(_git.checkout_options_init(
+                checkoutOptions, gitHelpers.checkout_options_version()));
+            gitHelpers.checkout_options_config_for_fastforward(checkoutOptions);
+            _checkErrors(_git.checkout_tree(repo,
                 upstreamCommit.value.cast<git_object>(), checkoutOptions));
 
             // Move HEAD
-            _checkErrors(git.reference_set_target(
+            _checkErrors(_git.reference_set_target(
                 newHeadRef, headRef.value, upstreamCommitId, nullptr));
             return MergeStatus.FAST_FORWARD;
           } finally {
             calloc.free(checkoutOptions);
             if (upstreamCommit.value != nullptr)
-              git.commit_free(upstreamCommit.value);
+              _git.commit_free(upstreamCommit.value);
             calloc.free(upstreamCommit);
             if (newHeadRef.value != nullptr)
-              git.reference_free(newHeadRef.value);
+              _git.reference_free(newHeadRef.value);
             calloc.free(newHeadRef);
           }
         } else if ((analysisResults & 1) != 0) {
@@ -543,13 +550,13 @@ class Libgit2 {
           Pointer<git_merge_options> mergeOptions = calloc<git_merge_options>();
 
           try {
-            _checkErrors(git.checkout_options_init(
-                checkoutOptions, git.checkout_options_version()));
-            git.checkout_options_config_for_merge(checkoutOptions);
-            _checkErrors(git.merge_options_init(
-                mergeOptions, git.merge_options_version()));
+            _checkErrors(_git.checkout_options_init(
+                checkoutOptions, gitHelpers.checkout_options_version()));
+            gitHelpers.checkout_options_config_for_merge(checkoutOptions);
+            _checkErrors(_git.merge_options_init(
+                mergeOptions, gitHelpers.merge_options_version()));
 
-            _checkErrors(git.merge(
+            _checkErrors(_git.merge(
                 repo, upstreamToMerge, 1, mergeOptions, checkoutOptions));
 
             return MergeStatus.NORMAL_MERGE;
@@ -562,25 +569,25 @@ class Libgit2 {
       });
     } finally {
       if (upstreamToMerge.value != nullptr)
-        git.annotated_commit_free(upstreamToMerge.value);
+        _git.annotated_commit_free(upstreamToMerge.value);
       calloc.free(upstreamToMerge);
       if (headRefToMergeWith.value != nullptr)
-        git.reference_free(headRefToMergeWith.value);
+        _git.reference_free(headRefToMergeWith.value);
       calloc.free(headRefToMergeWith);
       calloc.free(headRefString);
-      git.buf_dispose(buf);
+      _git.buf_dispose(buf);
       calloc.free(buf);
 
-      if (headRef.value != nullptr) git.reference_free(headRef.value);
+      if (headRef.value != nullptr) _git.reference_free(headRef.value);
       calloc.free(headRef);
-      if (upstreamRef.value != nullptr) git.reference_free(upstreamRef.value);
+      if (upstreamRef.value != nullptr) _git.reference_free(upstreamRef.value);
       calloc.free(upstreamRef);
     }
   }
 
   static int repositoryState(String dir) {
     return _withRepository(dir, (repo) {
-      return git.repository_state(repo);
+      return _git.repository_state(repo);
     });
   }
 
@@ -601,33 +608,33 @@ class Libgit2 {
 
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.repository_head(headRef, repo));
-        _checkErrors(git.reference_resolve(headDirectRef, headRef.value));
+        _checkErrors(_git.repository_head(headRef, repo));
+        _checkErrors(_git.reference_resolve(headDirectRef, headRef.value));
 
-        _checkErrors(git.branch_upstream(upstreamRef, headRef.value));
+        _checkErrors(_git.branch_upstream(upstreamRef, headRef.value));
         _checkErrors(
-            git.reference_resolve(upstreamDirectRef, upstreamRef.value));
+            _git.reference_resolve(upstreamDirectRef, upstreamRef.value));
 
-        _checkErrors(git.graph_ahead_behind(
+        _checkErrors(_git.graph_ahead_behind(
             ahead,
             behind,
             repo,
-            git.reference_target(headDirectRef.value),
-            git.reference_target(upstreamDirectRef.value)));
+            _git.reference_target(headDirectRef.value),
+            _git.reference_target(upstreamDirectRef.value)));
         return <int>[ahead.value, behind.value];
       });
     } finally {
       calloc.free(ahead);
       calloc.free(behind);
-      if (headRef.value != nullptr) git.reference_free(headRef.value);
+      if (headRef.value != nullptr) _git.reference_free(headRef.value);
       calloc.free(headRef);
       if (headDirectRef.value != nullptr)
-        git.reference_free(headDirectRef.value);
+        _git.reference_free(headDirectRef.value);
       calloc.free(headDirectRef);
-      if (upstreamRef.value != nullptr) git.reference_free(upstreamRef.value);
+      if (upstreamRef.value != nullptr) _git.reference_free(upstreamRef.value);
       calloc.free(upstreamRef);
       if (upstreamDirectRef.value != nullptr)
-        git.reference_free(upstreamDirectRef.value);
+        _git.reference_free(upstreamDirectRef.value);
       calloc.free(upstreamDirectRef);
     }
   }
@@ -638,11 +645,11 @@ class Libgit2 {
     Pointer<Pointer<git_remote>> remote = calloc<Pointer<git_remote>>();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remote_create(
+        _checkErrors(_git.remote_create(
             remote, repo, remoteStr.cast<Int8>(), urlStr.cast<Int8>()));
       });
     } finally {
-      if (remote.value != nullptr) git.remote_free(remote.value);
+      if (remote.value != nullptr) _git.remote_free(remote.value);
       calloc.free(remote);
       calloc.free(remoteStr);
       calloc.free(urlStr);
@@ -653,7 +660,7 @@ class Libgit2 {
     Pointer<Utf8> remoteStr = remote.toNativeUtf8();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remote_delete(repo, remoteStr.cast<Int8>()));
+        _checkErrors(_git.remote_delete(repo, remoteStr.cast<Int8>()));
       });
     } finally {
       calloc.free(remoteStr);
@@ -678,7 +685,7 @@ class Libgit2Exception implements Exception {
   Libgit2Exception(this.errorCode, this.message, this.klass);
 
   Libgit2Exception.fromErrorCode(this.errorCode) {
-    var err = git.errorLast();
+    var err = _git.error_last();
     if (err != nullptr) {
       message = err.ref.message.cast<Utf8>().toDartString();
       klass = err.ref.klass;

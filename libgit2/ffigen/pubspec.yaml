@@ -88,6 +88,8 @@ ffigen:
      - git_checkout_options_init
      - git_merge_options_init
      - git_repository_init_options_init
+    rename:
+      'git_(.*)': '$1'
   structs:
     dependency-only: opaque
     include:
