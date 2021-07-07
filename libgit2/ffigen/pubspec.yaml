@@ -33,6 +33,30 @@ ffigen:
      - git_repository_free
      - git_repository_head_unborn
      - git_reference_name
+     - git_repository_head
+     - git_repository_set_head
+     - git_graph_ahead_behind
+     - git_strarray_dispose
+     - git_remote_free
+     - git_remote_fetch
+     - git_remote_push
+     - git_remote_list
+     - git_remote_create
+     - git_remote_delete
+     - git_remote_lookup
+     - git_status_list_new
+     - git_status_list_free
+     - git_status_list_entrycount
+     - git_status_byindex
+     - git_repository_index
+     - git_index_free
+     - git_index_write_tree
+     - git_tree_lookup
+     - git_commit_lookup
+     - git_commit_free
+     - git_annotated_commit_from_ref
+     - git_annotated_commit_id
+     - git_annotated_commit_free
   structs:
     dependency-only: opaque
     include:

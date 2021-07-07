@@ -1,7 +1,6 @@
 import 'dart:ffi';
 import 'dart:async';
 
-import 'structs.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 import 'native_git.dart';
@@ -42,7 +41,8 @@ class Libgit2 {
       _checkErrors(git.repository_init(repository, dirPtr.cast<Int8>(), 0));
       // Using repository_init_ext doesn't seem to change the branch for head
       // so I'm just manually setting it to main
-      _checkErrors(git.repository_set_head(repository.value, mainPtr));
+      _checkErrors(
+          git.repository_set_head(repository.value, mainPtr.cast<Int8>()));
     } finally {
       calloc.free(dirPtr);
       if (repository.value != nullptr) git.repository_free(repository.value);
@@ -100,7 +100,8 @@ class Libgit2 {
     var remoteStrPtr = remoteStr.toNativeUtf8();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remote_lookup(remote, repo, remoteStrPtr));
+        _checkErrors(
+            git.remote_lookup(remote, repo, remoteStrPtr.cast<Int8>()));
         return fn(repo, remote.value);
       });
     } finally {
@@ -145,8 +146,8 @@ class Libgit2 {
   static void fetch(
       String dir, String remoteStr, String username, String password) {
     setupCredentials(username, password);
-    Pointer<NativeType> fetchOptions =
-        calloc.call<Int8>(git.fetch_options_size());
+    Pointer<git_fetch_options> fetchOptions =
+        calloc.call<Int8>(git.fetch_options_size()).cast<git_fetch_options>();
     try {
       return _withRepositoryAndRemote(dir, remoteStr, (repo, remote) {
         _checkErrors(
@@ -214,8 +215,8 @@ class Libgit2 {
   static void push(
       String dir, String remoteStr, String username, String password) {
     setupCredentials(username, password);
-    Pointer<NativeType> pushOptions =
-        calloc.call<Int8>(git.push_options_size());
+    Pointer<git_push_options> pushOptions =
+        calloc.call<Int8>(git.push_options_size()).cast<git_push_options>();
     Pointer<git_strarray> refStrings = calloc<git_strarray>();
     refStrings.ref.count = 1;
     refStrings.ref.strings = calloc.call<Pointer<Int8>>(1);
@@ -245,8 +246,8 @@ class Libgit2 {
   }
 
   static dynamic status(String dir) {
-    Pointer<NativeType> statusOptions =
-        calloc.call<Int8>(git.status_options_size());
+    Pointer<git_status_options> statusOptions =
+        calloc.call<Int8>(git.status_options_size()).cast<git_status_options>();
     Pointer<Pointer<git_status_list>> statusList =
         calloc<Pointer<git_status_list>>();
     statusList.value = nullptr;
@@ -639,7 +640,8 @@ class Libgit2 {
     Pointer<Pointer<git_remote>> remote = calloc<Pointer<git_remote>>();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remote_create(remote, repo, remoteStr, urlStr));
+        _checkErrors(git.remote_create(
+            remote, repo, remoteStr.cast<Int8>(), urlStr.cast<Int8>()));
       });
     } finally {
       if (remote.value != nullptr) git.remote_free(remote.value);
@@ -653,7 +655,7 @@ class Libgit2 {
     Pointer<Utf8> remoteStr = remote.toNativeUtf8();
     try {
       return _withRepository(dir, (repo) {
-        _checkErrors(git.remote_delete(repo, remoteStr));
+        _checkErrors(git.remote_delete(repo, remoteStr.cast<Int8>()));
       });
     } finally {
       calloc.free(remoteStr);

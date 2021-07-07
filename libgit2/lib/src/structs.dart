@@ -20,17 +20,17 @@ import 'package:ffi/ffi.dart';
 
 // class git_repository extends Opaque {}
 
-class git_status_list extends Opaque {}
+// class git_status_list extends Opaque {}
 
 // class git_credential extends Opaque {}
 
-class git_index extends Opaque {}
+// class git_index extends Opaque {}
 
-class git_tree extends Opaque {}
+// class git_tree extends Opaque {}
 
-class git_commit extends Opaque {}
+// class git_commit extends Opaque {}
 
-class git_annotated_commit extends Opaque {}
+// class git_annotated_commit extends Opaque {}
 
 // class git_reference extends Opaque {}
 

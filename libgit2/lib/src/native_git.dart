@@ -2,7 +2,6 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'generated_bindings.dart';
-import 'structs.dart';
 import 'package:ffi/ffi.dart';
 
 export 'generated_bindings.dart'
@@ -20,7 +19,15 @@ export 'generated_bindings.dart'
         git_diff_delta,
         git_diff_file,
         git_credential_acquire_cb,
-        git_remote_callbacks;
+        git_remote_callbacks,
+        git_fetch_options,
+        git_push_options,
+        git_status_list,
+        git_status_options,
+        git_index,
+        git_tree,
+        git_commit,
+        git_annotated_commit;
 
 class git {
   static final DynamicLibrary nativeGit2 = Platform.isAndroid
@@ -114,35 +121,24 @@ class git {
     return git2.git_repository_head_unborn(repo);
   }
 
-  static final int Function(
-          Pointer<Pointer<git_reference>>, Pointer<git_repository>)
-      repository_head = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<Pointer<git_reference>>,
-                      Pointer<git_repository>)>>("git_repository_head")
-          .asFunction();
+  static int repository_head(
+      Pointer<Pointer<git_reference>> out, Pointer<git_repository> repo) {
+    return git2.git_repository_head(out, repo);
+  }
 
-  static final int Function(Pointer<git_repository>, Pointer<Utf8>)
-      repository_set_head = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_repository>,
-                      Pointer<Utf8>)>>("git_repository_set_head")
-          .asFunction();
+  static int repository_set_head(
+      Pointer<git_repository> repo, Pointer<Int8> refname) {
+    return git2.git_repository_set_head(repo, refname);
+  }
 
-  static final int Function(Pointer<IntPtr>, Pointer<IntPtr>,
-          Pointer<git_repository>, Pointer<git_oid>, Pointer<git_oid>)
-      graph_ahead_behind = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<IntPtr>,
-                      Pointer<IntPtr>,
-                      Pointer<git_repository>,
-                      Pointer<git_oid>,
-                      Pointer<git_oid>)>>("git_graph_ahead_behind")
-          .asFunction();
+  static int graph_ahead_behind(
+      Pointer<IntPtr> ahead,
+      Pointer<IntPtr> behind,
+      Pointer<git_repository> repo,
+      Pointer<git_oid> local,
+      Pointer<git_oid> upstream) {
+    return git2.git_graph_ahead_behind(ahead, behind, repo, local, upstream);
+  }
 
   static final int Function(Pointer<Pointer<git_repository>>, Pointer<Utf8>,
           Pointer<Utf8>, Pointer<NativeType>) clone =
@@ -156,10 +152,9 @@ class git {
                       Pointer<NativeType>)>>("git_clone")
           .asFunction();
 
-  static final int Function(Pointer<git_strarray>) strArrayDispose = nativeGit2
-      .lookup<NativeFunction<Int32 Function(Pointer<git_strarray>)>>(
-          "git_strarray_dispose")
-      .asFunction();
+  static void strArrayDispose(Pointer<git_strarray> array) {
+    git2.git_strarray_dispose(array);
+  }
 
   static final int Function(Pointer<NativeType>, int version)
       fetch_options_init = nativeGit2
@@ -291,98 +286,67 @@ class git {
               "git_clone_options_set_credentials_cb")
           .asFunction();
 
-  static final int Function(Pointer<git_strarray>, Pointer<git_repository>)
-      remote_list = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_strarray>,
-                      Pointer<git_repository>)>>("git_remote_list")
-          .asFunction();
+  static int remote_list(
+      Pointer<git_strarray> out, Pointer<git_repository> repo) {
+    return git2.git_remote_list(out, repo);
+  }
 
-  static final int Function(Pointer<Pointer<git_remote>>,
-          Pointer<git_repository>, Pointer<Utf8>, Pointer<Utf8>) remote_create =
-      nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<Pointer<git_remote>>,
-                      Pointer<git_repository>,
-                      Pointer<Utf8>,
-                      Pointer<Utf8>)>>("git_remote_create")
-          .asFunction();
+  static int remote_create(
+    Pointer<Pointer<git_remote>> out,
+    Pointer<git_repository> repo,
+    Pointer<Int8> name,
+    Pointer<Int8> url,
+  ) {
+    return git2.git_remote_create(out, repo, name, url);
+  }
 
-  static final int Function(Pointer<git_repository>, Pointer<Utf8>)
-      remote_delete = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_repository>,
-                      Pointer<Utf8>)>>("git_remote_delete")
-          .asFunction();
+  static int remote_delete(Pointer<git_repository> repo, Pointer<Int8> name) {
+    return git2.git_remote_delete(repo, name);
+  }
 
-  static final int Function(
-          Pointer<Pointer<git_remote>>, Pointer<git_repository>, Pointer<Utf8>)
-      remote_lookup = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<Pointer<git_remote>>,
-                      Pointer<git_repository>,
-                      Pointer<Utf8>)>>("git_remote_lookup")
-          .asFunction();
+  static int remote_lookup(Pointer<Pointer<git_remote>> out,
+      Pointer<git_repository> repo, Pointer<Int8> name) {
+    return git2.git_remote_lookup(out, repo, name);
+  }
 
-  static final int Function(Pointer<git_remote>) remote_free = nativeGit2
-      .lookup<NativeFunction<Int32 Function(Pointer<git_remote>)>>(
-          "git_remote_free")
-      .asFunction();
+  static void remote_free(Pointer<git_remote> remote) {
+    git2.git_remote_free(remote);
+  }
 
-  static final int Function(Pointer<git_remote>, Pointer<git_strarray>,
-          Pointer<NativeType>, Pointer<Utf8>) remote_fetch =
-      nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_remote>, Pointer<git_strarray>,
-                      Pointer<NativeType>, Pointer<Utf8>)>>("git_remote_fetch")
-          .asFunction();
+  static int remote_fetch(
+    Pointer<git_remote> remote,
+    Pointer<git_strarray> refspecs,
+    Pointer<git_fetch_options> opts,
+    Pointer<Int8> reflog_message,
+  ) {
+    return git2.git_remote_fetch(remote, refspecs, opts, reflog_message);
+  }
 
-  static final int Function(
-          Pointer<git_remote>, Pointer<git_strarray>, Pointer<NativeType>)
-      remote_push = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_remote>, Pointer<git_strarray>,
-                      Pointer<NativeType>)>>("git_remote_push")
-          .asFunction();
+  static int remote_push(
+    Pointer<git_remote> remote,
+    Pointer<git_strarray> refspecs,
+    Pointer<git_push_options> opts,
+  ) {
+    return git2.git_remote_push(remote, refspecs, opts);
+  }
 
-  static final int Function(Pointer<Pointer<git_status_list>>,
-          Pointer<git_repository>, Pointer<NativeType>) status_list_new =
-      nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<Pointer<git_status_list>>,
-                      Pointer<git_repository>,
-                      Pointer<NativeType>)>>("git_status_list_new")
-          .asFunction();
+  static int status_list_new(Pointer<Pointer<git_status_list>> out,
+      Pointer<git_repository> repo, Pointer<git_status_options> opts) {
+    return git2.git_status_list_new(out, repo, opts);
+  }
 
-  static final void Function(Pointer<git_status_list>) status_list_free =
-      nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<git_status_list>)>>(
-              "git_status_list_free")
-          .asFunction();
+  static void status_list_free(Pointer<git_status_list> statuslist) {
+    git2.git_status_list_free(statuslist);
+  }
 
-  static final int Function(Pointer<git_status_list>) status_list_entrycount =
-      nativeGit2
-          .lookup<NativeFunction<IntPtr Function(Pointer<git_status_list>)>>(
-              "git_status_list_entrycount")
-          .asFunction();
+  static int status_list_entrycount(Pointer<git_status_list> statuslist) {
+    return git2.git_status_list_entrycount(statuslist);
+  }
 
-  static final Pointer<git_status_entry> Function(Pointer<git_status_list>, int)
-      status_byindex = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Pointer<git_status_entry> Function(
-                      Pointer<git_status_list>, IntPtr)>>("git_status_byindex")
-          .asFunction();
+  static Pointer<git_status_entry> status_byindex(
+      Pointer<git_status_list> statuslist, int idx) {
+    return git2.git_status_byindex(statuslist, idx);
+  }
 
   // The second parameter can be null or a pointer to a pointer of a string
   static final void Function(Pointer<NativeType>, Pointer<Pointer<Utf8>>)
@@ -404,19 +368,14 @@ class git {
                       Pointer<Utf8>)>>("git_credential_userpass_plaintext_new")
           .asFunction();
 
-  static final int Function(
-          Pointer<Pointer<git_index>>, Pointer<git_repository>)
-      repository_index = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<Pointer<git_index>>,
-                      Pointer<git_repository>)>>("git_repository_index")
-          .asFunction();
+  static int repository_index(
+      Pointer<Pointer<git_index>> out, Pointer<git_repository> repo) {
+    return git2.git_repository_index(out, repo);
+  }
 
-  static final int Function(Pointer<git_index>) index_free = nativeGit2
-      .lookup<NativeFunction<Int32 Function(Pointer<git_index>)>>(
-          "git_index_free")
-      .asFunction();
+  static void index_free(Pointer<git_index> index) {
+    return git2.git_index_free(index);
+  }
 
   static final int Function(Pointer<git_index>, Pointer<Utf8>)
       index_add_bypath = nativeGit2
@@ -439,24 +398,14 @@ class git {
           "git_index_write")
       .asFunction();
 
-  static final int Function(Pointer<git_oid>, Pointer<git_index>)
-      index_write_tree = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(Pointer<git_oid>,
-                      Pointer<git_index>)>>("git_index_write_tree")
-          .asFunction();
+  static int index_write_tree(Pointer<git_oid> out, Pointer<git_index> index) {
+    return git2.git_index_write_tree(out, index);
+  }
 
-  static final int Function(
-          Pointer<Pointer<git_tree>>, Pointer<git_repository>, Pointer<git_oid>)
-      tree_lookup = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<Pointer<git_tree>>,
-                      Pointer<git_repository>,
-                      Pointer<git_oid>)>>("git_tree_lookup")
-          .asFunction();
+  static int tree_lookup(Pointer<Pointer<git_tree>> out,
+      Pointer<git_repository> repo, Pointer<git_oid> id) {
+    return git2.git_tree_lookup(out, repo, id);
+  }
 
   static final int Function(
           Pointer<git_repository>, Pointer<NativeType>, Pointer<NativeType>)
@@ -543,21 +492,14 @@ class git {
                       Pointer<git_reference>)>>("git_reference_target")
           .asFunction();
 
-  static final int Function(Pointer<Pointer<git_commit>>,
-          Pointer<git_repository>, Pointer<git_oid>) commit_lookup =
-      nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<Pointer<git_commit>>,
-                      Pointer<git_repository>,
-                      Pointer<git_oid>)>>("git_commit_lookup")
-          .asFunction();
+  static int commit_lookup(Pointer<Pointer<git_commit>> commit,
+      Pointer<git_repository> repo, Pointer<git_oid> id) {
+    return git2.git_commit_lookup(commit, repo, id);
+  }
 
-  static final void Function(Pointer<git_commit>) commit_free = nativeGit2
-      .lookup<NativeFunction<Void Function(Pointer<git_commit>)>>(
-          "git_commit_free")
-      .asFunction();
+  static void commit_free(Pointer<git_commit> commit) {
+    git2.git_commit_free(commit);
+  }
 
   static final int Function(
           Pointer<git_oid>,
@@ -638,31 +580,21 @@ class git {
                       Pointer<NativeType>)>>("git_merge")
           .asFunction();
 
-  static final int Function(Pointer<Pointer<git_annotated_commit>>,
-          Pointer<git_repository>, Pointer<git_reference>)
-      annotated_commit_from_ref = nativeGit2
-          .lookup<
-              NativeFunction<
-                  Int32 Function(
-                      Pointer<Pointer<git_annotated_commit>>,
-                      Pointer<git_repository>,
-                      Pointer<git_reference>)>>("git_annotated_commit_from_ref")
-          .asFunction();
+  static int annotated_commit_from_ref(
+      Pointer<Pointer<git_annotated_commit>> out,
+      Pointer<git_repository> repo,
+      Pointer<git_reference> ref) {
+    return git2.git_annotated_commit_from_ref(out, repo, ref);
+  }
 
-  static final Pointer<git_oid> Function(Pointer<git_annotated_commit>)
-      annotated_commit_id = nativeGit2
-          .lookup<
-                  NativeFunction<
-                      Pointer<git_oid> Function(
-                          Pointer<git_annotated_commit>)>>(
-              "git_annotated_commit_id")
-          .asFunction();
+  static Pointer<git_oid> annotated_commit_id(
+      Pointer<git_annotated_commit> commit) {
+    return git2.git_annotated_commit_id(commit);
+  }
 
-  static final void Function(Pointer<git_annotated_commit>)
-      annotated_commit_free = nativeGit2
-          .lookup<NativeFunction<Void Function(Pointer<git_annotated_commit>)>>(
-              "git_annotated_commit_free")
-          .asFunction();
+  static void annotated_commit_free(Pointer<git_annotated_commit> commit) {
+    git2.git_annotated_commit_free(commit);
+  }
 
   static final int Function(Pointer<Pointer<git_reference>>,
           Pointer<git_repository>, Pointer<Utf8>) reference_dwim =
