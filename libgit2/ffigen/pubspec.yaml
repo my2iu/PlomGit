@@ -57,6 +57,30 @@ ffigen:
      - git_annotated_commit_from_ref
      - git_annotated_commit_id
      - git_annotated_commit_free
+     - git_reference_dwim
+     - git_branch_upstream
+     - git_branch_name
+     - git_reference_free
+     - git_buf_dispose
+     - git_index_add_bypath
+     - git_index_remove_bypath
+     - git_index_write
+     - git_tree_free
+     - git_signature_now
+     - git_signature_free
+     - git_oid_cpy
+     - git_reference_name_to_id
+     - git_reference_set_target
+     - git_reference_resolve
+     - git_reference_target
+     - git_commit_create
+     - git_merge_analysis
+     - git_merge
+     - git_checkout_tree
+     - git_checkout_head
+     - git_credential_userpass_plaintext_new
+     - git_clone
+     - git_repository_mergehead_foreach
   structs:
     dependency-only: opaque
     include:

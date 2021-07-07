@@ -56,8 +56,8 @@ class Libgit2 {
     Pointer<Pointer<git_repository>> repository =
         calloc<Pointer<git_repository>>();
     repository.value = nullptr;
-    Pointer<NativeType> cloneOptions =
-        calloc.call<Int8>(git.clone_options_size());
+    Pointer<git_clone_options> cloneOptions =
+        calloc.call<Int8>(git.clone_options_size()).cast<git_clone_options>();
     var dirPtr = dir.toNativeUtf8();
     var urlPtr = url.toNativeUtf8();
     try {
@@ -67,7 +67,8 @@ class Libgit2 {
           cloneOptions,
           Pointer.fromFunction<git_credential_acquire_cb>(
               credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
-      _checkErrors(git.clone(repository, urlPtr, dirPtr, cloneOptions));
+      _checkErrors(git.clone(
+          repository, urlPtr.cast<Int8>(), dirPtr.cast<Int8>(), cloneOptions));
     } finally {
       calloc.free(dirPtr);
       calloc.free(urlPtr);
@@ -197,7 +198,8 @@ class Libgit2 {
       Pointer<Utf8> username = _credentialUsername.toNativeUtf8();
       Pointer<Utf8> password = _credentialPassword.toNativeUtf8();
       try {
-        return git.credential_userpass_plaintext_new(out, username, password);
+        return git.credential_userpass_plaintext_new(
+            out, username.cast<Int8>(), password.cast<Int8>());
       } finally {
         calloc.free(username);
         calloc.free(password);
@@ -300,7 +302,7 @@ class Libgit2 {
     var filePtr = file.toNativeUtf8();
     try {
       _withRepositoryAndIndex(dir, (repo, index) {
-        _checkErrors(git.index_add_bypath(index, filePtr));
+        _checkErrors(git.index_add_bypath(index, filePtr.cast<Int8>()));
         _checkErrors(git.index_write(index));
       });
     } finally {
@@ -312,7 +314,7 @@ class Libgit2 {
     var filePtr = file.toNativeUtf8();
     try {
       _withRepositoryAndIndex(dir, (repo, index) {
-        _checkErrors(git.index_remove_bypath(index, filePtr));
+        _checkErrors(git.index_remove_bypath(index, filePtr.cast<Int8>()));
         _checkErrors(git.index_write(index));
       });
     } finally {
@@ -324,8 +326,7 @@ class Libgit2 {
   // in-flight at once, so it's safe to store data needed for callbacks
   // in static variables
   static List<Pointer<git_oid>>? mergeHeadsFromCallback;
-  static int mergeHeadsCallback(
-      Pointer<git_oid> oid, Pointer<NativeType> payload) {
+  static int mergeHeadsCallback(Pointer<git_oid> oid, Pointer<Void> payload) {
     Pointer<git_oid> newOid = calloc<git_oid>();
     git.oid_cpy(newOid, oid);
     mergeHeadsFromCallback!.add(newOid);
@@ -363,7 +364,7 @@ class Libgit2 {
             git.repository_mergehead_foreach(
                 repo,
                 Pointer.fromFunction<
-                        Int32 Function(Pointer<git_oid>, Pointer<NativeType>)>(
+                        Int32 Function(Pointer<git_oid>, Pointer<Void>)>(
                     mergeHeadsCallback, 1),
                 nullptr);
           }
@@ -393,23 +394,25 @@ class Libgit2 {
         // to branch off of
         if (hasNoHead == 0) {
           // Get head commit that we're branching off of
-          _checkErrors(git.reference_name_to_id(headOid, repo, headStr));
+          _checkErrors(
+              git.reference_name_to_id(headOid, repo, headStr.cast<Int8>()));
           _checkErrors(
               git.commit_lookup(parentCommits.elementAt(0), repo, headOid));
         }
 
         // Use the same info for author and commiter signature
-        _checkErrors(git.signature_now(authorSig, nameStr, emailStr));
+        _checkErrors(git.signature_now(
+            authorSig, nameStr.cast<Int8>(), emailStr.cast<Int8>()));
 
         // Perform the commit
         _checkErrors(git.commit_create(
             finalCommitOid,
             repo,
-            headStr,
+            headStr.cast<Int8>(),
             authorSig.value,
             authorSig.value,
             nullptr,
-            messageStr,
+            messageStr.cast<Int8>(),
             indexTree.value,
             numParentCommits,
             parentCommits));
@@ -439,8 +442,9 @@ class Libgit2 {
 
   static void revertFile(String dir, String file) {
     var filePtr = file.toNativeUtf8();
-    Pointer<NativeType> checkoutOptions =
-        calloc.call<Int8>(git.checkout_options_size());
+    Pointer<git_checkout_options> checkoutOptions = calloc
+        .call<Int8>(git.checkout_options_size())
+        .cast<git_checkout_options>();
     Pointer<Pointer<Utf8>> fileStrStr = calloc.call<Pointer<Utf8>>(1);
     fileStrStr[0] = file.toNativeUtf8();
     try {
@@ -505,8 +509,9 @@ class Libgit2 {
         } else if ((analysisResults & (4)) != 0) {
           Pointer<git_oid> upstreamCommitId =
               git.annotated_commit_id(upstreamToMerge[0]);
-          Pointer<NativeType> checkoutOptions =
-              calloc.call<Int8>(git.checkout_options_size());
+          Pointer<git_checkout_options> checkoutOptions = calloc
+              .call<Int8>(git.checkout_options_size())
+              .cast<git_checkout_options>();
           Pointer<Pointer<git_commit>> upstreamCommit =
               calloc<Pointer<git_commit>>();
           upstreamCommit.value = nullptr;
@@ -522,8 +527,8 @@ class Libgit2 {
             _checkErrors(git.checkout_options_init(
                 checkoutOptions, git.checkout_options_version()));
             git.checkout_options_config_for_fastforward(checkoutOptions);
-            _checkErrors(
-                git.checkout_tree(repo, upstreamCommit.value, checkoutOptions));
+            _checkErrors(git.checkout_tree(repo,
+                upstreamCommit.value.cast<git_object>(), checkoutOptions));
 
             // Move HEAD
             _checkErrors(git.reference_set_target(
@@ -539,10 +544,12 @@ class Libgit2 {
             calloc.free(newHeadRef);
           }
         } else if ((analysisResults & 1) != 0) {
-          Pointer<NativeType> checkoutOptions =
-              calloc.call<Int8>(git.checkout_options_size());
-          Pointer<NativeType> mergeOptions =
-              calloc.call<Int8>(git.merge_options_size());
+          Pointer<git_checkout_options> checkoutOptions = calloc
+              .call<Int8>(git.checkout_options_size())
+              .cast<git_checkout_options>();
+          Pointer<git_merge_options> mergeOptions = calloc
+              .call<Int8>(git.merge_options_size())
+              .cast<git_merge_options>();
 
           try {
             _checkErrors(git.checkout_options_init(

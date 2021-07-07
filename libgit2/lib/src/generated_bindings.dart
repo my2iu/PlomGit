@@ -45,6 +45,47 @@ class NativeLibrary {
   late final _dart_git_libgit2_features _git_libgit2_features =
       _git_libgit2_features_ptr.asFunction<_dart_git_libgit2_features>();
 
+  /// Free the memory referred to by the git_buf.
+  ///
+  /// Note that this does not free the `git_buf` itself, just the memory
+  /// pointed to by `buffer->ptr`.  This will not free the memory if it looks
+  /// like it was not allocated internally, but it will clear the buffer back
+  /// to the empty state.
+  ///
+  /// @param buffer The buffer to deallocate
+  void git_buf_dispose(
+    ffi.Pointer<git_buf> buffer,
+  ) {
+    return _git_buf_dispose(
+      buffer,
+    );
+  }
+
+  late final _git_buf_dispose_ptr =
+      _lookup<ffi.NativeFunction<_c_git_buf_dispose>>('git_buf_dispose');
+  late final _dart_git_buf_dispose _git_buf_dispose =
+      _git_buf_dispose_ptr.asFunction<_dart_git_buf_dispose>();
+
+  /// Copy an oid from one structure to another.
+  ///
+  /// @param out oid structure the result is written into.
+  /// @param src oid structure to copy from.
+  /// @return 0 on success or error code
+  int git_oid_cpy(
+    ffi.Pointer<git_oid> out,
+    ffi.Pointer<git_oid> src,
+  ) {
+    return _git_oid_cpy(
+      out,
+      src,
+    );
+  }
+
+  late final _git_oid_cpy_ptr =
+      _lookup<ffi.NativeFunction<_c_git_oid_cpy>>('git_oid_cpy');
+  late final _dart_git_oid_cpy _git_oid_cpy =
+      _git_oid_cpy_ptr.asFunction<_dart_git_oid_cpy>();
+
   /// Open a git repository.
   ///
   /// The 'path' argument must point to either a git repository
@@ -253,6 +294,36 @@ class NativeLibrary {
       _git_repository_state_cleanup_ptr
           .asFunction<_dart_git_repository_state_cleanup>();
 
+  /// If a merge is in progress, invoke 'callback' for each commit ID in the
+  /// MERGE_HEAD file.
+  ///
+  /// Return a non-zero value from the callback to stop the loop.
+  ///
+  /// @param repo A repository object
+  /// @param callback Callback function
+  /// @param payload Pointer to callback data (optional)
+  /// @return 0 on success, non-zero callback return value, GIT_ENOTFOUND if
+  /// there is no MERGE_HEAD file, or other error code.
+  int git_repository_mergehead_foreach(
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<ffi.NativeFunction<git_repository_mergehead_foreach_cb>>
+        callback,
+    ffi.Pointer<ffi.Void> payload,
+  ) {
+    return _git_repository_mergehead_foreach(
+      repo,
+      callback,
+      payload,
+    );
+  }
+
+  late final _git_repository_mergehead_foreach_ptr =
+      _lookup<ffi.NativeFunction<_c_git_repository_mergehead_foreach>>(
+          'git_repository_mergehead_foreach');
+  late final _dart_git_repository_mergehead_foreach
+      _git_repository_mergehead_foreach = _git_repository_mergehead_foreach_ptr
+          .asFunction<_dart_git_repository_mergehead_foreach>();
+
   /// Make the repository HEAD point to the specified reference.
   ///
   /// If the provided reference points to a Tree or a Blob, the HEAD is
@@ -390,6 +461,27 @@ class NativeLibrary {
   late final _dart_git_tree_lookup _git_tree_lookup =
       _git_tree_lookup_ptr.asFunction<_dart_git_tree_lookup>();
 
+  /// Close an open tree
+  ///
+  /// You can no longer use the git_tree pointer after this call.
+  ///
+  /// IMPORTANT: You MUST call this method when you stop using a tree to
+  /// release memory. Failure to do so will cause a memory leak.
+  ///
+  /// @param tree The tree to close
+  void git_tree_free(
+    ffi.Pointer<git_tree> tree,
+  ) {
+    return _git_tree_free(
+      tree,
+    );
+  }
+
+  late final _git_tree_free_ptr =
+      _lookup<ffi.NativeFunction<_c_git_tree_free>>('git_tree_free');
+  late final _dart_git_tree_free _git_tree_free =
+      _git_tree_free_ptr.asFunction<_dart_git_tree_free>();
+
   /// Free the strings contained in a string array.  This method should
   /// be called on `git_strarray` objects that were provided by the
   /// library.  Not doing so, will result in a memory leak.
@@ -412,6 +504,89 @@ class NativeLibrary {
   late final _dart_git_strarray_dispose _git_strarray_dispose =
       _git_strarray_dispose_ptr.asFunction<_dart_git_strarray_dispose>();
 
+  /// Lookup a reference by name and resolve immediately to OID.
+  ///
+  /// This function provides a quick way to resolve a reference name straight
+  /// through to the object id that it refers to.  This avoids having to
+  /// allocate or free any `git_reference` objects for simple situations.
+  ///
+  /// The name will be checked for validity.
+  /// See `git_reference_symbolic_create()` for rules about valid names.
+  ///
+  /// @param out Pointer to oid to be filled in
+  /// @param repo The repository in which to look up the reference
+  /// @param name The long name for the reference (e.g. HEAD, refs/heads/master, refs/tags/v0.1.0, ...)
+  /// @return 0 on success, GIT_ENOTFOUND, GIT_EINVALIDSPEC or an error code.
+  int git_reference_name_to_id(
+    ffi.Pointer<git_oid> out,
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<ffi.Int8> name,
+  ) {
+    return _git_reference_name_to_id(
+      out,
+      repo,
+      name,
+    );
+  }
+
+  late final _git_reference_name_to_id_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_name_to_id>>(
+          'git_reference_name_to_id');
+  late final _dart_git_reference_name_to_id _git_reference_name_to_id =
+      _git_reference_name_to_id_ptr
+          .asFunction<_dart_git_reference_name_to_id>();
+
+  /// Lookup a reference by DWIMing its short name
+  ///
+  /// Apply the git precendence rules to the given shorthand to determine
+  /// which reference the user is referring to.
+  ///
+  /// @param out pointer in which to store the reference
+  /// @param repo the repository in which to look
+  /// @param shorthand the short name for the reference
+  /// @return 0 or an error code
+  int git_reference_dwim(
+    ffi.Pointer<ffi.Pointer<git_reference>> out,
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<ffi.Int8> shorthand,
+  ) {
+    return _git_reference_dwim(
+      out,
+      repo,
+      shorthand,
+    );
+  }
+
+  late final _git_reference_dwim_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_dwim>>('git_reference_dwim');
+  late final _dart_git_reference_dwim _git_reference_dwim =
+      _git_reference_dwim_ptr.asFunction<_dart_git_reference_dwim>();
+
+  /// Get the OID pointed to by a direct reference.
+  ///
+  /// Only available if the reference is direct (i.e. an object id reference,
+  /// not a symbolic one).
+  ///
+  /// To find the OID of a symbolic ref, call `git_reference_resolve()` and
+  /// then this function (or maybe use `git_reference_name_to_id()` to
+  /// directly resolve a reference name all the way through to an OID).
+  ///
+  /// @param ref The reference
+  /// @return a pointer to the oid if available, NULL otherwise
+  ffi.Pointer<git_oid> git_reference_target(
+    ffi.Pointer<git_reference> ref,
+  ) {
+    return _git_reference_target(
+      ref,
+    );
+  }
+
+  late final _git_reference_target_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_target>>(
+          'git_reference_target');
+  late final _dart_git_reference_target _git_reference_target =
+      _git_reference_target_ptr.asFunction<_dart_git_reference_target>();
+
   /// Get the full name of a reference.
   ///
   /// See `git_reference_symbolic_create()` for rules about valid names.
@@ -431,6 +606,197 @@ class NativeLibrary {
   late final _dart_git_reference_name _git_reference_name =
       _git_reference_name_ptr.asFunction<_dart_git_reference_name>();
 
+  /// Resolve a symbolic reference to a direct reference.
+  ///
+  /// This method iteratively peels a symbolic reference until it resolves to
+  /// a direct reference to an OID.
+  ///
+  /// The peeled reference is returned in the `resolved_ref` argument, and
+  /// must be freed manually once it's no longer needed.
+  ///
+  /// If a direct reference is passed as an argument, a copy of that
+  /// reference is returned. This copy must be manually freed too.
+  ///
+  /// @param out Pointer to the peeled reference
+  /// @param ref The reference
+  /// @return 0 or an error code
+  int git_reference_resolve(
+    ffi.Pointer<ffi.Pointer<git_reference>> out,
+    ffi.Pointer<git_reference> ref,
+  ) {
+    return _git_reference_resolve(
+      out,
+      ref,
+    );
+  }
+
+  late final _git_reference_resolve_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_resolve>>(
+          'git_reference_resolve');
+  late final _dart_git_reference_resolve _git_reference_resolve =
+      _git_reference_resolve_ptr.asFunction<_dart_git_reference_resolve>();
+
+  /// Conditionally create a new reference with the same name as the given reference but a
+  /// different OID target. The reference must be a direct reference, otherwise
+  /// this will fail.
+  ///
+  /// The new reference will be written to disk, overwriting the given reference.
+  ///
+  /// @param out Pointer to the newly created reference
+  /// @param ref The reference
+  /// @param id The new target OID for the reference
+  /// @param log_message The one line long message to be appended to the reflog
+  /// @return 0 on success, GIT_EMODIFIED if the value of the reference
+  /// has changed since it was read, or an error code
+  int git_reference_set_target(
+    ffi.Pointer<ffi.Pointer<git_reference>> out,
+    ffi.Pointer<git_reference> ref,
+    ffi.Pointer<git_oid> id,
+    ffi.Pointer<ffi.Int8> log_message,
+  ) {
+    return _git_reference_set_target(
+      out,
+      ref,
+      id,
+      log_message,
+    );
+  }
+
+  late final _git_reference_set_target_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_set_target>>(
+          'git_reference_set_target');
+  late final _dart_git_reference_set_target _git_reference_set_target =
+      _git_reference_set_target_ptr
+          .asFunction<_dart_git_reference_set_target>();
+
+  /// Free the given reference.
+  ///
+  /// @param ref git_reference
+  void git_reference_free(
+    ffi.Pointer<git_reference> ref,
+  ) {
+    return _git_reference_free(
+      ref,
+    );
+  }
+
+  late final _git_reference_free_ptr =
+      _lookup<ffi.NativeFunction<_c_git_reference_free>>('git_reference_free');
+  late final _dart_git_reference_free _git_reference_free =
+      _git_reference_free_ptr.asFunction<_dart_git_reference_free>();
+
+  /// Get the branch name
+  ///
+  /// Given a reference object, this will check that it really is a branch (ie.
+  /// it lives under "refs/heads/" or "refs/remotes/"), and return the branch part
+  /// of it.
+  ///
+  /// @param out Pointer to the abbreviated reference name.
+  /// Owned by ref, do not free.
+  ///
+  /// @param ref A reference object, ideally pointing to a branch
+  ///
+  /// @return 0 on success; GIT_EINVALID if the reference isn't either a local or
+  /// remote branch, otherwise an error code.
+  int git_branch_name(
+    ffi.Pointer<ffi.Pointer<ffi.Int8>> out,
+    ffi.Pointer<git_reference> ref,
+  ) {
+    return _git_branch_name(
+      out,
+      ref,
+    );
+  }
+
+  late final _git_branch_name_ptr =
+      _lookup<ffi.NativeFunction<_c_git_branch_name>>('git_branch_name');
+  late final _dart_git_branch_name _git_branch_name =
+      _git_branch_name_ptr.asFunction<_dart_git_branch_name>();
+
+  /// Get the upstream of a branch
+  ///
+  /// Given a reference, this will return a new reference object corresponding
+  /// to its remote tracking branch. The reference must be a local branch.
+  ///
+  /// @see git_branch_upstream_name for details on the resolution.
+  ///
+  /// @param out Pointer where to store the retrieved reference.
+  /// @param branch Current underlying reference of the branch.
+  ///
+  /// @return 0 on success; GIT_ENOTFOUND when no remote tracking
+  /// reference exists, otherwise an error code.
+  int git_branch_upstream(
+    ffi.Pointer<ffi.Pointer<git_reference>> out,
+    ffi.Pointer<git_reference> branch,
+  ) {
+    return _git_branch_upstream(
+      out,
+      branch,
+    );
+  }
+
+  late final _git_branch_upstream_ptr =
+      _lookup<ffi.NativeFunction<_c_git_branch_upstream>>(
+          'git_branch_upstream');
+  late final _dart_git_branch_upstream _git_branch_upstream =
+      _git_branch_upstream_ptr.asFunction<_dart_git_branch_upstream>();
+
+  /// Updates files in the index and the working tree to match the content of
+  /// the commit pointed at by HEAD.
+  ///
+  /// Note that this is _not_ the correct mechanism used to switch branches;
+  /// do not change your `HEAD` and then call this method, that would leave
+  /// you with checkout conflicts since your working directory would then
+  /// appear to be dirty.  Instead, checkout the target of the branch and
+  /// then update `HEAD` using `git_repository_set_head` to point to the
+  /// branch you checked out.
+  ///
+  /// @param repo repository to check out (must be non-bare)
+  /// @param opts specifies checkout options (may be NULL)
+  /// @return 0 on success, GIT_EUNBORNBRANCH if HEAD points to a non
+  /// existing branch, non-zero value returned by `notify_cb`, or
+  /// other error code < 0 (use git_error_last for error details)
+  int git_checkout_head(
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<git_checkout_options> opts,
+  ) {
+    return _git_checkout_head(
+      repo,
+      opts,
+    );
+  }
+
+  late final _git_checkout_head_ptr =
+      _lookup<ffi.NativeFunction<_c_git_checkout_head>>('git_checkout_head');
+  late final _dart_git_checkout_head _git_checkout_head =
+      _git_checkout_head_ptr.asFunction<_dart_git_checkout_head>();
+
+  /// Updates files in the index and working tree to match the content of the
+  /// tree pointed at by the treeish.
+  ///
+  /// @param repo repository to check out (must be non-bare)
+  /// @param treeish a commit, tag or tree which content will be used to update
+  /// the working directory (or NULL to use HEAD)
+  /// @param opts specifies checkout options (may be NULL)
+  /// @return 0 on success, non-zero return value from `notify_cb`, or error
+  /// code < 0 (use git_error_last for error details)
+  int git_checkout_tree(
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<git_object> treeish,
+    ffi.Pointer<git_checkout_options> opts,
+  ) {
+    return _git_checkout_tree(
+      repo,
+      treeish,
+      opts,
+    );
+  }
+
+  late final _git_checkout_tree_ptr =
+      _lookup<ffi.NativeFunction<_c_git_checkout_tree>>('git_checkout_tree');
+  late final _dart_git_checkout_tree _git_checkout_tree =
+      _git_checkout_tree_ptr.asFunction<_dart_git_checkout_tree>();
+
   /// Free an existing index object.
   ///
   /// @param index an existing index object
@@ -446,6 +812,24 @@ class NativeLibrary {
       _lookup<ffi.NativeFunction<_c_git_index_free>>('git_index_free');
   late final _dart_git_index_free _git_index_free =
       _git_index_free_ptr.asFunction<_dart_git_index_free>();
+
+  /// Write an existing index object from memory back to disk
+  /// using an atomic file lock.
+  ///
+  /// @param index an existing index object
+  /// @return 0 or an error code
+  int git_index_write(
+    ffi.Pointer<git_index> index,
+  ) {
+    return _git_index_write(
+      index,
+    );
+  }
+
+  late final _git_index_write_ptr =
+      _lookup<ffi.NativeFunction<_c_git_index_write>>('git_index_write');
+  late final _dart_git_index_write _git_index_write =
+      _git_index_write_ptr.asFunction<_dart_git_index_write>();
 
   /// Write the index as a tree
   ///
@@ -479,6 +863,161 @@ class NativeLibrary {
           'git_index_write_tree');
   late final _dart_git_index_write_tree _git_index_write_tree =
       _git_index_write_tree_ptr.asFunction<_dart_git_index_write_tree>();
+
+  /// Add or update an index entry from a file on disk
+  ///
+  /// The file `path` must be relative to the repository's
+  /// working folder and must be readable.
+  ///
+  /// This method will fail in bare index instances.
+  ///
+  /// This forces the file to be added to the index, not looking
+  /// at gitignore rules.  Those rules can be evaluated through
+  /// the git_status APIs (in status.h) before calling this.
+  ///
+  /// If this file currently is the result of a merge conflict, this
+  /// file will no longer be marked as conflicting.  The data about
+  /// the conflict will be moved to the "resolve undo" (REUC) section.
+  ///
+  /// @param index an existing index object
+  /// @param path filename to add
+  /// @return 0 or an error code
+  int git_index_add_bypath(
+    ffi.Pointer<git_index> index,
+    ffi.Pointer<ffi.Int8> path,
+  ) {
+    return _git_index_add_bypath(
+      index,
+      path,
+    );
+  }
+
+  late final _git_index_add_bypath_ptr =
+      _lookup<ffi.NativeFunction<_c_git_index_add_bypath>>(
+          'git_index_add_bypath');
+  late final _dart_git_index_add_bypath _git_index_add_bypath =
+      _git_index_add_bypath_ptr.asFunction<_dart_git_index_add_bypath>();
+
+  /// Remove an index entry corresponding to a file on disk
+  ///
+  /// The file `path` must be relative to the repository's
+  /// working folder.  It may exist.
+  ///
+  /// If this file currently is the result of a merge conflict, this
+  /// file will no longer be marked as conflicting.  The data about
+  /// the conflict will be moved to the "resolve undo" (REUC) section.
+  ///
+  /// @param index an existing index object
+  /// @param path filename to remove
+  /// @return 0 or an error code
+  int git_index_remove_bypath(
+    ffi.Pointer<git_index> index,
+    ffi.Pointer<ffi.Int8> path,
+  ) {
+    return _git_index_remove_bypath(
+      index,
+      path,
+    );
+  }
+
+  late final _git_index_remove_bypath_ptr =
+      _lookup<ffi.NativeFunction<_c_git_index_remove_bypath>>(
+          'git_index_remove_bypath');
+  late final _dart_git_index_remove_bypath _git_index_remove_bypath =
+      _git_index_remove_bypath_ptr.asFunction<_dart_git_index_remove_bypath>();
+
+  /// Analyzes the given branch(es) and determines the opportunities for
+  /// merging them into the HEAD of the repository.
+  ///
+  /// @param analysis_out analysis enumeration that the result is written into
+  /// @param repo the repository to merge
+  /// @param their_heads the heads to merge into
+  /// @param their_heads_len the number of heads to merge
+  /// @return 0 on success or error code
+  int git_merge_analysis(
+    ffi.Pointer<ffi.Int32> analysis_out,
+    ffi.Pointer<ffi.Int32> preference_out,
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
+    int their_heads_len,
+  ) {
+    return _git_merge_analysis(
+      analysis_out,
+      preference_out,
+      repo,
+      their_heads,
+      their_heads_len,
+    );
+  }
+
+  late final _git_merge_analysis_ptr =
+      _lookup<ffi.NativeFunction<_c_git_merge_analysis>>('git_merge_analysis');
+  late final _dart_git_merge_analysis _git_merge_analysis =
+      _git_merge_analysis_ptr.asFunction<_dart_git_merge_analysis>();
+
+  /// Merges the given commit(s) into HEAD, writing the results into the working
+  /// directory.  Any changes are staged for commit and any conflicts are written
+  /// to the index.  Callers should inspect the repository's index after this
+  /// completes, resolve any conflicts and prepare a commit.
+  ///
+  /// For compatibility with git, the repository is put into a merging
+  /// state. Once the commit is done (or if the uses wishes to abort),
+  /// you should clear this state by calling
+  /// `git_repository_state_cleanup()`.
+  ///
+  /// @param repo the repository to merge
+  /// @param their_heads the heads to merge into
+  /// @param their_heads_len the number of heads to merge
+  /// @param merge_opts merge options
+  /// @param checkout_opts checkout options
+  /// @return 0 on success or error code
+  int git_merge(
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
+    int their_heads_len,
+    ffi.Pointer<git_merge_options> merge_opts,
+    ffi.Pointer<git_checkout_options> checkout_opts,
+  ) {
+    return _git_merge(
+      repo,
+      their_heads,
+      their_heads_len,
+      merge_opts,
+      checkout_opts,
+    );
+  }
+
+  late final _git_merge_ptr =
+      _lookup<ffi.NativeFunction<_c_git_merge>>('git_merge');
+  late final _dart_git_merge _git_merge =
+      _git_merge_ptr.asFunction<_dart_git_merge>();
+
+  /// Create a new plain-text username and password credential object.
+  /// The supplied credential parameter will be internally duplicated.
+  ///
+  /// @param out The newly created credential object.
+  /// @param username The username of the credential.
+  /// @param password The password of the credential.
+  /// @return 0 for success or an error code for failure
+  int git_credential_userpass_plaintext_new(
+    ffi.Pointer<ffi.Pointer<git_credential>> out,
+    ffi.Pointer<ffi.Int8> username,
+    ffi.Pointer<ffi.Int8> password,
+  ) {
+    return _git_credential_userpass_plaintext_new(
+      out,
+      username,
+      password,
+    );
+  }
+
+  late final _git_credential_userpass_plaintext_new_ptr =
+      _lookup<ffi.NativeFunction<_c_git_credential_userpass_plaintext_new>>(
+          'git_credential_userpass_plaintext_new');
+  late final _dart_git_credential_userpass_plaintext_new
+      _git_credential_userpass_plaintext_new =
+      _git_credential_userpass_plaintext_new_ptr
+          .asFunction<_dart_git_credential_userpass_plaintext_new>();
 
   /// Add a remote with the default fetch refspec to the repository's configuration.
   ///
@@ -652,6 +1191,39 @@ class NativeLibrary {
   late final _dart_git_remote_delete _git_remote_delete =
       _git_remote_delete_ptr.asFunction<_dart_git_remote_delete>();
 
+  /// Clone a remote repository.
+  ///
+  /// By default this creates its repository and initial remote to match
+  /// git's defaults. You can use the options in the callback to
+  /// customize how these are created.
+  ///
+  /// @param out pointer that will receive the resulting repository object
+  /// @param url the remote repository to clone
+  /// @param local_path local directory to clone to
+  /// @param options configuration options for the clone.  If NULL, the
+  /// function works as though GIT_OPTIONS_INIT were passed.
+  /// @return 0 on success, any non-zero return value from a callback
+  /// function, or a negative value to indicate an error (use
+  /// `git_error_last` for a detailed error message)
+  int git_clone(
+    ffi.Pointer<ffi.Pointer<git_repository>> out,
+    ffi.Pointer<ffi.Int8> url,
+    ffi.Pointer<ffi.Int8> local_path,
+    ffi.Pointer<git_clone_options> options,
+  ) {
+    return _git_clone(
+      out,
+      url,
+      local_path,
+      options,
+    );
+  }
+
+  late final _git_clone_ptr =
+      _lookup<ffi.NativeFunction<_c_git_clone>>('git_clone');
+  late final _dart_git_clone _git_clone =
+      _git_clone_ptr.asFunction<_dart_git_clone>();
+
   /// Lookup a commit object from a repository.
   ///
   /// The returned object should be released with `git_commit_free` when no
@@ -700,6 +1272,79 @@ class NativeLibrary {
       _lookup<ffi.NativeFunction<_c_git_commit_free>>('git_commit_free');
   late final _dart_git_commit_free _git_commit_free =
       _git_commit_free_ptr.asFunction<_dart_git_commit_free>();
+
+  /// Create new commit in the repository from a list of `git_object` pointers
+  ///
+  /// The message will **not** be cleaned up automatically. You can do that
+  /// with the `git_message_prettify()` function.
+  ///
+  /// @param id Pointer in which to store the OID of the newly created commit
+  ///
+  /// @param repo Repository where to store the commit
+  ///
+  /// @param update_ref If not NULL, name of the reference that
+  /// will be updated to point to this commit. If the reference
+  /// is not direct, it will be resolved to a direct reference.
+  /// Use "HEAD" to update the HEAD of the current branch and
+  /// make it point to this commit. If the reference doesn't
+  /// exist yet, it will be created. If it does exist, the first
+  /// parent must be the tip of this branch.
+  ///
+  /// @param author Signature with author and author time of commit
+  ///
+  /// @param committer Signature with committer and * commit time of commit
+  ///
+  /// @param message_encoding The encoding for the message in the
+  /// commit, represented with a standard encoding name.
+  /// E.g. "UTF-8". If NULL, no encoding header is written and
+  /// UTF-8 is assumed.
+  ///
+  /// @param message Full message for this commit
+  ///
+  /// @param tree An instance of a `git_tree` object that will
+  /// be used as the tree for the commit. This tree object must
+  /// also be owned by the given `repo`.
+  ///
+  /// @param parent_count Number of parents for this commit
+  ///
+  /// @param parents Array of `parent_count` pointers to `git_commit`
+  /// objects that will be used as the parents for this commit. This
+  /// array may be NULL if `parent_count` is 0 (root commit). All the
+  /// given commits must be owned by the `repo`.
+  ///
+  /// @return 0 or an error code
+  /// The created commit will be written to the Object Database and
+  /// the given reference will be updated to point to it
+  int git_commit_create(
+    ffi.Pointer<git_oid> id,
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<ffi.Int8> update_ref,
+    ffi.Pointer<git_signature> author,
+    ffi.Pointer<git_signature> committer,
+    ffi.Pointer<ffi.Int8> message_encoding,
+    ffi.Pointer<ffi.Int8> message,
+    ffi.Pointer<git_tree> tree,
+    int parent_count,
+    ffi.Pointer<ffi.Pointer<git_commit>> parents,
+  ) {
+    return _git_commit_create(
+      id,
+      repo,
+      update_ref,
+      author,
+      committer,
+      message_encoding,
+      message,
+      tree,
+      parent_count,
+      parents,
+    );
+  }
+
+  late final _git_commit_create_ptr =
+      _lookup<ffi.NativeFunction<_c_git_commit_create>>('git_commit_create');
+  late final _dart_git_commit_create _git_commit_create =
+      _git_commit_create_ptr.asFunction<_dart_git_commit_create>();
 
   /// Return the last `git_error` object that was generated for the
   /// current thread.
@@ -910,6 +1555,51 @@ class NativeLibrary {
           'git_graph_ahead_behind');
   late final _dart_git_graph_ahead_behind _git_graph_ahead_behind =
       _git_graph_ahead_behind_ptr.asFunction<_dart_git_graph_ahead_behind>();
+
+  /// Create a new action signature with a timestamp of 'now'.
+  ///
+  /// Call `git_signature_free()` to free the data.
+  ///
+  /// @param out new signature, in case of error NULL
+  /// @param name name of the person
+  /// @param email email of the person
+  /// @return 0 or an error code
+  int git_signature_now(
+    ffi.Pointer<ffi.Pointer<git_signature>> out,
+    ffi.Pointer<ffi.Int8> name,
+    ffi.Pointer<ffi.Int8> email,
+  ) {
+    return _git_signature_now(
+      out,
+      name,
+      email,
+    );
+  }
+
+  late final _git_signature_now_ptr =
+      _lookup<ffi.NativeFunction<_c_git_signature_now>>('git_signature_now');
+  late final _dart_git_signature_now _git_signature_now =
+      _git_signature_now_ptr.asFunction<_dart_git_signature_now>();
+
+  /// Free an existing signature.
+  ///
+  /// Because the signature is not an opaque structure, it is legal to free it
+  /// manually, but be sure to free the "name" and "email" strings in addition
+  /// to the structure itself.
+  ///
+  /// @param sig signature to free
+  void git_signature_free(
+    ffi.Pointer<git_signature> sig,
+  ) {
+    return _git_signature_free(
+      sig,
+    );
+  }
+
+  late final _git_signature_free_ptr =
+      _lookup<ffi.NativeFunction<_c_git_signature_free>>('git_signature_free');
+  late final _dart_git_signature_free _git_signature_free =
+      _git_signature_free_ptr.asFunction<_dart_git_signature_free>();
 }
 
 /// A data buffer for exporting data from libgit2
@@ -1272,6 +1962,17 @@ class git_diff_delta extends ffi.Struct {
   external git_diff_file new_file;
 }
 
+/// Checkout options structure
+///
+/// Initialize with `GIT_CHECKOUT_OPTIONS_INIT`. Alternatively, you can
+/// use `git_checkout_options_init`.
+class git_checkout_options extends ffi.Opaque {}
+
+class git_object extends ffi.Opaque {}
+
+/// Merging options
+class git_merge_options extends ffi.Opaque {}
+
 /// Fetch options structure.
 ///
 /// Zero out for defaults.  Initialize with `GIT_FETCH_OPTIONS_INIT` macro to
@@ -1282,6 +1983,12 @@ class git_fetch_options extends ffi.Opaque {}
 
 /// Controls the behavior of a git_push object.
 class git_push_options extends ffi.Opaque {}
+
+/// Clone options structure
+///
+/// Initialize with `GIT_CLONE_OPTIONS_INIT`. Alternatively, you can
+/// use `git_clone_options_init`.
+class git_clone_options extends ffi.Opaque {}
 
 class git_commit extends ffi.Opaque {}
 
@@ -1342,6 +2049,24 @@ const int GIT_STATUS_OPTIONS_VERSION = 1;
 typedef _c_git_libgit2_features = ffi.Int32 Function();
 
 typedef _dart_git_libgit2_features = int Function();
+
+typedef _c_git_buf_dispose = ffi.Void Function(
+  ffi.Pointer<git_buf> buffer,
+);
+
+typedef _dart_git_buf_dispose = void Function(
+  ffi.Pointer<git_buf> buffer,
+);
+
+typedef _c_git_oid_cpy = ffi.Int32 Function(
+  ffi.Pointer<git_oid> out,
+  ffi.Pointer<git_oid> src,
+);
+
+typedef _dart_git_oid_cpy = int Function(
+  ffi.Pointer<git_oid> out,
+  ffi.Pointer<git_oid> src,
+);
 
 typedef _c_git_repository_open = ffi.Int32 Function(
   ffi.Pointer<ffi.Pointer<git_repository>> out,
@@ -1421,6 +2146,23 @@ typedef _dart_git_repository_state_cleanup = int Function(
   ffi.Pointer<git_repository> repo,
 );
 
+typedef git_repository_mergehead_foreach_cb = ffi.Int32 Function(
+  ffi.Pointer<git_oid>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef _c_git_repository_mergehead_foreach = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.NativeFunction<git_repository_mergehead_foreach_cb>> callback,
+  ffi.Pointer<ffi.Void> payload,
+);
+
+typedef _dart_git_repository_mergehead_foreach = int Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.NativeFunction<git_repository_mergehead_foreach_cb>> callback,
+  ffi.Pointer<ffi.Void> payload,
+);
+
 typedef _c_git_repository_set_head = ffi.Int32 Function(
   ffi.Pointer<git_repository> repo,
   ffi.Pointer<ffi.Int8> refname,
@@ -1479,12 +2221,52 @@ typedef _dart_git_tree_lookup = int Function(
   ffi.Pointer<git_oid> id,
 );
 
+typedef _c_git_tree_free = ffi.Void Function(
+  ffi.Pointer<git_tree> tree,
+);
+
+typedef _dart_git_tree_free = void Function(
+  ffi.Pointer<git_tree> tree,
+);
+
 typedef _c_git_strarray_dispose = ffi.Void Function(
   ffi.Pointer<git_strarray> array,
 );
 
 typedef _dart_git_strarray_dispose = void Function(
   ffi.Pointer<git_strarray> array,
+);
+
+typedef _c_git_reference_name_to_id = ffi.Int32 Function(
+  ffi.Pointer<git_oid> out,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Int8> name,
+);
+
+typedef _dart_git_reference_name_to_id = int Function(
+  ffi.Pointer<git_oid> out,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Int8> name,
+);
+
+typedef _c_git_reference_dwim = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Int8> shorthand,
+);
+
+typedef _dart_git_reference_dwim = int Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Int8> shorthand,
+);
+
+typedef _c_git_reference_target = ffi.Pointer<git_oid> Function(
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _dart_git_reference_target = ffi.Pointer<git_oid> Function(
+  ffi.Pointer<git_reference> ref,
 );
 
 typedef _c_git_reference_name = ffi.Pointer<ffi.Int8> Function(
@@ -1495,11 +2277,93 @@ typedef _dart_git_reference_name = ffi.Pointer<ffi.Int8> Function(
   ffi.Pointer<git_reference> ref,
 );
 
+typedef _c_git_reference_resolve = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _dart_git_reference_resolve = int Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _c_git_reference_set_target = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_reference> ref,
+  ffi.Pointer<git_oid> id,
+  ffi.Pointer<ffi.Int8> log_message,
+);
+
+typedef _dart_git_reference_set_target = int Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_reference> ref,
+  ffi.Pointer<git_oid> id,
+  ffi.Pointer<ffi.Int8> log_message,
+);
+
+typedef _c_git_reference_free = ffi.Void Function(
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _dart_git_reference_free = void Function(
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _c_git_branch_name = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<ffi.Int8>> out,
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _dart_git_branch_name = int Function(
+  ffi.Pointer<ffi.Pointer<ffi.Int8>> out,
+  ffi.Pointer<git_reference> ref,
+);
+
+typedef _c_git_branch_upstream = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_reference> branch,
+);
+
+typedef _dart_git_branch_upstream = int Function(
+  ffi.Pointer<ffi.Pointer<git_reference>> out,
+  ffi.Pointer<git_reference> branch,
+);
+
+typedef _c_git_checkout_head = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<git_checkout_options> opts,
+);
+
+typedef _dart_git_checkout_head = int Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<git_checkout_options> opts,
+);
+
+typedef _c_git_checkout_tree = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<git_object> treeish,
+  ffi.Pointer<git_checkout_options> opts,
+);
+
+typedef _dart_git_checkout_tree = int Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<git_object> treeish,
+  ffi.Pointer<git_checkout_options> opts,
+);
+
 typedef _c_git_index_free = ffi.Void Function(
   ffi.Pointer<git_index> index,
 );
 
 typedef _dart_git_index_free = void Function(
+  ffi.Pointer<git_index> index,
+);
+
+typedef _c_git_index_write = ffi.Int32 Function(
+  ffi.Pointer<git_index> index,
+);
+
+typedef _dart_git_index_write = int Function(
   ffi.Pointer<git_index> index,
 );
 
@@ -1511,6 +2375,70 @@ typedef _c_git_index_write_tree = ffi.Int32 Function(
 typedef _dart_git_index_write_tree = int Function(
   ffi.Pointer<git_oid> out,
   ffi.Pointer<git_index> index,
+);
+
+typedef _c_git_index_add_bypath = ffi.Int32 Function(
+  ffi.Pointer<git_index> index,
+  ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _dart_git_index_add_bypath = int Function(
+  ffi.Pointer<git_index> index,
+  ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _c_git_index_remove_bypath = ffi.Int32 Function(
+  ffi.Pointer<git_index> index,
+  ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _dart_git_index_remove_bypath = int Function(
+  ffi.Pointer<git_index> index,
+  ffi.Pointer<ffi.Int8> path,
+);
+
+typedef _c_git_merge_analysis = ffi.Int32 Function(
+  ffi.Pointer<ffi.Int32> analysis_out,
+  ffi.Pointer<ffi.Int32> preference_out,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
+  ffi.IntPtr their_heads_len,
+);
+
+typedef _dart_git_merge_analysis = int Function(
+  ffi.Pointer<ffi.Int32> analysis_out,
+  ffi.Pointer<ffi.Int32> preference_out,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
+  int their_heads_len,
+);
+
+typedef _c_git_merge = ffi.Int32 Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
+  ffi.IntPtr their_heads_len,
+  ffi.Pointer<git_merge_options> merge_opts,
+  ffi.Pointer<git_checkout_options> checkout_opts,
+);
+
+typedef _dart_git_merge = int Function(
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
+  int their_heads_len,
+  ffi.Pointer<git_merge_options> merge_opts,
+  ffi.Pointer<git_checkout_options> checkout_opts,
+);
+
+typedef _c_git_credential_userpass_plaintext_new = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_credential>> out,
+  ffi.Pointer<ffi.Int8> username,
+  ffi.Pointer<ffi.Int8> password,
+);
+
+typedef _dart_git_credential_userpass_plaintext_new = int Function(
+  ffi.Pointer<ffi.Pointer<git_credential>> out,
+  ffi.Pointer<ffi.Int8> username,
+  ffi.Pointer<ffi.Int8> password,
 );
 
 typedef _c_git_remote_create = ffi.Int32 Function(
@@ -1593,6 +2521,20 @@ typedef _dart_git_remote_delete = int Function(
   ffi.Pointer<ffi.Int8> name,
 );
 
+typedef _c_git_clone = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> url,
+  ffi.Pointer<ffi.Int8> local_path,
+  ffi.Pointer<git_clone_options> options,
+);
+
+typedef _dart_git_clone = int Function(
+  ffi.Pointer<ffi.Pointer<git_repository>> out,
+  ffi.Pointer<ffi.Int8> url,
+  ffi.Pointer<ffi.Int8> local_path,
+  ffi.Pointer<git_clone_options> options,
+);
+
 typedef _c_git_commit_lookup = ffi.Int32 Function(
   ffi.Pointer<ffi.Pointer<git_commit>> commit,
   ffi.Pointer<git_repository> repo,
@@ -1611,6 +2553,32 @@ typedef _c_git_commit_free = ffi.Void Function(
 
 typedef _dart_git_commit_free = void Function(
   ffi.Pointer<git_commit> commit,
+);
+
+typedef _c_git_commit_create = ffi.Int32 Function(
+  ffi.Pointer<git_oid> id,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Int8> update_ref,
+  ffi.Pointer<git_signature> author,
+  ffi.Pointer<git_signature> committer,
+  ffi.Pointer<ffi.Int8> message_encoding,
+  ffi.Pointer<ffi.Int8> message,
+  ffi.Pointer<git_tree> tree,
+  ffi.IntPtr parent_count,
+  ffi.Pointer<ffi.Pointer<git_commit>> parents,
+);
+
+typedef _dart_git_commit_create = int Function(
+  ffi.Pointer<git_oid> id,
+  ffi.Pointer<git_repository> repo,
+  ffi.Pointer<ffi.Int8> update_ref,
+  ffi.Pointer<git_signature> author,
+  ffi.Pointer<git_signature> committer,
+  ffi.Pointer<ffi.Int8> message_encoding,
+  ffi.Pointer<ffi.Int8> message,
+  ffi.Pointer<git_tree> tree,
+  int parent_count,
+  ffi.Pointer<ffi.Pointer<git_commit>> parents,
 );
 
 typedef _c_git_error_last = ffi.Pointer<git_error> Function();
@@ -1687,6 +2655,26 @@ typedef _dart_git_graph_ahead_behind = int Function(
   ffi.Pointer<git_repository> repo,
   ffi.Pointer<git_oid> local,
   ffi.Pointer<git_oid> upstream,
+);
+
+typedef _c_git_signature_now = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_signature>> out,
+  ffi.Pointer<ffi.Int8> name,
+  ffi.Pointer<ffi.Int8> email,
+);
+
+typedef _dart_git_signature_now = int Function(
+  ffi.Pointer<ffi.Pointer<git_signature>> out,
+  ffi.Pointer<ffi.Int8> name,
+  ffi.Pointer<ffi.Int8> email,
+);
+
+typedef _c_git_signature_free = ffi.Void Function(
+  ffi.Pointer<git_signature> sig,
+);
+
+typedef _dart_git_signature_free = void Function(
+  ffi.Pointer<git_signature> sig,
 );
 
 typedef _typedefC_3 = ffi.Void Function(
