@@ -65,7 +65,7 @@ class Libgit2 {
           git.clone_options_init(cloneOptions, git.clone_options_version()));
       git.clone_options_set_credentials_cb(
           cloneOptions,
-          Pointer.fromFunction<git_credentials_acquire_cb>(
+          Pointer.fromFunction<git_credential_acquire_cb>(
               credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
       _checkErrors(git.clone(repository, urlPtr, dirPtr, cloneOptions));
     } finally {
@@ -153,7 +153,7 @@ class Libgit2 {
             git.fetch_options_init(fetchOptions, git.fetch_options_version()));
         git.fetch_options_set_credentials_cb(
             fetchOptions,
-            Pointer.fromFunction<git_credentials_acquire_cb>(
+            Pointer.fromFunction<git_credential_acquire_cb>(
                 credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
         _checkErrors(git.remote_fetch(remote, nullptr, fetchOptions, nullptr));
       });
@@ -170,14 +170,14 @@ class Libgit2 {
   static String _credentialPassword = "";
   static int credentialsCallback(
       Pointer<Pointer<git_credential>> out,
-      Pointer<Utf8> url,
-      Pointer<Utf8> username_from_url,
+      Pointer<Int8> url,
+      Pointer<Int8> username_from_url,
       @Uint32() int allowed_type,
-      Pointer<NativeType> payload) {
+      Pointer<Void> payload) {
     // We don't interactively ask the user for a password, so if we
     // get asked for the password for the same page twice, we'll
     // abort instead of repeatedly retrying the same password.
-    String currentUrl = url.toDartString();
+    String currentUrl = url.cast<Utf8>().toDartString();
     if (currentUrl == _lastUrlCredentialCheck) {
       Pointer<Utf8> msg = "Security credentials not accepted".toNativeUtf8();
       git.error_set_str(0, msg.cast<Int8>());
@@ -231,7 +231,7 @@ class Libgit2 {
             git.push_options_init(pushOptions, git.push_options_version()));
         git.push_options_set_credentials_cb(
             pushOptions,
-            Pointer.fromFunction<git_credentials_acquire_cb>(
+            Pointer.fromFunction<git_credential_acquire_cb>(
                 credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
         _checkErrors(git.remote_push(remote, refStrings, pushOptions));
       });
@@ -266,15 +266,17 @@ class Libgit2 {
                 git.status_byindex(statusList.value, n);
             var entryData = [];
             if (entry.ref.index_to_workdir != nullptr &&
-                entry.ref.index_to_workdir.ref.new_file_path != nullptr)
-              entryData.add(
-                  entry.ref.index_to_workdir.ref.new_file_path.toDartString());
+                entry.ref.index_to_workdir.ref.new_file.path != nullptr)
+              entryData.add(entry.ref.index_to_workdir.ref.new_file.path
+                  .cast<Utf8>()
+                  .toDartString());
             else
               entryData.add(null);
             if (entry.ref.head_to_index != nullptr &&
-                entry.ref.head_to_index.ref.old_file_path != nullptr)
-              entryData.add(
-                  entry.ref.head_to_index.ref.old_file_path.toDartString());
+                entry.ref.head_to_index.ref.old_file.path != nullptr)
+              entryData.add(entry.ref.head_to_index.ref.old_file.path
+                  .cast<Utf8>()
+                  .toDartString());
             else
               entryData.add(null);
             entryData.add(entry.ref.status);

@@ -11,7 +11,16 @@ export 'generated_bindings.dart'
         git_repository_init_options,
         git_strarray,
         git_reference,
-        git_buf;
+        git_buf,
+        git_oid,
+        git_remote,
+        git_credential,
+        git_signature,
+        git_status_entry,
+        git_diff_delta,
+        git_diff_file,
+        git_credential_acquire_cb,
+        git_remote_callbacks;
 
 class git {
   static final DynamicLibrary nativeGit2 = Platform.isAndroid
@@ -253,38 +262,32 @@ class git {
   //     .asFunction();
 
   static final void Function(Pointer<NativeType>,
-          Pointer<NativeFunction<git_credentials_acquire_cb>>)
+          Pointer<NativeFunction<git_credential_acquire_cb>>)
       fetch_options_set_credentials_cb = nativeGit2
           .lookup<
                   NativeFunction<
-                      Void Function(
-                          Pointer<NativeType>,
-                          Pointer<
-                              NativeFunction<git_credentials_acquire_cb>>)>>(
+                      Void Function(Pointer<NativeType>,
+                          Pointer<NativeFunction<git_credential_acquire_cb>>)>>(
               "git_fetch_options_set_credentials_cb")
           .asFunction();
 
   static final void Function(Pointer<NativeType>,
-          Pointer<NativeFunction<git_credentials_acquire_cb>>)
+          Pointer<NativeFunction<git_credential_acquire_cb>>)
       push_options_set_credentials_cb = nativeGit2
           .lookup<
                   NativeFunction<
-                      Void Function(
-                          Pointer<NativeType>,
-                          Pointer<
-                              NativeFunction<git_credentials_acquire_cb>>)>>(
+                      Void Function(Pointer<NativeType>,
+                          Pointer<NativeFunction<git_credential_acquire_cb>>)>>(
               "git_push_options_set_credentials_cb")
           .asFunction();
 
   static final void Function(Pointer<NativeType>,
-          Pointer<NativeFunction<git_credentials_acquire_cb>>)
+          Pointer<NativeFunction<git_credential_acquire_cb>>)
       clone_options_set_credentials_cb = nativeGit2
           .lookup<
                   NativeFunction<
-                      Void Function(
-                          Pointer<NativeType>,
-                          Pointer<
-                              NativeFunction<git_credentials_acquire_cb>>)>>(
+                      Void Function(Pointer<NativeType>,
+                          Pointer<NativeFunction<git_credential_acquire_cb>>)>>(
               "git_clone_options_set_credentials_cb")
           .asFunction();
 

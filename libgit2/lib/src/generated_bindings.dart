@@ -359,6 +359,183 @@ class git_buf extends ffi.Struct {
   external int size;
 }
 
+/// Unique identity of any object (commit, tree, blob, tag).
+class git_oid extends ffi.Struct {
+  @ffi.Array.multi([20])
+  external ffi.Array<ffi.Uint8> id;
+}
+
+/// Time in a signature
+class git_time extends ffi.Struct {
+  /// < time in seconds from epoch
+  @ffi.Int64()
+  external int time;
+
+  /// < timezone offset, in minutes
+  @ffi.Int32()
+  external int offset;
+
+  /// < indicator for questionable '-0000' offsets in signature
+  @ffi.Int8()
+  external int sign;
+}
+
+/// An action signature (e.g. for committers, taggers, etc)
+class git_signature extends ffi.Struct {
+  /// < full name of the author
+  external ffi.Pointer<ffi.Int8> name;
+
+  /// < email of the author
+  external ffi.Pointer<ffi.Int8> email;
+
+  /// < time when the action happened
+  external git_time when;
+}
+
+/// The base structure for all credential types
+class git_credential extends ffi.Struct {
+  /// < A type of credential
+  @ffi.Int32()
+  external int credtype;
+
+  external ffi.Pointer<ffi.NativeFunction<_typedefC_3>> free;
+}
+
+/// Parent type for `git_cert_hostkey` and `git_cert_x509`.
+class git_cert extends ffi.Struct {
+  /// Type of certificate. A `GIT_CERT_` value.
+  @ffi.Int32()
+  external int cert_type;
+}
+
+/// This structure is used to provide callers information about the
+/// progress of indexing a packfile, either directly or part of a
+/// fetch or clone that downloads a packfile.
+class git_indexer_progress extends ffi.Struct {
+  /// number of objects in the packfile being indexed
+  @ffi.Uint32()
+  external int total_objects;
+
+  /// received objects that have been hashed
+  @ffi.Uint32()
+  external int indexed_objects;
+
+  /// received_objects: objects which have been downloaded
+  @ffi.Uint32()
+  external int received_objects;
+
+  /// locally-available objects that have been injected in order
+  /// to fix a thin pack
+  @ffi.Uint32()
+  external int local_objects;
+
+  /// number of deltas in the packfile being indexed
+  @ffi.Uint32()
+  external int total_deltas;
+
+  /// received deltas that have been indexed
+  @ffi.Uint32()
+  external int indexed_deltas;
+
+  /// size of the packfile received up to now
+  @ffi.IntPtr()
+  external int received_bytes;
+}
+
+/// Represents an update which will be performed on the remote during push
+class git_push_update extends ffi.Struct {
+  /// The source name of the reference
+  external ffi.Pointer<ffi.Int8> src_refname;
+
+  /// The name of the reference to update on the server
+  external ffi.Pointer<ffi.Int8> dst_refname;
+
+  /// The current target of the reference
+  external git_oid src;
+
+  /// The new target for the reference
+  external git_oid dst;
+}
+
+class git_transport extends ffi.Opaque {}
+
+class git_remote extends ffi.Opaque {}
+
+/// The callback settings structure
+///
+/// Set the callbacks to be called by the remote when informing the user
+/// about the progress of the network operations.
+class git_remote_callbacks extends ffi.Struct {
+  /// < The version
+  @ffi.Uint32()
+  external int version;
+
+  /// Textual progress from the remote. Text send over the
+  /// progress side-band will be passed to this function (this is
+  /// the 'counting objects' output).
+  external ffi.Pointer<ffi.NativeFunction<git_transport_message_cb>>
+      sideband_progress;
+
+  external ffi.Pointer<ffi.NativeFunction<_typedefC_1>> completion;
+
+  /// This will be called if the remote host requires
+  /// authentication in order to connect to it.
+  ///
+  /// Returning GIT_PASSTHROUGH will make libgit2 behave as
+  /// though this field isn't set.
+  external ffi.Pointer<ffi.NativeFunction<git_credential_acquire_cb>>
+      credentials;
+
+  /// If cert verification fails, this will be called to let the
+  /// user make the final decision of whether to allow the
+  /// connection to proceed. Returns 0 to allow the connection
+  /// or a negative value to indicate an error.
+  external ffi.Pointer<ffi.NativeFunction<git_transport_certificate_check_cb>>
+      certificate_check;
+
+  /// During the download of new data, this will be regularly
+  /// called with the current count of progress done by the
+  /// indexer.
+  external ffi.Pointer<ffi.NativeFunction<git_indexer_progress_cb>>
+      transfer_progress;
+
+  external ffi.Pointer<ffi.NativeFunction<_typedefC_2>> update_tips;
+
+  /// Function to call with progress information during pack
+  /// building. Be aware that this is called inline with pack
+  /// building operations, so performance may be affected.
+  external ffi.Pointer<ffi.NativeFunction<git_packbuilder_progress>>
+      pack_progress;
+
+  /// Function to call with progress information during the
+  /// upload portion of a push. Be aware that this is called
+  /// inline with pack building operations, so performance may be
+  /// affected.
+  external ffi.Pointer<ffi.NativeFunction<git_push_transfer_progress_cb>>
+      push_transfer_progress;
+
+  /// See documentation of git_push_update_reference_cb
+  external ffi.Pointer<ffi.NativeFunction<git_push_update_reference_cb>>
+      push_update_reference;
+
+  /// Called once between the negotiation step and the upload. It
+  /// provides information about what updates will be performed.
+  external ffi.Pointer<ffi.NativeFunction<git_push_negotiation>>
+      push_negotiation;
+
+  /// Create the transport to use for this operation. Leave NULL
+  /// to auto-detect.
+  external ffi.Pointer<ffi.NativeFunction<git_transport_cb>> transport;
+
+  /// This will be passed to each of the callbacks in this struct
+  /// as the last parameter.
+  external ffi.Pointer<ffi.Void> payload;
+
+  /// Resolve URL before connecting to remote.
+  /// The returned URL will be used to connect to the remote instead.
+  external ffi.Pointer<ffi.NativeFunction<git_url_resolve_cb>> resolve_url;
+}
+
 class git_repository extends ffi.Opaque {}
 
 /// Extended options structure for `git_repository_init_ext`.
@@ -399,6 +576,107 @@ class git_strarray extends ffi.Struct {
 
 class git_reference extends ffi.Opaque {}
 
+/// Description of one side of a delta.
+///
+/// Although this is called a "file", it could represent a file, a symbolic
+/// link, a submodule commit id, or even a tree (although that only if you
+/// are tracking type changes or ignored/untracked directories).
+///
+/// The `id` is the `git_oid` of the item.  If the entry represents an
+/// absent side of a diff (e.g. the `old_file` of a `GIT_DELTA_ADDED` delta),
+/// then the oid will be zeroes.
+///
+/// `path` is the NUL-terminated path to the entry relative to the working
+/// directory of the repository.
+///
+/// `size` is the size of the entry in bytes.
+///
+/// `flags` is a combination of the `git_diff_flag_t` types
+///
+/// `mode` is, roughly, the stat() `st_mode` value for the item.  This will
+/// be restricted to one of the `git_filemode_t` values.
+///
+/// The `id_abbrev` represents the known length of the `id` field, when
+/// converted to a hex string.  It is generally `GIT_OID_HEXSZ`, unless this
+/// delta was created from reading a patch file, in which case it may be
+/// abbreviated to something reasonable, like 7 characters.
+class git_diff_file extends ffi.Struct {
+  external git_oid id;
+
+  external ffi.Pointer<ffi.Int8> path;
+
+  @ffi.Uint64()
+  external int size;
+
+  @ffi.Uint32()
+  external int flags;
+
+  @ffi.Uint16()
+  external int mode;
+
+  @ffi.Uint16()
+  external int id_abbrev;
+}
+
+/// Description of changes to one entry.
+///
+/// A `delta` is a file pair with an old and new revision.  The old version
+/// may be absent if the file was just created and the new version may be
+/// absent if the file was deleted.  A diff is mostly just a list of deltas.
+///
+/// When iterating over a diff, this will be passed to most callbacks and
+/// you can use the contents to understand exactly what has changed.
+///
+/// The `old_file` represents the "from" side of the diff and the `new_file`
+/// represents to "to" side of the diff.  What those means depend on the
+/// function that was used to generate the diff and will be documented below.
+/// You can also use the `GIT_DIFF_REVERSE` flag to flip it around.
+///
+/// Although the two sides of the delta are named "old_file" and "new_file",
+/// they actually may correspond to entries that represent a file, a symbolic
+/// link, a submodule commit id, or even a tree (if you are tracking type
+/// changes or ignored/untracked directories).
+///
+/// Under some circumstances, in the name of efficiency, not all fields will
+/// be filled in, but we generally try to fill in as much as possible.  One
+/// example is that the "flags" field may not have either the `BINARY` or the
+/// `NOT_BINARY` flag set to avoid examining file contents if you do not pass
+/// in hunk and/or line callbacks to the diff foreach iteration function.  It
+/// will just use the git attributes for those files.
+///
+/// The similarity score is zero unless you call `git_diff_find_similar()`
+/// which does a similarity analysis of files in the diff.  Use that
+/// function to do rename and copy detection, and to split heavily modified
+/// files in add/delete pairs.  After that call, deltas with a status of
+/// GIT_DELTA_RENAMED or GIT_DELTA_COPIED will have a similarity score
+/// between 0 and 100 indicating how similar the old and new sides are.
+///
+/// If you ask `git_diff_find_similar` to find heavily modified files to
+/// break, but to not *actually* break the records, then GIT_DELTA_MODIFIED
+/// records may have a non-zero similarity score if the self-similarity is
+/// below the split threshold.  To display this value like core Git, invert
+/// the score (a la `printf("M%03d", 100 - delta->similarity)`).
+class git_diff_delta extends ffi.Struct {
+  @ffi.Int32()
+  external int status;
+
+  /// < git_diff_flag_t values
+  @ffi.Uint32()
+  external int flags;
+
+  /// < for RENAMED and COPIED, value 0-100
+  @ffi.Uint16()
+  external int similarity;
+
+  /// < number of files in this delta
+  @ffi.Uint16()
+  external int nfiles;
+
+  external git_diff_file old_file;
+
+  external git_diff_file new_file;
+}
+
 /// Structure to store extra details of the last error that occurred.
 ///
 /// This is kept on a per-thread basis if GIT_THREADS was defined when the
@@ -409,6 +687,29 @@ class git_error extends ffi.Struct {
   @ffi.Int32()
   external int klass;
 }
+
+/// A status entry, providing the differences between the file as it exists
+/// in HEAD and the index, and providing the differences between the index
+/// and the working directory.
+///
+/// The `status` value provides the status flags for this file.
+///
+/// The `head_to_index` value provides detailed information about the
+/// differences between the file in HEAD and the file in the index.
+///
+/// The `index_to_workdir` value provides detailed information about the
+/// differences between the file in the index and the file in the
+/// working directory.
+class git_status_entry extends ffi.Struct {
+  @ffi.Int32()
+  external int status;
+
+  external ffi.Pointer<git_diff_delta> head_to_index;
+
+  external ffi.Pointer<git_diff_delta> index_to_workdir;
+}
+
+const int GIT_REPOSITORY_INIT_OPTIONS_VERSION = 1;
 
 const int GIT_CHECKOUT_OPTIONS_VERSION = 1;
 
@@ -521,3 +822,84 @@ typedef _dart_git_libgit2_init = int Function();
 typedef _c_git_libgit2_shutdown = ffi.Int32 Function();
 
 typedef _dart_git_libgit2_shutdown = int Function();
+
+typedef _typedefC_3 = ffi.Void Function(
+  ffi.Pointer<git_credential>,
+);
+
+typedef git_transport_message_cb = ffi.Int32 Function(
+  ffi.Pointer<ffi.Int8>,
+  ffi.Int32,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef _typedefC_1 = ffi.Int32 Function(
+  ffi.Int32,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_credential_acquire_cb = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_credential>>,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Uint32,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_transport_certificate_check_cb = ffi.Int32 Function(
+  ffi.Pointer<git_cert>,
+  ffi.Int32,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_indexer_progress_cb = ffi.Int32 Function(
+  ffi.Pointer<git_indexer_progress>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef _typedefC_2 = ffi.Int32 Function(
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<git_oid>,
+  ffi.Pointer<git_oid>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_packbuilder_progress = ffi.Int32 Function(
+  ffi.Int32,
+  ffi.Uint32,
+  ffi.Uint32,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_push_transfer_progress_cb = ffi.Int32 Function(
+  ffi.Uint32,
+  ffi.Uint32,
+  ffi.IntPtr,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_push_update_reference_cb = ffi.Int32 Function(
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_push_negotiation = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_push_update>>,
+  ffi.IntPtr,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_transport_cb = ffi.Int32 Function(
+  ffi.Pointer<ffi.Pointer<git_transport>>,
+  ffi.Pointer<git_remote>,
+  ffi.Pointer<ffi.Void>,
+);
+
+typedef git_url_resolve_cb = ffi.Int32 Function(
+  ffi.Pointer<git_buf>,
+  ffi.Pointer<ffi.Int8>,
+  ffi.Int32,
+  ffi.Pointer<ffi.Void>,
+);

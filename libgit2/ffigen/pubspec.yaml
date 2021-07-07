@@ -39,6 +39,11 @@ ffigen:
      - git_error
      - git_strarray
      - git_buf
+     - git_signature
+     - git_oid
+     - git_status_entry
+     - git_diff_delta
+     - git_remote_callbacks
   enums:
     exclude:
      - .*
@@ -50,6 +55,7 @@ ffigen:
      - GIT_CLONE_OPTIONS_VERSION
      - GIT_CHECKOUT_OPTIONS_VERSION
      - GIT_MERGE_OPTIONS_VERSION
+     - GIT_REPOSITORY_INIT_OPTIONS_VERSION
   globals:
     exclude:
     - .*
