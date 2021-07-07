@@ -22,10 +22,13 @@ ffigen:
     include:
      - git_libgit2_features
      - git_libgit2_init
+     - git_libgit2_shutdown
+     - git_error_last
+     - git_error_set_str
   structs:
     dependency-only: opaque
-    exclude:
-     - .*
+    include:
+     - git_error
   enums:
     exclude:
      - .*

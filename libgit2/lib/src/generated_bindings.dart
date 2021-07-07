@@ -45,6 +45,54 @@ class NativeLibrary {
   late final _dart_git_libgit2_features _git_libgit2_features =
       _git_libgit2_features_ptr.asFunction<_dart_git_libgit2_features>();
 
+  /// Return the last `git_error` object that was generated for the
+  /// current thread.
+  ///
+  /// The default behaviour of this function is to return NULL if no previous error has occurred.
+  /// However, libgit2's error strings are not cleared aggressively, so a prior
+  /// (unrelated) error may be returned. This can be avoided by only calling
+  /// this function if the prior call to a libgit2 API returned an error.
+  ///
+  /// @return A git_error object.
+  ffi.Pointer<git_error> git_error_last() {
+    return _git_error_last();
+  }
+
+  late final _git_error_last_ptr =
+      _lookup<ffi.NativeFunction<_c_git_error_last>>('git_error_last');
+  late final _dart_git_error_last _git_error_last =
+      _git_error_last_ptr.asFunction<_dart_git_error_last>();
+
+  /// Set the error message string for this thread.
+  ///
+  /// This function is public so that custom ODB backends and the like can
+  /// relay an error message through libgit2.  Most regular users of libgit2
+  /// will never need to call this function -- actually, calling it in most
+  /// circumstances (for example, calling from within a callback function)
+  /// will just end up having the value overwritten by libgit2 internals.
+  ///
+  /// This error message is stored in thread-local storage and only applies
+  /// to the particular thread that this libgit2 call is made from.
+  ///
+  /// @param error_class One of the `git_error_t` enum above describing the
+  /// general subsystem that is responsible for the error.
+  /// @param string The formatted error message to keep
+  /// @return 0 on success or -1 on failure
+  int git_error_set_str(
+    int error_class,
+    ffi.Pointer<ffi.Int8> string,
+  ) {
+    return _git_error_set_str(
+      error_class,
+      string,
+    );
+  }
+
+  late final _git_error_set_str_ptr =
+      _lookup<ffi.NativeFunction<_c_git_error_set_str>>('git_error_set_str');
+  late final _dart_git_error_set_str _git_error_set_str =
+      _git_error_set_str_ptr.asFunction<_dart_git_error_set_str>();
+
   /// Init the global state
   ///
   /// This function must be called before any other libgit2 function in
@@ -63,12 +111,60 @@ class NativeLibrary {
       _lookup<ffi.NativeFunction<_c_git_libgit2_init>>('git_libgit2_init');
   late final _dart_git_libgit2_init _git_libgit2_init =
       _git_libgit2_init_ptr.asFunction<_dart_git_libgit2_init>();
+
+  /// Shutdown the global state
+  ///
+  /// Clean up the global state and threading context after calling it as
+  /// many times as `git_libgit2_init()` was called - it will return the
+  /// number of remainining initializations that have not been shutdown
+  /// (after this one).
+  ///
+  /// @return the number of remaining initializations of the library, or an
+  /// error code.
+  int git_libgit2_shutdown() {
+    return _git_libgit2_shutdown();
+  }
+
+  late final _git_libgit2_shutdown_ptr =
+      _lookup<ffi.NativeFunction<_c_git_libgit2_shutdown>>(
+          'git_libgit2_shutdown');
+  late final _dart_git_libgit2_shutdown _git_libgit2_shutdown =
+      _git_libgit2_shutdown_ptr.asFunction<_dart_git_libgit2_shutdown>();
+}
+
+/// Structure to store extra details of the last error that occurred.
+///
+/// This is kept on a per-thread basis if GIT_THREADS was defined when the
+/// library was build, otherwise one is kept globally for the library
+class git_error extends ffi.Struct {
+  external ffi.Pointer<ffi.Int8> message;
+
+  @ffi.Int32()
+  external int klass;
 }
 
 typedef _c_git_libgit2_features = ffi.Int32 Function();
 
 typedef _dart_git_libgit2_features = int Function();
 
+typedef _c_git_error_last = ffi.Pointer<git_error> Function();
+
+typedef _dart_git_error_last = ffi.Pointer<git_error> Function();
+
+typedef _c_git_error_set_str = ffi.Int32 Function(
+  ffi.Int32 error_class,
+  ffi.Pointer<ffi.Int8> string,
+);
+
+typedef _dart_git_error_set_str = int Function(
+  int error_class,
+  ffi.Pointer<ffi.Int8> string,
+);
+
 typedef _c_git_libgit2_init = ffi.Int32 Function();
 
 typedef _dart_git_libgit2_init = int Function();
+
+typedef _c_git_libgit2_shutdown = ffi.Int32 Function();
+
+typedef _dart_git_libgit2_shutdown = int Function();

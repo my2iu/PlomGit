@@ -22,18 +22,17 @@ class git {
     return git2.git_libgit2_init();
   }
 
-  static final int Function() shutdown = nativeGit2
-      .lookup<NativeFunction<Int32 Function()>>("git_libgit2_shutdown")
-      .asFunction();
+  static int shutdown() {
+    return git2.git_libgit2_shutdown();
+  }
 
-  static final Pointer<git_error> Function() errorLast = nativeGit2
-      .lookup<NativeFunction<Pointer<git_error> Function()>>("git_error_last")
-      .asFunction();
+  static Pointer<git_error> errorLast() {
+    return git2.git_error_last();
+  }
 
-  static final int Function(int, Pointer<Utf8>) error_set_str = nativeGit2
-      .lookup<NativeFunction<Int32 Function(Int32, Pointer<Utf8>)>>(
-          "git_error_set_str")
-      .asFunction();
+  static int error_set_str(int errorClass, Pointer<Int8> str) {
+    return git2.git_error_set_str(errorClass, str);
+  }
 
   static final int Function(
           Pointer<Pointer<git_repository>>, Pointer<Utf8>, int)

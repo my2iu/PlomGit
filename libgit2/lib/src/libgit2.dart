@@ -179,7 +179,7 @@ class Libgit2 {
     String currentUrl = url.toDartString();
     if (currentUrl == _lastUrlCredentialCheck) {
       Pointer<Utf8> msg = "Security credentials not accepted".toNativeUtf8();
-      git.error_set_str(0, msg);
+      git.error_set_str(0, msg.cast<Int8>());
       calloc.free(msg);
       return Libgit2Exception.GIT_EUSER;
     }
@@ -677,7 +677,7 @@ class Libgit2Exception implements Exception {
   Libgit2Exception.fromErrorCode(this.errorCode) {
     var err = git.errorLast();
     if (err != nullptr) {
-      message = err.ref.message.toDartString();
+      message = err.ref.message.cast<Utf8>().toDartString();
       klass = err.ref.klass;
     }
   }

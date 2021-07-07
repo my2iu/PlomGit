@@ -1,12 +1,12 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 
-class git_error extends Struct {
-  external Pointer<Utf8> message;
+// class git_error extends Struct {
+//   external Pointer<Utf8> message;
 
-  @Int32()
-  external int klass;
-}
+//   @Int32()
+//   external int klass;
+// }
 
 class git_strarray extends Struct {
   external Pointer<Pointer<Utf8>> strings;
