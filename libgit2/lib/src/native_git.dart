@@ -35,17 +35,17 @@ class gitHelpers {
   }
 
   static void fetch_options_set_credentials_cb(Pointer<git_fetch_options> opts,
-      Pointer<NativeFunction<git_credential_acquire_cb>> credentials_cb) {
+      git_credential_acquire_cb credentials_cb) {
     opts.ref.callbacks.credentials = credentials_cb;
   }
 
   static void push_options_set_credentials_cb(Pointer<git_push_options> opts,
-      Pointer<NativeFunction<git_credential_acquire_cb>> credentials_cb) {
+      git_credential_acquire_cb credentials_cb) {
     opts.ref.callbacks.credentials = credentials_cb;
   }
 
   static void clone_options_set_credentials_cb(Pointer<git_clone_options> opts,
-      Pointer<NativeFunction<git_credential_acquire_cb>> credentials_cb) {
+      git_credential_acquire_cb credentials_cb) {
     opts.ref.fetch_opts.callbacks.credentials = credentials_cb;
   }
 
@@ -56,7 +56,7 @@ class gitHelpers {
       opts.ref.pathspec.count = 1;
       opts.ref.pathspec.strings = path;
     }
-    opts.ref.show_1 = git_status_show_t.GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+    opts.ref.show1 = git_status_show_t.GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
     opts.ref.flags = git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED |
         git_status_opt_t.GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
         git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNMODIFIED;

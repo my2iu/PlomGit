@@ -1,7 +1,7 @@
 name: libgit2_ffigen
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
 
 dev_dependencies:
   ffigen:
@@ -13,11 +13,11 @@ ffigen:
   llvm-path:
    - '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr'
   compiler-opts:
-   - '-I../ios/libgit2-1.1.0/include'
+   - '-I../ios/libgit2-1.3.0/include'
    - '-Wno-nullability-completeness'
   headers:
     entry-points:
-      - '../ios/libgit2-1.1.0/include/git2.h'
+      - '../ios/libgit2-1.3.0/include/git2.h'
   functions:
     include:
      - git_libgit2_features

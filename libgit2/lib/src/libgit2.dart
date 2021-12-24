@@ -70,8 +70,7 @@ class Libgit2 {
           cloneOptions, gitHelpers.clone_options_version()));
       gitHelpers.clone_options_set_credentials_cb(
           cloneOptions,
-          Pointer.fromFunction<git_credential_acquire_cb>(
-              credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
+          Pointer.fromFunction(credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
       _checkErrors(_git.clone(
           repository, urlPtr.cast<Int8>(), dirPtr.cast<Int8>(), cloneOptions));
     } finally {
@@ -159,8 +158,7 @@ class Libgit2 {
             fetchOptions, gitHelpers.fetch_options_version()));
         gitHelpers.fetch_options_set_credentials_cb(
             fetchOptions,
-            Pointer.fromFunction<git_credential_acquire_cb>(
-                credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
+            Pointer.fromFunction(credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
         _checkErrors(_git.remote_fetch(remote, nullptr, fetchOptions, nullptr));
       });
     } finally {
@@ -237,8 +235,7 @@ class Libgit2 {
             pushOptions, gitHelpers.push_options_version()));
         gitHelpers.push_options_set_credentials_cb(
             pushOptions,
-            Pointer.fromFunction<git_credential_acquire_cb>(
-                credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
+            Pointer.fromFunction(credentialsCallback, Libgit2Exception.GIT_PASSTHROUGH));
         _checkErrors(_git.remote_push(remote, refStrings, pushOptions));
       });
     } finally {
