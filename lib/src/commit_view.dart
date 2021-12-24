@@ -167,6 +167,12 @@ class CommitFinalView extends StatelessWidget {
   }
 }
 
+class _ChangedFileForStaging {
+  final String name;
+  final RawGitStatusFlags flags;
+  const _ChangedFileForStaging(this.name, this.flags);
+}
+
 class _CommitFilesView extends StatefulWidget {
   _CommitFilesView(this.repositoryName, this.repositoryUri);
 
@@ -195,12 +201,12 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
   }
 
   Widget _makeCommitUi(List<dynamic> allChanges) {
-    List<String> staged = <String>[];
-    List<String> unstaged = <String>[];
+    List<_ChangedFileForStaging> staged = <_ChangedFileForStaging>[];
+    List<_ChangedFileForStaging> unstaged = <_ChangedFileForStaging>[];
     allChanges.forEach((entry) {
       var gitFlags = RawGitStatusFlags.fromStatus(entry[2]);
-      if (gitFlags.staged) staged.add(entry[0] ?? entry[1]);
-      if (gitFlags.unstaged) unstaged.add(entry[0] ?? entry[1]);
+      if (gitFlags.staged) staged.add(_ChangedFileForStaging(entry[0] ?? entry[1], gitFlags));
+      if (gitFlags.unstaged) unstaged.add(_ChangedFileForStaging(entry[0] ?? entry[1], gitFlags));
     });
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
         Widget>[
@@ -216,14 +222,14 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
         itemCount: staged.length,
         itemBuilder: (context, index) {
           return ListTile(
-              title: Text(staged[index]),
+              title: Text(staged[index].name),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
                   tooltip: "Remove",
                   icon: Icon(Icons.remove),
                   onPressed: () {
                     GitIsolate.instance
-                        .removeFromIndex(repositoryDir, staged[index])
+                        .removeFromIndex(repositoryDir, staged[index].name)
                         .then((result) => _refresh())
                         .catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -244,7 +250,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
         itemCount: unstaged.length,
         itemBuilder: (context, index) {
           return ListTile(
-              title: Text(unstaged[index]),
+              title: Text(unstaged[index].name),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
                   tooltip: "Revert",
@@ -255,7 +261,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                         .then((response) {
                       if (response ?? false) {
                         GitIsolate.instance
-                            .revertFile(repositoryDir, unstaged[index])
+                            .revertFile(repositoryDir, unstaged[index].name)
                             .then((result) => _refresh())
                             .catchError((error) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -269,13 +275,23 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                   tooltip: "Add",
                   icon: Icon(Icons.add),
                   onPressed: () {
-                    GitIsolate.instance
-                        .addToIndex(repositoryDir, unstaged[index])
-                        .then((result) => _refresh())
-                        .catchError((error) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: ' + error.toString())));
-                    });
+                    if (!unstaged[index].flags.workTreeDeleted) {
+                      GitIsolate.instance
+                          .addToIndex(repositoryDir, unstaged[index].name)
+                          .then((result) => _refresh())
+                          .catchError((error) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Error: ' + error.toString())));
+                      });
+                    } else {
+                      GitIsolate.instance
+                          .removeFromIndex(repositoryDir, unstaged[index].name)
+                          .then((result) => _refresh())
+                          .catchError((error) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Error: ' + error.toString())));
+                      });
+                    }
                   },
                 ),
               ]));
