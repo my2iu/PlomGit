@@ -229,7 +229,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
                   icon: Icon(Icons.remove),
                   onPressed: () {
                     GitIsolate.instance
-                        .removeFromIndex(repositoryDir, staged[index].name)
+                        .unstage(repositoryDir, staged[index].name)
                         .then((result) => _refresh())
                         .catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

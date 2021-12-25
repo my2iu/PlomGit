@@ -104,6 +104,10 @@ class GitIsolate {
     return _sendRequest(RequestType.removeIndex, [dir, file]);
   }
 
+  Future<dynamic> unstage(String dir, String file) {
+    return _sendRequest(RequestType.unstage, [dir, file]);
+  }
+
   Future<dynamic> commit(
       String dir, String message, String name, String email) {
     return _sendRequest(RequestType.commit, [dir, message, name, email]);
@@ -187,6 +191,10 @@ class GitIsolate {
             Libgit2.removeFromIndex(event[1], event[2]);
             _isolateResponse(channel, "");
             break;
+          case RequestType.unstage:
+            Libgit2.unstageFile(event[1], event[2]);
+            _isolateResponse(channel, "");
+            break;
           case RequestType.commit:
             Libgit2.commit(event[1], event[2], event[3], event[4]);
             _isolateResponse(channel, "");
@@ -244,5 +252,6 @@ enum RequestType {
   repositoryState,
   aheadBehind,
   createRemote,
-  deleteRemote
+  deleteRemote,
+  unstage
 }

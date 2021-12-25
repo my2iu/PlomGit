@@ -321,6 +321,46 @@ class Libgit2 {
     }
   }
 
+  static void unstageFile(String dir, String file) {
+    var filePtr = file.toNativeUtf8();
+    Pointer<git_strarray> pathStrings = calloc<git_strarray>();
+    pathStrings.ref.count = 1;
+    pathStrings.ref.strings = calloc.call<Pointer<Int8>>(1);
+    pathStrings.ref.strings[0] = filePtr.cast<Int8>();
+    Pointer<Pointer<git_reference>> headRef = calloc<Pointer<git_reference>>();
+    headRef.value = nullptr;
+    Pointer<Pointer<git_object>> headCommitRef = calloc<Pointer<git_object>>();
+    headCommitRef.value = nullptr;
+    try {
+      _withRepositoryAndIndex(dir, (repo, index) {
+
+        var hasNoHead = _git.repository_head_unborn(repo);
+        _checkErrors(hasNoHead);
+        if (hasNoHead == 1) {
+          // If there is no head, we just clear out the index entry (so
+          // no file)
+          _checkErrors(_git.reset_default(repo, nullptr, pathStrings));
+        } else {
+          // If there is a head, we replace the file in the index to 
+          // match what is in head 
+          _checkErrors(_git.repository_head(headRef, repo));
+          _checkErrors(_git.reference_peel(headCommitRef, headRef.value, git_object_t.GIT_OBJECT_COMMIT));
+          _checkErrors(_git.reset_default(repo, headCommitRef.value, pathStrings));
+        }
+
+        _checkErrors(_git.index_write(index));
+      });
+    } finally {
+      calloc.free(filePtr);
+      calloc.free(pathStrings.ref.strings);
+      calloc.free(pathStrings);
+      if (headRef.value != nullptr) _git.reference_free(headRef.value);
+      calloc.free(headRef);
+      if (headCommitRef.value != nullptr) _git.object_free(headCommitRef.value);
+      calloc.free(headCommitRef);
+    }
+  }
+
   // Since Dart is single-threaded, we can only have one libgit2 call
   // in-flight at once, so it's safe to store data needed for callbacks
   // in static variables

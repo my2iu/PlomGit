@@ -39,10 +39,10 @@ class NativeLibrary {
     return _libgit2_features();
   }
 
-  late final _libgit2_features_ptr =
-      _lookup<ffi.NativeFunction<_c_libgit2_features>>('git_libgit2_features');
-  late final _dart_libgit2_features _libgit2_features =
-      _libgit2_features_ptr.asFunction<_dart_libgit2_features>();
+  late final _libgit2_featuresPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function()>>('git_libgit2_features');
+  late final _libgit2_features =
+      _libgit2_featuresPtr.asFunction<int Function()>();
 
   /// Free the memory referred to by the git_buf.
   ///
@@ -60,10 +60,11 @@ class NativeLibrary {
     );
   }
 
-  late final _buf_dispose_ptr =
-      _lookup<ffi.NativeFunction<_c_buf_dispose>>('git_buf_dispose');
-  late final _dart_buf_dispose _buf_dispose =
-      _buf_dispose_ptr.asFunction<_dart_buf_dispose>();
+  late final _buf_disposePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_buf>)>>(
+          'git_buf_dispose');
+  late final _buf_dispose =
+      _buf_disposePtr.asFunction<void Function(ffi.Pointer<git_buf>)>();
 
   /// Copy an oid from one structure to another.
   ///
@@ -80,9 +81,12 @@ class NativeLibrary {
     );
   }
 
-  late final _oid_cpy_ptr =
-      _lookup<ffi.NativeFunction<_c_oid_cpy>>('git_oid_cpy');
-  late final _dart_oid_cpy _oid_cpy = _oid_cpy_ptr.asFunction<_dart_oid_cpy>();
+  late final _oid_cpyPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_oid>, ffi.Pointer<git_oid>)>>('git_oid_cpy');
+  late final _oid_cpy = _oid_cpyPtr
+      .asFunction<int Function(ffi.Pointer<git_oid>, ffi.Pointer<git_oid>)>();
 
   /// Open a git repository.
   ///
@@ -105,10 +109,13 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_open_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_open>>('git_repository_open');
-  late final _dart_repository_open _repository_open =
-      _repository_open_ptr.asFunction<_dart_repository_open>();
+  late final _repository_openPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_repository>>,
+              ffi.Pointer<ffi.Int8>)>>('git_repository_open');
+  late final _repository_open = _repository_openPtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Pointer<git_repository>>, ffi.Pointer<ffi.Int8>)>();
 
   /// Free a previously allocated repository
   ///
@@ -127,10 +134,11 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_free_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_free>>('git_repository_free');
-  late final _dart_repository_free _repository_free =
-      _repository_free_ptr.asFunction<_dart_repository_free>();
+  late final _repository_freePtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_repository>)>>(
+      'git_repository_free');
+  late final _repository_free = _repository_freePtr
+      .asFunction<void Function(ffi.Pointer<git_repository>)>();
 
   /// Creates a new Git repository in the given folder.
   ///
@@ -157,10 +165,13 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_init_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_init>>('git_repository_init');
-  late final _dart_repository_init _repository_init =
-      _repository_init_ptr.asFunction<_dart_repository_init>();
+  late final _repository_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_repository>>,
+              ffi.Pointer<ffi.Int8>, ffi.Uint32)>>('git_repository_init');
+  late final _repository_init = _repository_initPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_repository>>,
+          ffi.Pointer<ffi.Int8>, int)>();
 
   /// Initialize git_repository_init_options structure
   ///
@@ -180,12 +191,13 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_init_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_init_options_init>>(
-          'git_repository_init_options_init');
-  late final _dart_repository_init_options_init _repository_init_options_init =
-      _repository_init_options_init_ptr
-          .asFunction<_dart_repository_init_options_init>();
+  late final _repository_init_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_repository_init_options>,
+              ffi.Uint32)>>('git_repository_init_options_init');
+  late final _repository_init_options_init =
+      _repository_init_options_initPtr.asFunction<
+          int Function(ffi.Pointer<git_repository_init_options>, int)>();
 
   /// Create a new Git repository in the given folder with extended controls.
   ///
@@ -210,11 +222,16 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_init_ext_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_init_ext>>(
-          'git_repository_init_ext');
-  late final _dart_repository_init_ext _repository_init_ext =
-      _repository_init_ext_ptr.asFunction<_dart_repository_init_ext>();
+  late final _repository_init_extPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Int32 Function(
+                  ffi.Pointer<ffi.Pointer<git_repository>>,
+                  ffi.Pointer<ffi.Int8>,
+                  ffi.Pointer<git_repository_init_options>)>>(
+      'git_repository_init_ext');
+  late final _repository_init_ext = _repository_init_extPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_repository>>,
+          ffi.Pointer<ffi.Int8>, ffi.Pointer<git_repository_init_options>)>();
 
   /// Retrieve and resolve the reference pointed at by HEAD.
   ///
@@ -237,10 +254,13 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_head_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_head>>('git_repository_head');
-  late final _dart_repository_head _repository_head =
-      _repository_head_ptr.asFunction<_dart_repository_head>();
+  late final _repository_headPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+              ffi.Pointer<git_repository>)>>('git_repository_head');
+  late final _repository_head = _repository_headPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+          ffi.Pointer<git_repository>)>();
 
   /// Check if the current branch is unborn
   ///
@@ -258,11 +278,11 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_head_unborn_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_head_unborn>>(
-          'git_repository_head_unborn');
-  late final _dart_repository_head_unborn _repository_head_unborn =
-      _repository_head_unborn_ptr.asFunction<_dart_repository_head_unborn>();
+  late final _repository_head_unbornPtr = _lookup<
+          ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<git_repository>)>>(
+      'git_repository_head_unborn');
+  late final _repository_head_unborn = _repository_head_unbornPtr
+      .asFunction<int Function(ffi.Pointer<git_repository>)>();
 
   /// Get the Index file for this repository.
   ///
@@ -286,10 +306,13 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_index_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_index>>('git_repository_index');
-  late final _dart_repository_index _repository_index =
-      _repository_index_ptr.asFunction<_dart_repository_index>();
+  late final _repository_indexPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_index>>,
+              ffi.Pointer<git_repository>)>>('git_repository_index');
+  late final _repository_index = _repository_indexPtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Pointer<git_index>>, ffi.Pointer<git_repository>)>();
 
   /// Remove all the metadata associated with an ongoing command like merge,
   /// revert, cherry-pick, etc.  For example: MERGE_HEAD, MERGE_MSG, etc.
@@ -304,12 +327,11 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_state_cleanup_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_state_cleanup>>(
-          'git_repository_state_cleanup');
-  late final _dart_repository_state_cleanup _repository_state_cleanup =
-      _repository_state_cleanup_ptr
-          .asFunction<_dart_repository_state_cleanup>();
+  late final _repository_state_cleanupPtr = _lookup<
+          ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<git_repository>)>>(
+      'git_repository_state_cleanup');
+  late final _repository_state_cleanup = _repository_state_cleanupPtr
+      .asFunction<int Function(ffi.Pointer<git_repository>)>();
 
   /// If a merge is in progress, invoke 'callback' for each commit ID in the
   /// MERGE_HEAD file.
@@ -323,8 +345,7 @@ class NativeLibrary {
   /// there is no MERGE_HEAD file, or other error code.
   int repository_mergehead_foreach(
     ffi.Pointer<git_repository> repo,
-    ffi.Pointer<ffi.NativeFunction<git_repository_mergehead_foreach_cb>>
-        callback,
+    git_repository_mergehead_foreach_cb callback,
     ffi.Pointer<ffi.Void> payload,
   ) {
     return _repository_mergehead_foreach(
@@ -334,12 +355,16 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_mergehead_foreach_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_mergehead_foreach>>(
-          'git_repository_mergehead_foreach');
-  late final _dart_repository_mergehead_foreach _repository_mergehead_foreach =
-      _repository_mergehead_foreach_ptr
-          .asFunction<_dart_repository_mergehead_foreach>();
+  late final _repository_mergehead_foreachPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_repository>,
+              git_repository_mergehead_foreach_cb,
+              ffi.Pointer<ffi.Void>)>>('git_repository_mergehead_foreach');
+  late final _repository_mergehead_foreach =
+      _repository_mergehead_foreachPtr.asFunction<
+          int Function(ffi.Pointer<git_repository>,
+              git_repository_mergehead_foreach_cb, ffi.Pointer<ffi.Void>)>();
 
   /// Make the repository HEAD point to the specified reference.
   ///
@@ -367,11 +392,12 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_set_head_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_set_head>>(
-          'git_repository_set_head');
-  late final _dart_repository_set_head _repository_set_head =
-      _repository_set_head_ptr.asFunction<_dart_repository_set_head>();
+  late final _repository_set_headPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>)>>('git_repository_set_head');
+  late final _repository_set_head = _repository_set_headPtr.asFunction<
+      int Function(ffi.Pointer<git_repository>, ffi.Pointer<ffi.Int8>)>();
 
   /// Determines the status of a git repository - ie, whether an operation
   /// (merge, cherry-pick, etc) is in progress.
@@ -386,10 +412,11 @@ class NativeLibrary {
     );
   }
 
-  late final _repository_state_ptr =
-      _lookup<ffi.NativeFunction<_c_repository_state>>('git_repository_state');
-  late final _dart_repository_state _repository_state =
-      _repository_state_ptr.asFunction<_dart_repository_state>();
+  late final _repository_statePtr = _lookup<
+          ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<git_repository>)>>(
+      'git_repository_state');
+  late final _repository_state = _repository_statePtr
+      .asFunction<int Function(ffi.Pointer<git_repository>)>();
 
   /// Creates a `git_annotated_commit` from the given reference.
   /// The resulting git_annotated_commit must be freed with
@@ -411,12 +438,16 @@ class NativeLibrary {
     );
   }
 
-  late final _annotated_commit_from_ref_ptr =
-      _lookup<ffi.NativeFunction<_c_annotated_commit_from_ref>>(
-          'git_annotated_commit_from_ref');
-  late final _dart_annotated_commit_from_ref _annotated_commit_from_ref =
-      _annotated_commit_from_ref_ptr
-          .asFunction<_dart_annotated_commit_from_ref>();
+  late final _annotated_commit_from_refPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_annotated_commit>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_reference>)>>('git_annotated_commit_from_ref');
+  late final _annotated_commit_from_ref =
+      _annotated_commit_from_refPtr.asFunction<
+          int Function(ffi.Pointer<ffi.Pointer<git_annotated_commit>>,
+              ffi.Pointer<git_repository>, ffi.Pointer<git_reference>)>();
 
   /// Gets the commit ID that the given `git_annotated_commit` refers to.
   ///
@@ -430,11 +461,12 @@ class NativeLibrary {
     );
   }
 
-  late final _annotated_commit_id_ptr =
-      _lookup<ffi.NativeFunction<_c_annotated_commit_id>>(
-          'git_annotated_commit_id');
-  late final _dart_annotated_commit_id _annotated_commit_id =
-      _annotated_commit_id_ptr.asFunction<_dart_annotated_commit_id>();
+  late final _annotated_commit_idPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<git_oid> Function(
+              ffi.Pointer<git_annotated_commit>)>>('git_annotated_commit_id');
+  late final _annotated_commit_id = _annotated_commit_idPtr.asFunction<
+      ffi.Pointer<git_oid> Function(ffi.Pointer<git_annotated_commit>)>();
 
   /// Frees a `git_annotated_commit`.
   ///
@@ -447,11 +479,39 @@ class NativeLibrary {
     );
   }
 
-  late final _annotated_commit_free_ptr =
-      _lookup<ffi.NativeFunction<_c_annotated_commit_free>>(
-          'git_annotated_commit_free');
-  late final _dart_annotated_commit_free _annotated_commit_free =
-      _annotated_commit_free_ptr.asFunction<_dart_annotated_commit_free>();
+  late final _annotated_commit_freePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Pointer<git_annotated_commit>)>>('git_annotated_commit_free');
+  late final _annotated_commit_free = _annotated_commit_freePtr
+      .asFunction<void Function(ffi.Pointer<git_annotated_commit>)>();
+
+  /// Close an open object
+  ///
+  /// This method instructs the library to close an existing
+  /// object; note that git_objects are owned and cached by the repository
+  /// so the object may or may not be freed after this library call,
+  /// depending on how aggressive is the caching mechanism used
+  /// by the repository.
+  ///
+  /// IMPORTANT:
+  /// It *is* necessary to call this method when you stop using
+  /// an object. Failure to do so will cause a memory leak.
+  ///
+  /// @param object the object to close
+  void object_free(
+    ffi.Pointer<git_object> object,
+  ) {
+    return _object_free(
+      object,
+    );
+  }
+
+  late final _object_freePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_object>)>>(
+          'git_object_free');
+  late final _object_free =
+      _object_freePtr.asFunction<void Function(ffi.Pointer<git_object>)>();
 
   /// Lookup a tree object from the repository.
   ///
@@ -471,10 +531,15 @@ class NativeLibrary {
     );
   }
 
-  late final _tree_lookup_ptr =
-      _lookup<ffi.NativeFunction<_c_tree_lookup>>('git_tree_lookup');
-  late final _dart_tree_lookup _tree_lookup =
-      _tree_lookup_ptr.asFunction<_dart_tree_lookup>();
+  late final _tree_lookupPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_tree>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_oid>)>>('git_tree_lookup');
+  late final _tree_lookup = _tree_lookupPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_tree>>,
+          ffi.Pointer<git_repository>, ffi.Pointer<git_oid>)>();
 
   /// Close an open tree
   ///
@@ -492,10 +557,11 @@ class NativeLibrary {
     );
   }
 
-  late final _tree_free_ptr =
-      _lookup<ffi.NativeFunction<_c_tree_free>>('git_tree_free');
-  late final _dart_tree_free _tree_free =
-      _tree_free_ptr.asFunction<_dart_tree_free>();
+  late final _tree_freePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_tree>)>>(
+          'git_tree_free');
+  late final _tree_free =
+      _tree_freePtr.asFunction<void Function(ffi.Pointer<git_tree>)>();
 
   /// Free the strings contained in a string array.  This method should
   /// be called on `git_strarray` objects that were provided by the
@@ -513,10 +579,11 @@ class NativeLibrary {
     );
   }
 
-  late final _strarray_dispose_ptr =
-      _lookup<ffi.NativeFunction<_c_strarray_dispose>>('git_strarray_dispose');
-  late final _dart_strarray_dispose _strarray_dispose =
-      _strarray_dispose_ptr.asFunction<_dart_strarray_dispose>();
+  late final _strarray_disposePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_strarray>)>>(
+          'git_strarray_dispose');
+  late final _strarray_dispose = _strarray_disposePtr
+      .asFunction<void Function(ffi.Pointer<git_strarray>)>();
 
   /// Lookup a reference by name and resolve immediately to OID.
   ///
@@ -543,11 +610,13 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_name_to_id_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_name_to_id>>(
-          'git_reference_name_to_id');
-  late final _dart_reference_name_to_id _reference_name_to_id =
-      _reference_name_to_id_ptr.asFunction<_dart_reference_name_to_id>();
+  late final _reference_name_to_idPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_oid>, ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>)>>('git_reference_name_to_id');
+  late final _reference_name_to_id = _reference_name_to_idPtr.asFunction<
+      int Function(ffi.Pointer<git_oid>, ffi.Pointer<git_repository>,
+          ffi.Pointer<ffi.Int8>)>();
 
   /// Lookup a reference by DWIMing its short name
   ///
@@ -570,10 +639,15 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_dwim_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_dwim>>('git_reference_dwim');
-  late final _dart_reference_dwim _reference_dwim =
-      _reference_dwim_ptr.asFunction<_dart_reference_dwim>();
+  late final _reference_dwimPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_reference>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>)>>('git_reference_dwim');
+  late final _reference_dwim = _reference_dwimPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+          ffi.Pointer<git_repository>, ffi.Pointer<ffi.Int8>)>();
 
   /// Get the OID pointed to by a direct reference.
   ///
@@ -594,10 +668,12 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_target_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_target>>('git_reference_target');
-  late final _dart_reference_target _reference_target =
-      _reference_target_ptr.asFunction<_dart_reference_target>();
+  late final _reference_targetPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<git_oid> Function(
+              ffi.Pointer<git_reference>)>>('git_reference_target');
+  late final _reference_target = _reference_targetPtr
+      .asFunction<ffi.Pointer<git_oid> Function(ffi.Pointer<git_reference>)>();
 
   /// Get the full name of a reference.
   ///
@@ -613,10 +689,12 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_name_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_name>>('git_reference_name');
-  late final _dart_reference_name _reference_name =
-      _reference_name_ptr.asFunction<_dart_reference_name>();
+  late final _reference_namePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Int8> Function(
+              ffi.Pointer<git_reference>)>>('git_reference_name');
+  late final _reference_name = _reference_namePtr
+      .asFunction<ffi.Pointer<ffi.Int8> Function(ffi.Pointer<git_reference>)>();
 
   /// Resolve a symbolic reference to a direct reference.
   ///
@@ -642,11 +720,13 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_resolve_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_resolve>>(
-          'git_reference_resolve');
-  late final _dart_reference_resolve _reference_resolve =
-      _reference_resolve_ptr.asFunction<_dart_reference_resolve>();
+  late final _reference_resolvePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+              ffi.Pointer<git_reference>)>>('git_reference_resolve');
+  late final _reference_resolve = _reference_resolvePtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+          ffi.Pointer<git_reference>)>();
 
   /// Conditionally create a new reference with the same name as the given reference but a
   /// different OID target. The reference must be a direct reference, otherwise
@@ -674,11 +754,19 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_set_target_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_set_target>>(
-          'git_reference_set_target');
-  late final _dart_reference_set_target _reference_set_target =
-      _reference_set_target_ptr.asFunction<_dart_reference_set_target>();
+  late final _reference_set_targetPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_reference>>,
+              ffi.Pointer<git_reference>,
+              ffi.Pointer<git_oid>,
+              ffi.Pointer<ffi.Int8>)>>('git_reference_set_target');
+  late final _reference_set_target = _reference_set_targetPtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Pointer<git_reference>>,
+          ffi.Pointer<git_reference>,
+          ffi.Pointer<git_oid>,
+          ffi.Pointer<ffi.Int8>)>();
 
   /// Free the given reference.
   ///
@@ -691,10 +779,44 @@ class NativeLibrary {
     );
   }
 
-  late final _reference_free_ptr =
-      _lookup<ffi.NativeFunction<_c_reference_free>>('git_reference_free');
-  late final _dart_reference_free _reference_free =
-      _reference_free_ptr.asFunction<_dart_reference_free>();
+  late final _reference_freePtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_reference>)>>(
+      'git_reference_free');
+  late final _reference_free = _reference_freePtr
+      .asFunction<void Function(ffi.Pointer<git_reference>)>();
+
+  /// Recursively peel reference until object of the specified type is found.
+  ///
+  /// The retrieved `peeled` object is owned by the repository
+  /// and should be closed with the `git_object_free` method.
+  ///
+  /// If you pass `GIT_OBJECT_ANY` as the target type, then the object
+  /// will be peeled until a non-tag object is met.
+  ///
+  /// @param out Pointer to the peeled git_object
+  /// @param ref The reference to be processed
+  /// @param type The type of the requested object (GIT_OBJECT_COMMIT,
+  /// GIT_OBJECT_TAG, GIT_OBJECT_TREE, GIT_OBJECT_BLOB or GIT_OBJECT_ANY).
+  /// @return 0 on success, GIT_EAMBIGUOUS, GIT_ENOTFOUND or an error code
+  int reference_peel(
+    ffi.Pointer<ffi.Pointer<git_object>> out,
+    ffi.Pointer<git_reference> ref,
+    int type,
+  ) {
+    return _reference_peel(
+      out,
+      ref,
+      type,
+    );
+  }
+
+  late final _reference_peelPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_object>>,
+              ffi.Pointer<git_reference>, ffi.Int32)>>('git_reference_peel');
+  late final _reference_peel = _reference_peelPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_object>>,
+          ffi.Pointer<git_reference>, int)>();
 
   /// Get the branch name
   ///
@@ -719,10 +841,13 @@ class NativeLibrary {
     );
   }
 
-  late final _branch_name_ptr =
-      _lookup<ffi.NativeFunction<_c_branch_name>>('git_branch_name');
-  late final _dart_branch_name _branch_name =
-      _branch_name_ptr.asFunction<_dart_branch_name>();
+  late final _branch_namePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<ffi.Int8>>,
+              ffi.Pointer<git_reference>)>>('git_branch_name');
+  late final _branch_name = _branch_namePtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Pointer<ffi.Int8>>, ffi.Pointer<git_reference>)>();
 
   /// Get the upstream of a branch
   ///
@@ -746,10 +871,13 @@ class NativeLibrary {
     );
   }
 
-  late final _branch_upstream_ptr =
-      _lookup<ffi.NativeFunction<_c_branch_upstream>>('git_branch_upstream');
-  late final _dart_branch_upstream _branch_upstream =
-      _branch_upstream_ptr.asFunction<_dart_branch_upstream>();
+  late final _branch_upstreamPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+              ffi.Pointer<git_reference>)>>('git_branch_upstream');
+  late final _branch_upstream = _branch_upstreamPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_reference>>,
+          ffi.Pointer<git_reference>)>();
 
   /// Initialize git_checkout_options structure
   ///
@@ -769,11 +897,12 @@ class NativeLibrary {
     );
   }
 
-  late final _checkout_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_checkout_options_init>>(
-          'git_checkout_options_init');
-  late final _dart_checkout_options_init _checkout_options_init =
-      _checkout_options_init_ptr.asFunction<_dart_checkout_options_init>();
+  late final _checkout_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_checkout_options>,
+              ffi.Uint32)>>('git_checkout_options_init');
+  late final _checkout_options_init = _checkout_options_initPtr
+      .asFunction<int Function(ffi.Pointer<git_checkout_options>, int)>();
 
   /// Updates files in the index and the working tree to match the content of
   /// the commit pointed at by HEAD.
@@ -800,10 +929,13 @@ class NativeLibrary {
     );
   }
 
-  late final _checkout_head_ptr =
-      _lookup<ffi.NativeFunction<_c_checkout_head>>('git_checkout_head');
-  late final _dart_checkout_head _checkout_head =
-      _checkout_head_ptr.asFunction<_dart_checkout_head>();
+  late final _checkout_headPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_repository>,
+              ffi.Pointer<git_checkout_options>)>>('git_checkout_head');
+  late final _checkout_head = _checkout_headPtr.asFunction<
+      int Function(
+          ffi.Pointer<git_repository>, ffi.Pointer<git_checkout_options>)>();
 
   /// Updates files in the index and working tree to match the content of the
   /// tree pointed at by the treeish.
@@ -826,10 +958,15 @@ class NativeLibrary {
     );
   }
 
-  late final _checkout_tree_ptr =
-      _lookup<ffi.NativeFunction<_c_checkout_tree>>('git_checkout_tree');
-  late final _dart_checkout_tree _checkout_tree =
-      _checkout_tree_ptr.asFunction<_dart_checkout_tree>();
+  late final _checkout_treePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_object>,
+              ffi.Pointer<git_checkout_options>)>>('git_checkout_tree');
+  late final _checkout_tree = _checkout_treePtr.asFunction<
+      int Function(ffi.Pointer<git_repository>, ffi.Pointer<git_object>,
+          ffi.Pointer<git_checkout_options>)>();
 
   /// Free an existing index object.
   ///
@@ -842,10 +979,11 @@ class NativeLibrary {
     );
   }
 
-  late final _index_free_ptr =
-      _lookup<ffi.NativeFunction<_c_index_free>>('git_index_free');
-  late final _dart_index_free _index_free =
-      _index_free_ptr.asFunction<_dart_index_free>();
+  late final _index_freePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_index>)>>(
+          'git_index_free');
+  late final _index_free =
+      _index_freePtr.asFunction<void Function(ffi.Pointer<git_index>)>();
 
   /// Write an existing index object from memory back to disk
   /// using an atomic file lock.
@@ -860,10 +998,11 @@ class NativeLibrary {
     );
   }
 
-  late final _index_write_ptr =
-      _lookup<ffi.NativeFunction<_c_index_write>>('git_index_write');
-  late final _dart_index_write _index_write =
-      _index_write_ptr.asFunction<_dart_index_write>();
+  late final _index_writePtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<git_index>)>>(
+          'git_index_write');
+  late final _index_write =
+      _index_writePtr.asFunction<int Function(ffi.Pointer<git_index>)>();
 
   /// Write the index as a tree
   ///
@@ -892,10 +1031,12 @@ class NativeLibrary {
     );
   }
 
-  late final _index_write_tree_ptr =
-      _lookup<ffi.NativeFunction<_c_index_write_tree>>('git_index_write_tree');
-  late final _dart_index_write_tree _index_write_tree =
-      _index_write_tree_ptr.asFunction<_dart_index_write_tree>();
+  late final _index_write_treePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_oid>,
+              ffi.Pointer<git_index>)>>('git_index_write_tree');
+  late final _index_write_tree = _index_write_treePtr
+      .asFunction<int Function(ffi.Pointer<git_oid>, ffi.Pointer<git_index>)>();
 
   /// Add or update an index entry from a file on disk
   ///
@@ -925,10 +1066,12 @@ class NativeLibrary {
     );
   }
 
-  late final _index_add_bypath_ptr =
-      _lookup<ffi.NativeFunction<_c_index_add_bypath>>('git_index_add_bypath');
-  late final _dart_index_add_bypath _index_add_bypath =
-      _index_add_bypath_ptr.asFunction<_dart_index_add_bypath>();
+  late final _index_add_bypathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_index>,
+              ffi.Pointer<ffi.Int8>)>>('git_index_add_bypath');
+  late final _index_add_bypath = _index_add_bypathPtr.asFunction<
+      int Function(ffi.Pointer<git_index>, ffi.Pointer<ffi.Int8>)>();
 
   /// Remove an index entry corresponding to a file on disk
   ///
@@ -952,11 +1095,12 @@ class NativeLibrary {
     );
   }
 
-  late final _index_remove_bypath_ptr =
-      _lookup<ffi.NativeFunction<_c_index_remove_bypath>>(
-          'git_index_remove_bypath');
-  late final _dart_index_remove_bypath _index_remove_bypath =
-      _index_remove_bypath_ptr.asFunction<_dart_index_remove_bypath>();
+  late final _index_remove_bypathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_index>,
+              ffi.Pointer<ffi.Int8>)>>('git_index_remove_bypath');
+  late final _index_remove_bypath = _index_remove_bypathPtr.asFunction<
+      int Function(ffi.Pointer<git_index>, ffi.Pointer<ffi.Int8>)>();
 
   /// Initialize git_merge_options structure
   ///
@@ -976,11 +1120,12 @@ class NativeLibrary {
     );
   }
 
-  late final _merge_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_merge_options_init>>(
-          'git_merge_options_init');
-  late final _dart_merge_options_init _merge_options_init =
-      _merge_options_init_ptr.asFunction<_dart_merge_options_init>();
+  late final _merge_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_merge_options>,
+              ffi.Uint32)>>('git_merge_options_init');
+  late final _merge_options_init = _merge_options_initPtr
+      .asFunction<int Function(ffi.Pointer<git_merge_options>, int)>();
 
   /// Analyzes the given branch(es) and determines the opportunities for
   /// merging them into the HEAD of the repository.
@@ -1006,10 +1151,21 @@ class NativeLibrary {
     );
   }
 
-  late final _merge_analysis_ptr =
-      _lookup<ffi.NativeFunction<_c_merge_analysis>>('git_merge_analysis');
-  late final _dart_merge_analysis _merge_analysis =
-      _merge_analysis_ptr.asFunction<_dart_merge_analysis>();
+  late final _merge_analysisPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Int32>,
+              ffi.Pointer<ffi.Int32>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Pointer<git_annotated_commit>>,
+              ffi.IntPtr)>>('git_merge_analysis');
+  late final _merge_analysis = _merge_analysisPtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Int32>,
+          ffi.Pointer<ffi.Int32>,
+          ffi.Pointer<git_repository>,
+          ffi.Pointer<ffi.Pointer<git_annotated_commit>>,
+          int)>();
 
   /// Merges the given commit(s) into HEAD, writing the results into the working
   /// directory.  Any changes are staged for commit and any conflicts are written
@@ -1043,8 +1199,21 @@ class NativeLibrary {
     );
   }
 
-  late final _merge_ptr = _lookup<ffi.NativeFunction<_c_merge>>('git_merge');
-  late final _dart_merge _merge = _merge_ptr.asFunction<_dart_merge>();
+  late final _mergePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Pointer<git_annotated_commit>>,
+              ffi.IntPtr,
+              ffi.Pointer<git_merge_options>,
+              ffi.Pointer<git_checkout_options>)>>('git_merge');
+  late final _merge = _mergePtr.asFunction<
+      int Function(
+          ffi.Pointer<git_repository>,
+          ffi.Pointer<ffi.Pointer<git_annotated_commit>>,
+          int,
+          ffi.Pointer<git_merge_options>,
+          ffi.Pointer<git_checkout_options>)>();
 
   /// Create a new plain-text username and password credential object.
   /// The supplied credential parameter will be internally duplicated.
@@ -1065,13 +1234,16 @@ class NativeLibrary {
     );
   }
 
-  late final _credential_userpass_plaintext_new_ptr =
-      _lookup<ffi.NativeFunction<_c_credential_userpass_plaintext_new>>(
-          'git_credential_userpass_plaintext_new');
-  late final _dart_credential_userpass_plaintext_new
-      _credential_userpass_plaintext_new =
-      _credential_userpass_plaintext_new_ptr
-          .asFunction<_dart_credential_userpass_plaintext_new>();
+  late final _credential_userpass_plaintext_newPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_credential>>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<ffi.Int8>)>>('git_credential_userpass_plaintext_new');
+  late final _credential_userpass_plaintext_new =
+      _credential_userpass_plaintext_newPtr.asFunction<
+          int Function(ffi.Pointer<ffi.Pointer<git_credential>>,
+              ffi.Pointer<ffi.Int8>, ffi.Pointer<ffi.Int8>)>();
 
   /// Add a remote with the default fetch refspec to the repository's configuration.
   ///
@@ -1094,10 +1266,19 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_create_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_create>>('git_remote_create');
-  late final _dart_remote_create _remote_create =
-      _remote_create_ptr.asFunction<_dart_remote_create>();
+  late final _remote_createPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_remote>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<ffi.Int8>)>>('git_remote_create');
+  late final _remote_create = _remote_createPtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Pointer<git_remote>>,
+          ffi.Pointer<git_repository>,
+          ffi.Pointer<ffi.Int8>,
+          ffi.Pointer<ffi.Int8>)>();
 
   /// Get the information for a particular remote
   ///
@@ -1120,10 +1301,15 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_lookup_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_lookup>>('git_remote_lookup');
-  late final _dart_remote_lookup _remote_lookup =
-      _remote_lookup_ptr.asFunction<_dart_remote_lookup>();
+  late final _remote_lookupPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_remote>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>)>>('git_remote_lookup');
+  late final _remote_lookup = _remote_lookupPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_remote>>,
+          ffi.Pointer<git_repository>, ffi.Pointer<ffi.Int8>)>();
 
   /// Free the memory associated with a remote
   ///
@@ -1139,10 +1325,11 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_free_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_free>>('git_remote_free');
-  late final _dart_remote_free _remote_free =
-      _remote_free_ptr.asFunction<_dart_remote_free>();
+  late final _remote_freePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_remote>)>>(
+          'git_remote_free');
+  late final _remote_free =
+      _remote_freePtr.asFunction<void Function(ffi.Pointer<git_remote>)>();
 
   /// Get a list of the configured remotes for a repo
   ///
@@ -1161,10 +1348,12 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_list_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_list>>('git_remote_list');
-  late final _dart_remote_list _remote_list =
-      _remote_list_ptr.asFunction<_dart_remote_list>();
+  late final _remote_listPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_strarray>,
+              ffi.Pointer<git_repository>)>>('git_remote_list');
+  late final _remote_list = _remote_listPtr.asFunction<
+      int Function(ffi.Pointer<git_strarray>, ffi.Pointer<git_repository>)>();
 
   /// Initialize git_fetch_options structure
   ///
@@ -1184,11 +1373,12 @@ class NativeLibrary {
     );
   }
 
-  late final _fetch_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_fetch_options_init>>(
-          'git_fetch_options_init');
-  late final _dart_fetch_options_init _fetch_options_init =
-      _fetch_options_init_ptr.asFunction<_dart_fetch_options_init>();
+  late final _fetch_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_fetch_options>,
+              ffi.Uint32)>>('git_fetch_options_init');
+  late final _fetch_options_init = _fetch_options_initPtr
+      .asFunction<int Function(ffi.Pointer<git_fetch_options>, int)>();
 
   /// Initialize git_push_options structure
   ///
@@ -1208,11 +1398,12 @@ class NativeLibrary {
     );
   }
 
-  late final _push_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_push_options_init>>(
-          'git_push_options_init');
-  late final _dart_push_options_init _push_options_init =
-      _push_options_init_ptr.asFunction<_dart_push_options_init>();
+  late final _push_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_push_options>,
+              ffi.Uint32)>>('git_push_options_init');
+  late final _push_options_init = _push_options_initPtr
+      .asFunction<int Function(ffi.Pointer<git_push_options>, int)>();
 
   /// Download new data and update tips
   ///
@@ -1240,10 +1431,16 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_fetch_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_fetch>>('git_remote_fetch');
-  late final _dart_remote_fetch _remote_fetch =
-      _remote_fetch_ptr.asFunction<_dart_remote_fetch>();
+  late final _remote_fetchPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_remote>,
+              ffi.Pointer<git_strarray>,
+              ffi.Pointer<git_fetch_options>,
+              ffi.Pointer<ffi.Int8>)>>('git_remote_fetch');
+  late final _remote_fetch = _remote_fetchPtr.asFunction<
+      int Function(ffi.Pointer<git_remote>, ffi.Pointer<git_strarray>,
+          ffi.Pointer<git_fetch_options>, ffi.Pointer<ffi.Int8>)>();
 
   /// Perform a push
   ///
@@ -1265,10 +1462,13 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_push_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_push>>('git_remote_push');
-  late final _dart_remote_push _remote_push =
-      _remote_push_ptr.asFunction<_dart_remote_push>();
+  late final _remote_pushPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_remote>, ffi.Pointer<git_strarray>,
+              ffi.Pointer<git_push_options>)>>('git_remote_push');
+  late final _remote_push = _remote_pushPtr.asFunction<
+      int Function(ffi.Pointer<git_remote>, ffi.Pointer<git_strarray>,
+          ffi.Pointer<git_push_options>)>();
 
   /// Delete an existing persisted remote.
   ///
@@ -1288,10 +1488,12 @@ class NativeLibrary {
     );
   }
 
-  late final _remote_delete_ptr =
-      _lookup<ffi.NativeFunction<_c_remote_delete>>('git_remote_delete');
-  late final _dart_remote_delete _remote_delete =
-      _remote_delete_ptr.asFunction<_dart_remote_delete>();
+  late final _remote_deletePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>)>>('git_remote_delete');
+  late final _remote_delete = _remote_deletePtr.asFunction<
+      int Function(ffi.Pointer<git_repository>, ffi.Pointer<ffi.Int8>)>();
 
   /// Initialize git_clone_options structure
   ///
@@ -1311,11 +1513,12 @@ class NativeLibrary {
     );
   }
 
-  late final _clone_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_clone_options_init>>(
-          'git_clone_options_init');
-  late final _dart_clone_options_init _clone_options_init =
-      _clone_options_init_ptr.asFunction<_dart_clone_options_init>();
+  late final _clone_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_clone_options>,
+              ffi.Uint32)>>('git_clone_options_init');
+  late final _clone_options_init = _clone_options_initPtr
+      .asFunction<int Function(ffi.Pointer<git_clone_options>, int)>();
 
   /// Clone a remote repository.
   ///
@@ -1345,8 +1548,19 @@ class NativeLibrary {
     );
   }
 
-  late final _clone_ptr = _lookup<ffi.NativeFunction<_c_clone>>('git_clone');
-  late final _dart_clone _clone = _clone_ptr.asFunction<_dart_clone>();
+  late final _clonePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_repository>>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<git_clone_options>)>>('git_clone');
+  late final _clone = _clonePtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.Pointer<git_repository>>,
+          ffi.Pointer<ffi.Int8>,
+          ffi.Pointer<ffi.Int8>,
+          ffi.Pointer<git_clone_options>)>();
 
   /// Lookup a commit object from a repository.
   ///
@@ -1370,10 +1584,15 @@ class NativeLibrary {
     );
   }
 
-  late final _commit_lookup_ptr =
-      _lookup<ffi.NativeFunction<_c_commit_lookup>>('git_commit_lookup');
-  late final _dart_commit_lookup _commit_lookup =
-      _commit_lookup_ptr.asFunction<_dart_commit_lookup>();
+  late final _commit_lookupPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_commit>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_oid>)>>('git_commit_lookup');
+  late final _commit_lookup = _commit_lookupPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_commit>>,
+          ffi.Pointer<git_repository>, ffi.Pointer<git_oid>)>();
 
   /// Close an open commit
   ///
@@ -1392,10 +1611,11 @@ class NativeLibrary {
     );
   }
 
-  late final _commit_free_ptr =
-      _lookup<ffi.NativeFunction<_c_commit_free>>('git_commit_free');
-  late final _dart_commit_free _commit_free =
-      _commit_free_ptr.asFunction<_dart_commit_free>();
+  late final _commit_freePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_commit>)>>(
+          'git_commit_free');
+  late final _commit_free =
+      _commit_freePtr.asFunction<void Function(ffi.Pointer<git_commit>)>();
 
   /// Create new commit in the repository from a list of `git_object` pointers
   ///
@@ -1465,10 +1685,31 @@ class NativeLibrary {
     );
   }
 
-  late final _commit_create_ptr =
-      _lookup<ffi.NativeFunction<_c_commit_create>>('git_commit_create');
-  late final _dart_commit_create _commit_create =
-      _commit_create_ptr.asFunction<_dart_commit_create>();
+  late final _commit_createPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_oid>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<git_signature>,
+              ffi.Pointer<git_signature>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<git_tree>,
+              ffi.IntPtr,
+              ffi.Pointer<ffi.Pointer<git_commit>>)>>('git_commit_create');
+  late final _commit_create = _commit_createPtr.asFunction<
+      int Function(
+          ffi.Pointer<git_oid>,
+          ffi.Pointer<git_repository>,
+          ffi.Pointer<ffi.Int8>,
+          ffi.Pointer<git_signature>,
+          ffi.Pointer<git_signature>,
+          ffi.Pointer<ffi.Int8>,
+          ffi.Pointer<ffi.Int8>,
+          ffi.Pointer<git_tree>,
+          int,
+          ffi.Pointer<ffi.Pointer<git_commit>>)>();
 
   /// Return the last `git_error` object that was generated for the
   /// current thread.
@@ -1483,10 +1724,11 @@ class NativeLibrary {
     return _error_last();
   }
 
-  late final _error_last_ptr =
-      _lookup<ffi.NativeFunction<_c_error_last>>('git_error_last');
-  late final _dart_error_last _error_last =
-      _error_last_ptr.asFunction<_dart_error_last>();
+  late final _error_lastPtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<git_error> Function()>>(
+          'git_error_last');
+  late final _error_last =
+      _error_lastPtr.asFunction<ffi.Pointer<git_error> Function()>();
 
   /// Set the error message string for this thread.
   ///
@@ -1513,10 +1755,12 @@ class NativeLibrary {
     );
   }
 
-  late final _error_set_str_ptr =
-      _lookup<ffi.NativeFunction<_c_error_set_str>>('git_error_set_str');
-  late final _dart_error_set_str _error_set_str =
-      _error_set_str_ptr.asFunction<_dart_error_set_str>();
+  late final _error_set_strPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Int32, ffi.Pointer<ffi.Int8>)>>('git_error_set_str');
+  late final _error_set_str =
+      _error_set_strPtr.asFunction<int Function(int, ffi.Pointer<ffi.Int8>)>();
 
   /// Initialize git_status_options structure
   ///
@@ -1536,11 +1780,12 @@ class NativeLibrary {
     );
   }
 
-  late final _status_options_init_ptr =
-      _lookup<ffi.NativeFunction<_c_status_options_init>>(
-          'git_status_options_init');
-  late final _dart_status_options_init _status_options_init =
-      _status_options_init_ptr.asFunction<_dart_status_options_init>();
+  late final _status_options_initPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<git_status_options>,
+              ffi.Uint32)>>('git_status_options_init');
+  late final _status_options_init = _status_options_initPtr
+      .asFunction<int Function(ffi.Pointer<git_status_options>, int)>();
 
   /// Gather file status information and populate the `git_status_list`.
   ///
@@ -1565,10 +1810,15 @@ class NativeLibrary {
     );
   }
 
-  late final _status_list_new_ptr =
-      _lookup<ffi.NativeFunction<_c_status_list_new>>('git_status_list_new');
-  late final _dart_status_list_new _status_list_new =
-      _status_list_new_ptr.asFunction<_dart_status_list_new>();
+  late final _status_list_newPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_status_list>>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_status_options>)>>('git_status_list_new');
+  late final _status_list_new = _status_list_newPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_status_list>>,
+          ffi.Pointer<git_repository>, ffi.Pointer<git_status_options>)>();
 
   /// Gets the count of status entries in this list.
   ///
@@ -1585,11 +1835,12 @@ class NativeLibrary {
     );
   }
 
-  late final _status_list_entrycount_ptr =
-      _lookup<ffi.NativeFunction<_c_status_list_entrycount>>(
-          'git_status_list_entrycount');
-  late final _dart_status_list_entrycount _status_list_entrycount =
-      _status_list_entrycount_ptr.asFunction<_dart_status_list_entrycount>();
+  late final _status_list_entrycountPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.IntPtr Function(
+              ffi.Pointer<git_status_list>)>>('git_status_list_entrycount');
+  late final _status_list_entrycount = _status_list_entrycountPtr
+      .asFunction<int Function(ffi.Pointer<git_status_list>)>();
 
   /// Get a pointer to one of the entries in the status list.
   ///
@@ -1608,10 +1859,13 @@ class NativeLibrary {
     );
   }
 
-  late final _status_byindex_ptr =
-      _lookup<ffi.NativeFunction<_c_status_byindex>>('git_status_byindex');
-  late final _dart_status_byindex _status_byindex =
-      _status_byindex_ptr.asFunction<_dart_status_byindex>();
+  late final _status_byindexPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<git_status_entry> Function(
+              ffi.Pointer<git_status_list>, ffi.IntPtr)>>('git_status_byindex');
+  late final _status_byindex = _status_byindexPtr.asFunction<
+      ffi.Pointer<git_status_entry> Function(
+          ffi.Pointer<git_status_list>, int)>();
 
   /// Free an existing status list
   ///
@@ -1624,10 +1878,11 @@ class NativeLibrary {
     );
   }
 
-  late final _status_list_free_ptr =
-      _lookup<ffi.NativeFunction<_c_status_list_free>>('git_status_list_free');
-  late final _dart_status_list_free _status_list_free =
-      _status_list_free_ptr.asFunction<_dart_status_list_free>();
+  late final _status_list_freePtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_status_list>)>>(
+      'git_status_list_free');
+  late final _status_list_free = _status_list_freePtr
+      .asFunction<void Function(ffi.Pointer<git_status_list>)>();
 
   /// Init the global state
   ///
@@ -1643,10 +1898,9 @@ class NativeLibrary {
     return _libgit2_init();
   }
 
-  late final _libgit2_init_ptr =
-      _lookup<ffi.NativeFunction<_c_libgit2_init>>('git_libgit2_init');
-  late final _dart_libgit2_init _libgit2_init =
-      _libgit2_init_ptr.asFunction<_dart_libgit2_init>();
+  late final _libgit2_initPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function()>>('git_libgit2_init');
+  late final _libgit2_init = _libgit2_initPtr.asFunction<int Function()>();
 
   /// Shutdown the global state
   ///
@@ -1661,10 +1915,10 @@ class NativeLibrary {
     return _libgit2_shutdown();
   }
 
-  late final _libgit2_shutdown_ptr =
-      _lookup<ffi.NativeFunction<_c_libgit2_shutdown>>('git_libgit2_shutdown');
-  late final _dart_libgit2_shutdown _libgit2_shutdown =
-      _libgit2_shutdown_ptr.asFunction<_dart_libgit2_shutdown>();
+  late final _libgit2_shutdownPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function()>>('git_libgit2_shutdown');
+  late final _libgit2_shutdown =
+      _libgit2_shutdownPtr.asFunction<int Function()>();
 
   /// Count the number of unique commits between two commit objects
   ///
@@ -1694,11 +1948,59 @@ class NativeLibrary {
     );
   }
 
-  late final _graph_ahead_behind_ptr =
-      _lookup<ffi.NativeFunction<_c_graph_ahead_behind>>(
-          'git_graph_ahead_behind');
-  late final _dart_graph_ahead_behind _graph_ahead_behind =
-      _graph_ahead_behind_ptr.asFunction<_dart_graph_ahead_behind>();
+  late final _graph_ahead_behindPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.IntPtr>,
+              ffi.Pointer<ffi.IntPtr>,
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_oid>,
+              ffi.Pointer<git_oid>)>>('git_graph_ahead_behind');
+  late final _graph_ahead_behind = _graph_ahead_behindPtr.asFunction<
+      int Function(
+          ffi.Pointer<ffi.IntPtr>,
+          ffi.Pointer<ffi.IntPtr>,
+          ffi.Pointer<git_repository>,
+          ffi.Pointer<git_oid>,
+          ffi.Pointer<git_oid>)>();
+
+  /// Updates some entries in the index from the target commit tree.
+  ///
+  /// The scope of the updated entries is determined by the paths
+  /// being passed in the `pathspec` parameters.
+  ///
+  /// Passing a NULL `target` will result in removing
+  /// entries in the index matching the provided pathspecs.
+  ///
+  /// @param repo Repository where to perform the reset operation.
+  ///
+  /// @param target The committish which content will be used to reset the content
+  /// of the index.
+  ///
+  /// @param pathspecs List of pathspecs to operate on.
+  ///
+  /// @return 0 on success or an error code < 0
+  int reset_default(
+    ffi.Pointer<git_repository> repo,
+    ffi.Pointer<git_object> target,
+    ffi.Pointer<git_strarray> pathspecs,
+  ) {
+    return _reset_default(
+      repo,
+      target,
+      pathspecs,
+    );
+  }
+
+  late final _reset_defaultPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<git_repository>,
+              ffi.Pointer<git_object>,
+              ffi.Pointer<git_strarray>)>>('git_reset_default');
+  late final _reset_default = _reset_defaultPtr.asFunction<
+      int Function(ffi.Pointer<git_repository>, ffi.Pointer<git_object>,
+          ffi.Pointer<git_strarray>)>();
 
   /// Create a new action signature with a timestamp of 'now'.
   ///
@@ -1720,10 +2022,15 @@ class NativeLibrary {
     );
   }
 
-  late final _signature_now_ptr =
-      _lookup<ffi.NativeFunction<_c_signature_now>>('git_signature_now');
-  late final _dart_signature_now _signature_now =
-      _signature_now_ptr.asFunction<_dart_signature_now>();
+  late final _signature_nowPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(
+              ffi.Pointer<ffi.Pointer<git_signature>>,
+              ffi.Pointer<ffi.Int8>,
+              ffi.Pointer<ffi.Int8>)>>('git_signature_now');
+  late final _signature_now = _signature_nowPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Pointer<git_signature>>,
+          ffi.Pointer<ffi.Int8>, ffi.Pointer<ffi.Int8>)>();
 
   /// Free an existing signature.
   ///
@@ -1740,11 +2047,42 @@ class NativeLibrary {
     );
   }
 
-  late final _signature_free_ptr =
-      _lookup<ffi.NativeFunction<_c_signature_free>>('git_signature_free');
-  late final _dart_signature_free _signature_free =
-      _signature_free_ptr.asFunction<_dart_signature_free>();
+  late final _signature_freePtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_signature>)>>(
+      'git_signature_free');
+  late final _signature_free = _signature_freePtr
+      .asFunction<void Function(ffi.Pointer<git_signature>)>();
 }
+
+class __mbstate_t extends ffi.Union {
+  @ffi.Array.multi([128])
+  external ffi.Array<ffi.Int8> __mbstate8;
+
+  @ffi.Int64()
+  external int _mbstateL;
+}
+
+class sigval extends ffi.Union {
+  @ffi.Int32()
+  external int sival_int;
+
+  external ffi.Pointer<ffi.Void> sival_ptr;
+}
+
+class __sigaction_u extends ffi.Union {
+  external ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Int32)>>
+      __sa_handler;
+
+  external ffi.Pointer<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int32, ffi.Pointer<__siginfo>, ffi.Pointer<ffi.Void>)>>
+      __sa_sigaction;
+}
+
+class __siginfo extends ffi.Opaque {}
+
+class wait extends ffi.Opaque {}
 
 /// A data buffer for exporting data from libgit2
 ///
@@ -1788,19 +2126,31 @@ class git_oid extends ffi.Struct {
   external ffi.Array<ffi.Uint8> id;
 }
 
-/// Time in a signature
-class git_time extends ffi.Struct {
-  /// < time in seconds from epoch
-  @ffi.Int64()
-  external int time;
+/// Basic type (loose or packed) of any Git object.
+abstract class git_object_t {
+  /// < Object can be any of the following
+  static const int GIT_OBJECT_ANY = -2;
 
-  /// < timezone offset, in minutes
-  @ffi.Int32()
-  external int offset;
+  /// < Object is invalid.
+  static const int GIT_OBJECT_INVALID = -1;
 
-  /// < indicator for questionable '-0000' offsets in signature
-  @ffi.Int8()
-  external int sign;
+  /// < A commit object.
+  static const int GIT_OBJECT_COMMIT = 1;
+
+  /// < A tree (directory listing) object.
+  static const int GIT_OBJECT_TREE = 2;
+
+  /// < A file revision object.
+  static const int GIT_OBJECT_BLOB = 3;
+
+  /// < An annotated tag object.
+  static const int GIT_OBJECT_TAG = 4;
+
+  /// < A delta, base is given by an offset.
+  static const int GIT_OBJECT_OFS_DELTA = 6;
+
+  /// < A delta, base is given by object id.
+  static const int GIT_OBJECT_REF_DELTA = 7;
 }
 
 /// An action signature (e.g. for committers, taggers, etc)
@@ -1815,14 +2165,218 @@ class git_signature extends ffi.Struct {
   external git_time when;
 }
 
+/// Time in a signature
+class git_time extends ffi.Struct {
+  /// < time in seconds from epoch
+  @git_time_t()
+  external int time;
+
+  /// < timezone offset, in minutes
+  @ffi.Int32()
+  external int offset;
+
+  /// < indicator for questionable '-0000' offsets in signature
+  @ffi.Int8()
+  external int sign;
+}
+
+typedef git_time_t = ffi.Int64;
+
+/// The callback settings structure
+///
+/// Set the callbacks to be called by the remote when informing the user
+/// about the progress of the network operations.
+class git_remote_callbacks extends ffi.Struct {
+  /// < The version
+  @ffi.Uint32()
+  external int version;
+
+  /// Textual progress from the remote. Text send over the
+  /// progress side-band will be passed to this function (this is
+  /// the 'counting objects' output).
+  external git_transport_message_cb sideband_progress;
+
+  external ffi.Pointer<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>)>> completion;
+
+  /// This will be called if the remote host requires
+  /// authentication in order to connect to it.
+  ///
+  /// Returning GIT_PASSTHROUGH will make libgit2 behave as
+  /// though this field isn't set.
+  external git_credential_acquire_cb credentials;
+
+  /// If cert verification fails, this will be called to let the
+  /// user make the final decision of whether to allow the
+  /// connection to proceed. Returns 0 to allow the connection
+  /// or a negative value to indicate an error.
+  external git_transport_certificate_check_cb certificate_check;
+
+  /// During the download of new data, this will be regularly
+  /// called with the current count of progress done by the
+  /// indexer.
+  external git_indexer_progress_cb transfer_progress;
+
+  external ffi.Pointer<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ffi.Int8>, ffi.Pointer<git_oid>,
+              ffi.Pointer<git_oid>, ffi.Pointer<ffi.Void>)>> update_tips;
+
+  /// Function to call with progress information during pack
+  /// building. Be aware that this is called inline with pack
+  /// building operations, so performance may be affected.
+  external git_packbuilder_progress pack_progress;
+
+  /// Function to call with progress information during the
+  /// upload portion of a push. Be aware that this is called
+  /// inline with pack building operations, so performance may be
+  /// affected.
+  external git_push_transfer_progress_cb push_transfer_progress;
+
+  /// See documentation of git_push_update_reference_cb
+  external git_push_update_reference_cb push_update_reference;
+
+  /// Called once between the negotiation step and the upload. It
+  /// provides information about what updates will be performed.
+  external git_push_negotiation push_negotiation;
+
+  /// Create the transport to use for this operation. Leave NULL
+  /// to auto-detect.
+  external git_transport_cb transport;
+
+  /// Callback when the remote is ready to connect.
+  external git_remote_ready_cb remote_ready;
+
+  /// This will be passed to each of the callbacks in this struct
+  /// as the last parameter.
+  external ffi.Pointer<ffi.Void> payload;
+
+  /// Resolve URL before connecting to remote.
+  /// The returned URL will be used to connect to the remote instead.
+  ///
+  /// This callback is deprecated; users should use
+  /// git_remote_ready_cb and configure the instance URL instead.
+  external git_url_resolve_cb resolve_url;
+}
+
+/// Callback for messages received by the transport.
+///
+/// Return a negative value to cancel the network operation.
+///
+/// @param str The message from the transport
+/// @param len The length of the message
+/// @param payload Payload provided by the caller
+typedef git_transport_message_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Pointer<ffi.Int8>, ffi.Int32, ffi.Pointer<ffi.Void>)>>;
+
+/// Argument to the completion callback which tells it which operation
+/// finished.
+abstract class git_remote_completion_t {
+  static const int GIT_REMOTE_COMPLETION_DOWNLOAD = 0;
+  static const int GIT_REMOTE_COMPLETION_INDEXING = 1;
+  static const int GIT_REMOTE_COMPLETION_ERROR = 2;
+}
+
+/// Credential acquisition callback.
+///
+/// This callback is usually involved any time another system might need
+/// authentication. As such, you are expected to provide a valid
+/// git_credential object back, depending on allowed_types (a
+/// git_credential_t bitmask).
+///
+/// Note that most authentication details are your responsibility - this
+/// callback will be called until the authentication succeeds, or you report
+/// an error. As such, it's easy to get in a loop if you fail to stop providing
+/// the same incorrect credentials.
+///
+/// @param out The newly created credential object.
+/// @param url The resource for which we are demanding a credential.
+/// @param username_from_url The username that was embedded in a "user\@host"
+/// remote url, or NULL if not included.
+/// @param allowed_types A bitmask stating which credential types are OK to return.
+/// @param payload The payload provided when specifying this callback.
+/// @return 0 for success, < 0 to indicate an error, > 0 to indicate
+/// no credential was acquired
+typedef git_credential_acquire_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Pointer<ffi.Pointer<git_credential>>,
+            ffi.Pointer<ffi.Int8>,
+            ffi.Pointer<ffi.Int8>,
+            ffi.Uint32,
+            ffi.Pointer<ffi.Void>)>>;
+
 /// The base structure for all credential types
 class git_credential extends ffi.Struct {
   /// < A type of credential
   @ffi.Int32()
   external int credtype;
 
-  external ffi.Pointer<ffi.NativeFunction<_typedefC_3>> free;
+  external ffi.Pointer<
+      ffi.NativeFunction<ffi.Void Function(ffi.Pointer<git_credential>)>> free;
 }
+
+/// Supported credential types
+///
+/// This represents the various types of authentication methods supported by
+/// the library.
+abstract class git_credential_t {
+  /// A vanilla user/password request
+  /// @see git_credential_userpass_plaintext_new
+  static const int GIT_CREDENTIAL_USERPASS_PLAINTEXT = 1;
+
+  /// An SSH key-based authentication request
+  /// @see git_credential_ssh_key_new
+  static const int GIT_CREDENTIAL_SSH_KEY = 2;
+
+  /// An SSH key-based authentication request, with a custom signature
+  /// @see git_credential_ssh_custom_new
+  static const int GIT_CREDENTIAL_SSH_CUSTOM = 4;
+
+  /// An NTLM/Negotiate-based authentication request.
+  /// @see git_credential_default
+  static const int GIT_CREDENTIAL_DEFAULT = 8;
+
+  /// An SSH interactive authentication request
+  /// @see git_credential_ssh_interactive_new
+  static const int GIT_CREDENTIAL_SSH_INTERACTIVE = 16;
+
+  /// Username-only authentication request
+  ///
+  /// Used as a pre-authentication step if the underlying transport
+  /// (eg. SSH, with no username in its URL) does not know which username
+  /// to use.
+  ///
+  /// @see git_credential_username_new
+  static const int GIT_CREDENTIAL_USERNAME = 32;
+
+  /// An SSH key-based authentication request
+  ///
+  /// Allows credentials to be read from memory instead of files.
+  /// Note that because of differences in crypto backend support, it might
+  /// not be functional.
+  ///
+  /// @see git_credential_ssh_key_memory_new
+  static const int GIT_CREDENTIAL_SSH_MEMORY = 64;
+}
+
+/// Callback for the user's custom certificate checks.
+///
+/// @param cert The host certificate
+/// @param valid Whether the libgit2 checks (OpenSSL or WinHTTP) think
+/// this certificate is valid
+/// @param host Hostname of the host libgit2 connected to
+/// @param payload Payload provided by the caller
+/// @return 0 to proceed with the connection, < 0 to fail the connection
+/// or > 0 to indicate that the callback refused to act and that
+/// the existing validity determination should be honored
+typedef git_transport_certificate_check_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<git_cert>, ffi.Int32,
+            ffi.Pointer<ffi.Int8>, ffi.Pointer<ffi.Void>)>>;
 
 /// Parent type for `git_cert_hostkey` and `git_cert_x509`.
 class git_cert extends ffi.Struct {
@@ -1830,6 +2384,37 @@ class git_cert extends ffi.Struct {
   @ffi.Int32()
   external int cert_type;
 }
+
+/// Type of host certificate structure that is passed to the check callback
+abstract class git_cert_t {
+  /// No information about the certificate is available. This may
+  /// happen when using curl.
+  static const int GIT_CERT_NONE = 0;
+
+  /// The `data` argument to the callback will be a pointer to
+  /// the DER-encoded data.
+  static const int GIT_CERT_X509 = 1;
+
+  /// The `data` argument to the callback will be a pointer to a
+  /// `git_cert_hostkey` structure.
+  static const int GIT_CERT_HOSTKEY_LIBSSH2 = 2;
+
+  /// The `data` argument to the callback will be a pointer to a
+  /// `git_strarray` with `name:content` strings containing
+  /// information about the certificate. This is used when using
+  /// curl.
+  static const int GIT_CERT_STRARRAY = 3;
+}
+
+/// Type for progress callbacks during indexing.  Return a value less
+/// than zero to cancel the indexing or download.
+///
+/// @param stats Structure containing information about the state of the transfer
+/// @param payload Payload provided by caller
+typedef git_indexer_progress_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Pointer<git_indexer_progress>, ffi.Pointer<ffi.Void>)>>;
 
 /// This structure is used to provide callers information about the
 /// progress of indexing a packfile, either directly or part of a
@@ -1865,6 +2450,44 @@ class git_indexer_progress extends ffi.Struct {
   external int received_bytes;
 }
 
+/// Packbuilder progress notification function
+typedef git_packbuilder_progress = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Int32, ffi.Uint32, ffi.Uint32, ffi.Pointer<ffi.Void>)>>;
+
+/// Push network progress notification function
+typedef git_push_transfer_progress_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Uint32, ffi.Uint32, ffi.IntPtr, ffi.Pointer<ffi.Void>)>>;
+
+/// Callback used to inform of the update status from the remote.
+///
+/// Called for each updated reference on push. If `status` is
+/// not `NULL`, the update was rejected by the remote server
+/// and `status` contains the reason given.
+///
+/// @param refname refname specifying to the remote ref
+/// @param status status message sent from the remote
+/// @param data data provided by the caller
+/// @return 0 on success, otherwise an error
+typedef git_push_update_reference_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<ffi.Int8>, ffi.Pointer<ffi.Int8>,
+            ffi.Pointer<ffi.Void>)>>;
+
+/// Callback used to inform of upcoming updates.
+///
+/// @param updates an array containing the updates which will be sent
+/// as commands to the destination.
+/// @param len number of elements in `updates`
+/// @param payload Payload provided by the caller
+typedef git_push_negotiation = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_push_update>>,
+            ffi.IntPtr, ffi.Pointer<ffi.Void>)>>;
+
 /// Represents an update which will be performed on the remote during push
 class git_push_update extends ffi.Struct {
   /// The source name of the reference
@@ -1880,131 +2503,89 @@ class git_push_update extends ffi.Struct {
   external git_oid dst;
 }
 
+/// Signature of a function which creates a transport
+typedef git_transport_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_transport>>,
+            ffi.Pointer<git_remote>, ffi.Pointer<ffi.Void>)>>;
+
 class git_transport extends ffi.Opaque {}
 
 class git_remote extends ffi.Opaque {}
 
-/// The callback settings structure
+/// Callback invoked immediately before we attempt to connect to the
+/// given url.  Callers may change the URL before the connection by
+/// calling `git_remote_set_instance_url` in the callback.
 ///
-/// Set the callbacks to be called by the remote when informing the user
-/// about the progress of the network operations.
-class git_remote_callbacks extends ffi.Struct {
-  /// < The version
-  @ffi.Uint32()
-  external int version;
+/// @param remote The remote to be connected
+/// @param direction GIT_DIRECTION_FETCH or GIT_DIRECTION_PUSH
+/// @param payload Payload provided by the caller
+/// @return 0 on success, or an error
+typedef git_remote_ready_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Pointer<git_remote>, ffi.Int32, ffi.Pointer<ffi.Void>)>>;
 
-  /// Textual progress from the remote. Text send over the
-  /// progress side-band will be passed to this function (this is
-  /// the 'counting objects' output).
-  external ffi.Pointer<ffi.NativeFunction<git_transport_message_cb>>
-      sideband_progress;
-
-  external ffi.Pointer<ffi.NativeFunction<_typedefC_1>> completion;
-
-  /// This will be called if the remote host requires
-  /// authentication in order to connect to it.
-  ///
-  /// Returning GIT_PASSTHROUGH will make libgit2 behave as
-  /// though this field isn't set.
-  external ffi.Pointer<ffi.NativeFunction<git_credential_acquire_cb>>
-      credentials;
-
-  /// If cert verification fails, this will be called to let the
-  /// user make the final decision of whether to allow the
-  /// connection to proceed. Returns 0 to allow the connection
-  /// or a negative value to indicate an error.
-  external ffi.Pointer<ffi.NativeFunction<git_transport_certificate_check_cb>>
-      certificate_check;
-
-  /// During the download of new data, this will be regularly
-  /// called with the current count of progress done by the
-  /// indexer.
-  external ffi.Pointer<ffi.NativeFunction<git_indexer_progress_cb>>
-      transfer_progress;
-
-  external ffi.Pointer<ffi.NativeFunction<_typedefC_2>> update_tips;
-
-  /// Function to call with progress information during pack
-  /// building. Be aware that this is called inline with pack
-  /// building operations, so performance may be affected.
-  external ffi.Pointer<ffi.NativeFunction<git_packbuilder_progress>>
-      pack_progress;
-
-  /// Function to call with progress information during the
-  /// upload portion of a push. Be aware that this is called
-  /// inline with pack building operations, so performance may be
-  /// affected.
-  external ffi.Pointer<ffi.NativeFunction<git_push_transfer_progress_cb>>
-      push_transfer_progress;
-
-  /// See documentation of git_push_update_reference_cb
-  external ffi.Pointer<ffi.NativeFunction<git_push_update_reference_cb>>
-      push_update_reference;
-
-  /// Called once between the negotiation step and the upload. It
-  /// provides information about what updates will be performed.
-  external ffi.Pointer<ffi.NativeFunction<git_push_negotiation>>
-      push_negotiation;
-
-  /// Create the transport to use for this operation. Leave NULL
-  /// to auto-detect.
-  external ffi.Pointer<ffi.NativeFunction<git_transport_cb>> transport;
-
-  /// This will be passed to each of the callbacks in this struct
-  /// as the last parameter.
-  external ffi.Pointer<ffi.Void> payload;
-
-  /// Resolve URL before connecting to remote.
-  /// The returned URL will be used to connect to the remote instead.
-  external ffi.Pointer<ffi.NativeFunction<git_url_resolve_cb>> resolve_url;
-}
+/// Callback to resolve URLs before connecting to remote
+///
+/// If you return GIT_PASSTHROUGH, you don't need to write anything to
+/// url_resolved.
+///
+/// @param url_resolved The buffer to write the resolved URL to
+/// @param url The URL to resolve
+/// @param direction GIT_DIRECTION_FETCH or GIT_DIRECTION_PUSH
+/// @param payload Payload provided by the caller
+/// @return 0 on success, GIT_PASSTHROUGH or an error
+/// @deprecated Use `git_remote_set_instance_url`
+typedef git_url_resolve_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<git_buf>, ffi.Pointer<ffi.Int8>,
+            ffi.Int32, ffi.Pointer<ffi.Void>)>>;
 
 class git_repository extends ffi.Opaque {}
 
 /// Extended options structure for `git_repository_init_ext`.
 ///
 /// This contains extra options for `git_repository_init_ext` that enable
-/// additional initialization features.  The fields are:
-///
-/// * flags - Combination of GIT_REPOSITORY_INIT flags above.
-/// * mode  - Set to one of the standard GIT_REPOSITORY_INIT_SHARED_...
-/// constants above, or to a custom value that you would like.
-/// * workdir_path - The path to the working dir or NULL for default (i.e.
-/// repo_path parent on non-bare repos).  IF THIS IS RELATIVE PATH,
-/// IT WILL BE EVALUATED RELATIVE TO THE REPO_PATH.  If this is not
-/// the "natural" working directory, a .git gitlink file will be
-/// created here linking to the repo_path.
-/// * description - If set, this will be used to initialize the "description"
-/// file in the repository, instead of using the template content.
-/// * template_path - When GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE is set,
-/// this contains the path to use for the template directory.  If
-/// this is NULL, the config or default directory options will be
-/// used instead.
-/// * initial_head - The name of the head to point HEAD at.  If NULL, then
-/// this will be treated as "master" and the HEAD ref will be set
-/// to "refs/heads/master".  If this begins with "refs/" it will be
-/// used verbatim; otherwise "refs/heads/" will be prefixed.
-/// * origin_url - If this is non-NULL, then after the rest of the
-/// repository initialization is completed, an "origin" remote
-/// will be added pointing to this URL.
+/// additional initialization features.
 class git_repository_init_options extends ffi.Struct {
   @ffi.Uint32()
   external int version;
 
+  /// Combination of GIT_REPOSITORY_INIT flags above.
   @ffi.Uint32()
   external int flags;
 
+  /// Set to one of the standard GIT_REPOSITORY_INIT_SHARED_... constants
+  /// above, or to a custom value that you would like.
   @ffi.Uint32()
   external int mode;
 
+  /// The path to the working dir or NULL for default (i.e. repo_path parent
+  /// on non-bare repos). IF THIS IS RELATIVE PATH, IT WILL BE EVALUATED
+  /// RELATIVE TO THE REPO_PATH. If this is not the "natural" working
+  /// directory, a .git gitlink file will be created here linking to the
+  /// repo_path.
   external ffi.Pointer<ffi.Int8> workdir_path;
 
+  /// If set, this will be used to initialize the "description" file in the
+  /// repository, instead of using the template content.
   external ffi.Pointer<ffi.Int8> description;
 
+  /// When GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE is set, this contains
+  /// the path to use for the template directory. If this is NULL, the config
+  /// or default directory options will be used instead.
   external ffi.Pointer<ffi.Int8> template_path;
 
+  /// The name of the head to point HEAD at. If NULL, then this will be
+  /// treated as "master" and the HEAD ref will be set to "refs/heads/master".
+  /// If this begins with "refs/" it will be used verbatim;
+  /// otherwise "refs/heads/" will be prefixed.
   external ffi.Pointer<ffi.Int8> initial_head;
 
+  /// If this is non-NULL, then after the rest of the repository
+  /// initialization is completed, an "origin" remote will be added
+  /// pointing to this URL.
   external ffi.Pointer<ffi.Int8> origin_url;
 }
 
@@ -2012,7 +2593,20 @@ class git_reference extends ffi.Opaque {}
 
 class git_index extends ffi.Opaque {}
 
+/// Callback used to iterate over each MERGE_HEAD entry
+///
+/// @see git_repository_mergehead_foreach
+///
+/// @param oid The merge OID
+/// @param payload Payload passed to git_repository_mergehead_foreach
+/// @return non-zero to terminate the iteration
+typedef git_repository_mergehead_foreach_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<git_oid>, ffi.Pointer<ffi.Void>)>>;
+
 class git_annotated_commit extends ffi.Opaque {}
+
+class git_object extends ffi.Opaque {}
 
 class git_tree extends ffi.Opaque {}
 
@@ -2022,48 +2616,6 @@ class git_strarray extends ffi.Struct {
 
   @ffi.IntPtr()
   external int count;
-}
-
-/// Description of one side of a delta.
-///
-/// Although this is called a "file", it could represent a file, a symbolic
-/// link, a submodule commit id, or even a tree (although that only if you
-/// are tracking type changes or ignored/untracked directories).
-///
-/// The `id` is the `git_oid` of the item.  If the entry represents an
-/// absent side of a diff (e.g. the `old_file` of a `GIT_DELTA_ADDED` delta),
-/// then the oid will be zeroes.
-///
-/// `path` is the NUL-terminated path to the entry relative to the working
-/// directory of the repository.
-///
-/// `size` is the size of the entry in bytes.
-///
-/// `flags` is a combination of the `git_diff_flag_t` types
-///
-/// `mode` is, roughly, the stat() `st_mode` value for the item.  This will
-/// be restricted to one of the `git_filemode_t` values.
-///
-/// The `id_abbrev` represents the known length of the `id` field, when
-/// converted to a hex string.  It is generally `GIT_OID_HEXSZ`, unless this
-/// delta was created from reading a patch file, in which case it may be
-/// abbreviated to something reasonable, like 7 characters.
-class git_diff_file extends ffi.Struct {
-  external git_oid id;
-
-  external ffi.Pointer<ffi.Int8> path;
-
-  @ffi.Uint64()
-  external int size;
-
-  @ffi.Uint32()
-  external int flags;
-
-  @ffi.Uint16()
-  external int mode;
-
-  @ffi.Uint16()
-  external int id_abbrev;
 }
 
 /// Description of changes to one entry.
@@ -2124,6 +2676,88 @@ class git_diff_delta extends ffi.Struct {
 
   external git_diff_file new_file;
 }
+
+/// What type of change is described by a git_diff_delta?
+///
+/// `GIT_DELTA_RENAMED` and `GIT_DELTA_COPIED` will only show up if you run
+/// `git_diff_find_similar()` on the diff object.
+///
+/// `GIT_DELTA_TYPECHANGE` only shows up given `GIT_DIFF_INCLUDE_TYPECHANGE`
+/// in the option flags (otherwise type changes will be split into ADDED /
+/// DELETED pairs).
+abstract class git_delta_t {
+  /// < no changes
+  static const int GIT_DELTA_UNMODIFIED = 0;
+
+  /// < entry does not exist in old version
+  static const int GIT_DELTA_ADDED = 1;
+
+  /// < entry does not exist in new version
+  static const int GIT_DELTA_DELETED = 2;
+
+  /// < entry content changed between old and new
+  static const int GIT_DELTA_MODIFIED = 3;
+
+  /// < entry was renamed between old and new
+  static const int GIT_DELTA_RENAMED = 4;
+
+  /// < entry was copied from another old entry
+  static const int GIT_DELTA_COPIED = 5;
+
+  /// < entry is ignored item in workdir
+  static const int GIT_DELTA_IGNORED = 6;
+
+  /// < entry is untracked item in workdir
+  static const int GIT_DELTA_UNTRACKED = 7;
+
+  /// < type of entry changed between old and new
+  static const int GIT_DELTA_TYPECHANGE = 8;
+
+  /// < entry is unreadable
+  static const int GIT_DELTA_UNREADABLE = 9;
+
+  /// < entry in the index is conflicted
+  static const int GIT_DELTA_CONFLICTED = 10;
+}
+
+/// Description of one side of a delta.
+///
+/// Although this is called a "file", it could represent a file, a symbolic
+/// link, a submodule commit id, or even a tree (although that only if you
+/// are tracking type changes or ignored/untracked directories).
+class git_diff_file extends ffi.Struct {
+  /// The `git_oid` of the item.  If the entry represents an
+  /// absent side of a diff (e.g. the `old_file` of a `GIT_DELTA_ADDED` delta),
+  /// then the oid will be zeroes.
+  external git_oid id;
+
+  /// The NUL-terminated path to the entry relative to the working
+  /// directory of the repository.
+  external ffi.Pointer<ffi.Int8> path;
+
+  /// The size of the entry in bytes.
+  @git_object_size_t()
+  external int size;
+
+  /// A combination of the `git_diff_flag_t` types
+  @ffi.Uint32()
+  external int flags;
+
+  /// Roughly, the stat() `st_mode` value for the item.  This will
+  /// be restricted to one of the `git_filemode_t` values.
+  @ffi.Uint16()
+  external int mode;
+
+  /// Represents the known length of the `id` field, when
+  /// converted to a hex string.  It is generally `GIT_OID_HEXSZ`, unless this
+  /// delta was created from reading a patch file, in which case it may be
+  /// abbreviated to something reasonable, like 7 characters.
+  @ffi.Uint16()
+  external int id_abbrev;
+}
+
+/// The maximum size of an object
+typedef git_object_size_t = ffi.Uint64;
 
 /// Checkout behavior flags
 ///
@@ -2276,15 +2910,16 @@ abstract class git_checkout_strategy_t {
   /// Normally checkout writes the index upon completion; this prevents that.
   static const int GIT_CHECKOUT_DONT_WRITE_INDEX = 8388608;
 
+  /// Show what would be done by a checkout.  Stop after sending
+  /// notifications; don't update the working directory or index.
+  static const int GIT_CHECKOUT_DRY_RUN = 16777216;
+
   /// Recursively checkout submodules with same options (NOT IMPLEMENTED)
   static const int GIT_CHECKOUT_UPDATE_SUBMODULES = 65536;
 
   /// Recursively checkout submodules if HEAD moved in super repo (NOT IMPLEMENTED)
   static const int GIT_CHECKOUT_UPDATE_SUBMODULES_IF_CHANGED = 131072;
 }
-
-/// Checkout performance-reporting structure
-class git_checkout_perfdata extends ffi.Opaque {}
 
 /// Checkout options structure
 ///
@@ -2321,14 +2956,13 @@ class git_checkout_options extends ffi.Struct {
 
   /// Optional callback to get notifications on specific file states.
   /// @see git_checkout_notify_t
-  external ffi.Pointer<ffi.NativeFunction<git_checkout_notify_cb>> notify_cb;
+  external git_checkout_notify_cb notify_cb;
 
   /// Payload passed to notify_cb
   external ffi.Pointer<ffi.Void> notify_payload;
 
   /// Optional callback to notify the consumer of checkout progress.
-  external ffi.Pointer<ffi.NativeFunction<git_checkout_progress_cb>>
-      progress_cb;
+  external git_checkout_progress_cb progress_cb;
 
   /// Payload passed to progress_cb
   external ffi.Pointer<ffi.Void> progress_payload;
@@ -2365,17 +2999,71 @@ class git_checkout_options extends ffi.Struct {
   external ffi.Pointer<ffi.Int8> their_label;
 
   /// Optional callback to notify the consumer of performance data.
-  external ffi.Pointer<ffi.NativeFunction<git_checkout_perfdata_cb>>
-      perfdata_cb;
+  external git_checkout_perfdata_cb perfdata_cb;
 
   /// Payload passed to perfdata_cb
   external ffi.Pointer<ffi.Void> perfdata_payload;
 }
 
-class git_object extends ffi.Opaque {}
+/// Checkout notification callback function
+typedef git_checkout_notify_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Int32,
+            ffi.Pointer<ffi.Int8>,
+            ffi.Pointer<git_diff_file>,
+            ffi.Pointer<git_diff_file>,
+            ffi.Pointer<git_diff_file>,
+            ffi.Pointer<ffi.Void>)>>;
 
-/// Pluggable similarity metric
-class git_diff_similarity_metric extends ffi.Opaque {}
+/// Checkout notification flags
+///
+/// Checkout will invoke an options notification callback (`notify_cb`) for
+/// certain cases - you pick which ones via `notify_flags`:
+///
+/// Returning a non-zero value from this callback will cancel the checkout.
+/// The non-zero return value will be propagated back and returned by the
+/// git_checkout_... call.
+///
+/// Notification callbacks are made prior to modifying any files on disk,
+/// so canceling on any notification will still happen prior to any files
+/// being modified.
+abstract class git_checkout_notify_t {
+  static const int GIT_CHECKOUT_NOTIFY_NONE = 0;
+
+  /// Invokes checkout on conflicting paths.
+  static const int GIT_CHECKOUT_NOTIFY_CONFLICT = 1;
+
+  /// Notifies about "dirty" files, i.e. those that do not need an update
+  /// but no longer match the baseline.  Core git displays these files when
+  /// checkout runs, but won't stop the checkout.
+  static const int GIT_CHECKOUT_NOTIFY_DIRTY = 2;
+
+  /// Sends notification for any file changed.
+  static const int GIT_CHECKOUT_NOTIFY_UPDATED = 4;
+
+  /// Notifies about untracked files.
+  static const int GIT_CHECKOUT_NOTIFY_UNTRACKED = 8;
+
+  /// Notifies about ignored files.
+  static const int GIT_CHECKOUT_NOTIFY_IGNORED = 16;
+  static const int GIT_CHECKOUT_NOTIFY_ALL = 65535;
+}
+
+/// Checkout progress notification function
+typedef git_checkout_progress_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Void Function(ffi.Pointer<ffi.Int8>, ffi.IntPtr, ffi.IntPtr,
+            ffi.Pointer<ffi.Void>)>>;
+
+/// Checkout perfdata notification function
+typedef git_checkout_perfdata_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Void Function(
+            ffi.Pointer<git_checkout_perfdata>, ffi.Pointer<ffi.Void>)>>;
+
+/// Checkout performance-reporting structure
+class git_checkout_perfdata extends ffi.Opaque {}
 
 /// Merging options
 class git_merge_options extends ffi.Struct {
@@ -2426,39 +3114,72 @@ class git_merge_options extends ffi.Struct {
   external int file_flags;
 }
 
-/// Options for connecting through a proxy
-///
-/// Note that not all types may be supported, depending on the platform
-/// and compilation options.
-class git_proxy_options extends ffi.Struct {
-  @ffi.Uint32()
-  external int version;
+/// Pluggable similarity metric
+class git_diff_similarity_metric extends ffi.Opaque {}
 
-  /// The type of proxy to use, by URL, auto-detect.
-  @ffi.Int32()
-  external int type;
+/// Merge file favor options for `git_merge_options` instruct the file-level
+/// merging functionality how to deal with conflicting regions of the files.
+abstract class git_merge_file_favor_t {
+  /// When a region of a file is changed in both branches, a conflict
+  /// will be recorded in the index so that `git_checkout` can produce
+  /// a merge file with conflict markers in the working directory.
+  /// This is the default.
+  static const int GIT_MERGE_FILE_FAVOR_NORMAL = 0;
 
-  /// The URL of the proxy.
-  external ffi.Pointer<ffi.Int8> url;
+  /// When a region of a file is changed in both branches, the file
+  /// created in the index will contain the "ours" side of any conflicting
+  /// region.  The index will not record a conflict.
+  static const int GIT_MERGE_FILE_FAVOR_OURS = 1;
 
-  /// This will be called if the remote host requires
-  /// authentication in order to connect to it.
-  ///
-  /// Returning GIT_PASSTHROUGH will make libgit2 behave as
-  /// though this field isn't set.
-  external ffi.Pointer<ffi.NativeFunction<git_credential_acquire_cb>>
-      credentials;
+  /// When a region of a file is changed in both branches, the file
+  /// created in the index will contain the "theirs" side of any conflicting
+  /// region.  The index will not record a conflict.
+  static const int GIT_MERGE_FILE_FAVOR_THEIRS = 2;
 
-  /// If cert verification fails, this will be called to let the
-  /// user make the final decision of whether to allow the
-  /// connection to proceed. Returns 0 to allow the connection
-  /// or a negative value to indicate an error.
-  external ffi.Pointer<ffi.NativeFunction<git_transport_certificate_check_cb>>
-      certificate_check;
+  /// When a region of a file is changed in both branches, the file
+  /// created in the index will contain each unique line from each side,
+  /// which has the result of combining both files.  The index will not
+  /// record a conflict.
+  static const int GIT_MERGE_FILE_FAVOR_UNION = 3;
+}
 
-  /// Payload to be provided to the credentials and certificate
-  /// check callbacks.
-  external ffi.Pointer<ffi.Void> payload;
+/// The results of `git_merge_analysis` indicate the merge opportunities.
+abstract class git_merge_analysis_t {
+  /// No merge is possible.  (Unused.)
+  static const int GIT_MERGE_ANALYSIS_NONE = 0;
+
+  /// A "normal" merge; both HEAD and the given merge input have diverged
+  /// from their common ancestor.  The divergent commits must be merged.
+  static const int GIT_MERGE_ANALYSIS_NORMAL = 1;
+
+  /// All given merge inputs are reachable from HEAD, meaning the
+  /// repository is up-to-date and no merge needs to be performed.
+  static const int GIT_MERGE_ANALYSIS_UP_TO_DATE = 2;
+
+  /// The given merge input is a fast-forward from HEAD and no merge
+  /// needs to be performed.  Instead, the client can check out the
+  /// given merge input.
+  static const int GIT_MERGE_ANALYSIS_FASTFORWARD = 4;
+
+  /// The HEAD of the current repository is "unborn" and does not point to
+  /// a valid commit.  No merge can be performed, but the caller may wish
+  /// to simply set HEAD to the target commit(s).
+  static const int GIT_MERGE_ANALYSIS_UNBORN = 8;
+}
+
+/// The user's stated preference for merges.
+abstract class git_merge_preference_t {
+  /// No configuration was found that suggests a preferred behavior for
+  /// merge.
+  static const int GIT_MERGE_PREFERENCE_NONE = 0;
+
+  /// There is a `merge.ff=false` configuration setting, suggesting that
+  /// the user does not want to allow a fast-forward merge.
+  static const int GIT_MERGE_PREFERENCE_NO_FASTFORWARD = 1;
+
+  /// There is a `merge.ff=only` configuration setting, suggesting that
+  /// the user only wants fast-forward merges.
+  static const int GIT_MERGE_PREFERENCE_FASTFORWARD_ONLY = 2;
 }
 
 /// Fetch options structure.
@@ -2496,6 +3217,84 @@ class git_fetch_options extends ffi.Struct {
 
   /// Extra headers for this fetch operation
   external git_strarray custom_headers;
+}
+
+/// Acceptable prune settings when fetching
+abstract class git_fetch_prune_t {
+  /// Use the setting from the configuration
+  static const int GIT_FETCH_PRUNE_UNSPECIFIED = 0;
+
+  /// Force pruning on
+  static const int GIT_FETCH_PRUNE = 1;
+
+  /// Force pruning off
+  static const int GIT_FETCH_NO_PRUNE = 2;
+}
+
+/// Automatic tag following option
+///
+/// Lets us select the --tags option to use.
+abstract class git_remote_autotag_option_t {
+  /// Use the setting from the configuration.
+  static const int GIT_REMOTE_DOWNLOAD_TAGS_UNSPECIFIED = 0;
+
+  /// Ask the server for tags pointing to objects we're already
+  /// downloading.
+  static const int GIT_REMOTE_DOWNLOAD_TAGS_AUTO = 1;
+
+  /// Don't ask for any tags beyond the refspecs.
+  static const int GIT_REMOTE_DOWNLOAD_TAGS_NONE = 2;
+
+  /// Ask for the all the tags.
+  static const int GIT_REMOTE_DOWNLOAD_TAGS_ALL = 3;
+}
+
+/// Options for connecting through a proxy
+///
+/// Note that not all types may be supported, depending on the platform
+/// and compilation options.
+class git_proxy_options extends ffi.Struct {
+  @ffi.Uint32()
+  external int version;
+
+  /// The type of proxy to use, by URL, auto-detect.
+  @ffi.Int32()
+  external int type;
+
+  /// The URL of the proxy.
+  external ffi.Pointer<ffi.Int8> url;
+
+  /// This will be called if the remote host requires
+  /// authentication in order to connect to it.
+  ///
+  /// Returning GIT_PASSTHROUGH will make libgit2 behave as
+  /// though this field isn't set.
+  external git_credential_acquire_cb credentials;
+
+  /// If cert verification fails, this will be called to let the
+  /// user make the final decision of whether to allow the
+  /// connection to proceed. Returns 0 to allow the connection
+  /// or a negative value to indicate an error.
+  external git_transport_certificate_check_cb certificate_check;
+
+  /// Payload to be provided to the credentials and certificate
+  /// check callbacks.
+  external ffi.Pointer<ffi.Void> payload;
+}
+
+/// The type of proxy to use.
+abstract class git_proxy_t {
+  /// Do not attempt to connect through a proxy
+  ///
+  /// If built against libcurl, it itself may attempt to connect
+  /// to a proxy if the environment variables specify it.
+  static const int GIT_PROXY_NONE = 0;
+
+  /// Try to auto-detect the proxy from the git configuration.
+  static const int GIT_PROXY_AUTO = 1;
+
+  /// Connect via the URL given in the options
+  static const int GIT_PROXY_SPECIFIED = 2;
 }
 
 /// Controls the behavior of a git_push object.
@@ -2557,8 +3356,7 @@ class git_clone_options extends ffi.Struct {
   /// A callback used to create the new repository into which to
   /// clone. If NULL, the 'bare' field will be used to determine
   /// whether to create a bare repository.
-  external ffi.Pointer<ffi.NativeFunction<git_repository_create_cb>>
-      repository_cb;
+  external git_repository_create_cb repository_cb;
 
   /// An opaque payload to pass to the git_repository creation callback.
   /// This parameter is ignored unless repository_cb is non-NULL.
@@ -2568,12 +3366,71 @@ class git_clone_options extends ffi.Struct {
   /// used to perform the clone operation. See the documentation for
   /// git_remote_create_cb for details. This parameter may be NULL,
   /// indicating that git_clone should provide default behavior.
-  external ffi.Pointer<ffi.NativeFunction<git_remote_create_cb>> remote_cb;
+  external git_remote_create_cb remote_cb;
 
   /// An opaque payload to pass to the git_remote creation callback.
   /// This parameter is ignored unless remote_cb is non-NULL.
   external ffi.Pointer<ffi.Void> remote_cb_payload;
 }
+
+/// Options for bypassing the git-aware transport on clone. Bypassing
+/// it means that instead of a fetch, libgit2 will copy the object
+/// database directory instead of figuring out what it needs, which is
+/// faster. If possible, it will hardlink the files to save space.
+abstract class git_clone_local_t {
+  /// Auto-detect (default), libgit2 will bypass the git-aware
+  /// transport for local paths, but use a normal fetch for
+  /// `file://` urls.
+  static const int GIT_CLONE_LOCAL_AUTO = 0;
+
+  /// Bypass the git-aware transport even for a `file://` url.
+  static const int GIT_CLONE_LOCAL = 1;
+
+  /// Do no bypass the git-aware transport
+  static const int GIT_CLONE_NO_LOCAL = 2;
+
+  /// Bypass the git-aware transport, but do not try to use
+  /// hardlinks.
+  static const int GIT_CLONE_LOCAL_NO_LINKS = 3;
+}
+
+/// The signature of a function matchin git_repository_init, with an
+/// aditional void * as callback payload.
+///
+/// Callers of git_clone my provide a function matching this signature
+/// to override the repository creation and customization process
+/// during a clone operation.
+///
+/// @param out the resulting repository
+/// @param path path in which to create the repository
+/// @param bare whether the repository is bare. This is the value from the clone options
+/// @param payload payload specified by the options
+/// @return 0, or a negative value to indicate error
+typedef git_repository_create_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<ffi.Pointer<git_repository>>,
+            ffi.Pointer<ffi.Int8>, ffi.Int32, ffi.Pointer<ffi.Void>)>>;
+
+/// The signature of a function matching git_remote_create, with an additional
+/// void* as a callback payload.
+///
+/// Callers of git_clone may provide a function matching this signature to override
+/// the remote creation and customization process during a clone operation.
+///
+/// @param out the resulting remote
+/// @param repo the repository in which to create the remote
+/// @param name the remote's name
+/// @param url the remote's url
+/// @param payload an opaque payload
+/// @return 0, GIT_EINVALIDSPEC, GIT_EEXISTS or an error code
+typedef git_remote_create_cb = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(
+            ffi.Pointer<ffi.Pointer<git_remote>>,
+            ffi.Pointer<git_repository>,
+            ffi.Pointer<ffi.Int8>,
+            ffi.Pointer<ffi.Int8>,
+            ffi.Pointer<ffi.Void>)>>;
 
 class git_commit extends ffi.Opaque {}
 
@@ -2593,86 +3450,100 @@ class git_error extends ffi.Struct {
 /// With `git_status_foreach_ext`, this will control which changes get
 /// callbacks.  With `git_status_list_new`, these will control which
 /// changes are included in the list.
-///
-/// - GIT_STATUS_SHOW_INDEX_AND_WORKDIR is the default.  This roughly
-/// matches `git status --porcelain` regarding which files are
-/// included and in what order.
-/// - GIT_STATUS_SHOW_INDEX_ONLY only gives status based on HEAD to index
-/// comparison, not looking at working directory changes.
-/// - GIT_STATUS_SHOW_WORKDIR_ONLY only gives status based on index to
-/// working directory comparison, not comparing the index to the HEAD.
 abstract class git_status_show_t {
+  /// The default. This roughly matches `git status --porcelain` regarding
+  /// which files are included and in what order.
   static const int GIT_STATUS_SHOW_INDEX_AND_WORKDIR = 0;
+
+  /// Only gives status based on HEAD to index comparison, not looking at
+  /// working directory changes.
   static const int GIT_STATUS_SHOW_INDEX_ONLY = 1;
+
+  /// Only gives status based on index to working directory comparison,
+  /// not comparing the index to the HEAD.
   static const int GIT_STATUS_SHOW_WORKDIR_ONLY = 2;
 }
 
 /// Flags to control status callbacks
-///
-/// - GIT_STATUS_OPT_INCLUDE_UNTRACKED says that callbacks should be made
-/// on untracked files.  These will only be made if the workdir files are
-/// included in the status "show" option.
-/// - GIT_STATUS_OPT_INCLUDE_IGNORED says that ignored files get callbacks.
-/// Again, these callbacks will only be made if the workdir files are
-/// included in the status "show" option.
-/// - GIT_STATUS_OPT_INCLUDE_UNMODIFIED indicates that callback should be
-/// made even on unmodified files.
-/// - GIT_STATUS_OPT_EXCLUDE_SUBMODULES indicates that submodules should be
-/// skipped.  This only applies if there are no pending typechanges to
-/// the submodule (either from or to another type).
-/// - GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS indicates that all files in
-/// untracked directories should be included.  Normally if an entire
-/// directory is new, then just the top-level directory is included (with
-/// a trailing slash on the entry name).  This flag says to include all
-/// of the individual files in the directory instead.
-/// - GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH indicates that the given path
-/// should be treated as a literal path, and not as a pathspec pattern.
-/// - GIT_STATUS_OPT_RECURSE_IGNORED_DIRS indicates that the contents of
-/// ignored directories should be included in the status.  This is like
-/// doing `git ls-files -o -i --exclude-standard` with core git.
-/// - GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX indicates that rename detection
-/// should be processed between the head and the index and enables
-/// the GIT_STATUS_INDEX_RENAMED as a possible status flag.
-/// - GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR indicates that rename
-/// detection should be run between the index and the working directory
-/// and enabled GIT_STATUS_WT_RENAMED as a possible status flag.
-/// - GIT_STATUS_OPT_SORT_CASE_SENSITIVELY overrides the native case
-/// sensitivity for the file system and forces the output to be in
-/// case-sensitive order
-/// - GIT_STATUS_OPT_SORT_CASE_INSENSITIVELY overrides the native case
-/// sensitivity for the file system and forces the output to be in
-/// case-insensitive order
-/// - GIT_STATUS_OPT_RENAMES_FROM_REWRITES indicates that rename detection
-/// should include rewritten files
-/// - GIT_STATUS_OPT_NO_REFRESH bypasses the default status behavior of
-/// doing a "soft" index reload (i.e. reloading the index data if the
-/// file on disk has been modified outside libgit2).
-/// - GIT_STATUS_OPT_UPDATE_INDEX tells libgit2 to refresh the stat cache
-/// in the index for files that are unchanged but have out of date stat
-/// information in the index.  It will result in less work being done on
-/// subsequent calls to get status.  This is mutually exclusive with the
-/// NO_REFRESH option.
 ///
 /// Calling `git_status_foreach()` is like calling the extended version
 /// with: GIT_STATUS_OPT_INCLUDE_IGNORED, GIT_STATUS_OPT_INCLUDE_UNTRACKED,
 /// and GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS.  Those options are bundled
 /// together as `GIT_STATUS_OPT_DEFAULTS` if you want them as a baseline.
 abstract class git_status_opt_t {
+  /// Says that callbacks should be made on untracked files.
+  /// These will only be made if the workdir files are included in the status
+  /// "show" option.
   static const int GIT_STATUS_OPT_INCLUDE_UNTRACKED = 1;
+
+  /// Says that ignored files get callbacks.
+  /// Again, these callbacks will only be made if the workdir files are
+  /// included in the status "show" option.
   static const int GIT_STATUS_OPT_INCLUDE_IGNORED = 2;
+
+  /// Indicates that callback should be made even on unmodified files.
   static const int GIT_STATUS_OPT_INCLUDE_UNMODIFIED = 4;
+
+  /// Indicates that submodules should be skipped.
+  /// This only applies if there are no pending typechanges to the submodule
+  /// (either from or to another type).
   static const int GIT_STATUS_OPT_EXCLUDE_SUBMODULES = 8;
+
+  /// Indicates that all files in untracked directories should be included.
+  /// Normally if an entire directory is new, then just the top-level
+  /// directory is included (with a trailing slash on the entry name).
+  /// This flag says to include all of the individual files in the directory
+  /// instead.
   static const int GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS = 16;
+
+  /// Indicates that the given path should be treated as a literal path,
+  /// and not as a pathspec pattern.
   static const int GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH = 32;
+
+  /// Indicates that the contents of ignored directories should be included
+  /// in the status. This is like doing `git ls-files -o -i --exclude-standard`
+  /// with core git.
   static const int GIT_STATUS_OPT_RECURSE_IGNORED_DIRS = 64;
+
+  /// Indicates that rename detection should be processed between the head and
+  /// the index and enables the GIT_STATUS_INDEX_RENAMED as a possible status
+  /// flag.
   static const int GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX = 128;
+
+  /// Indicates that rename detection should be run between the index and the
+  /// working directory and enabled GIT_STATUS_WT_RENAMED as a possible status
+  /// flag.
   static const int GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR = 256;
+
+  /// Overrides the native case sensitivity for the file system and forces
+  /// the output to be in case-sensitive order.
   static const int GIT_STATUS_OPT_SORT_CASE_SENSITIVELY = 512;
+
+  /// Overrides the native case sensitivity for the file system and forces
+  /// the output to be in case-insensitive order.
   static const int GIT_STATUS_OPT_SORT_CASE_INSENSITIVELY = 1024;
+
+  /// Iindicates that rename detection should include rewritten files.
   static const int GIT_STATUS_OPT_RENAMES_FROM_REWRITES = 2048;
+
+  /// Bypasses the default status behavior of doing a "soft" index reload
+  /// (i.e. reloading the index data if the file on disk has been modified
+  /// outside libgit2).
   static const int GIT_STATUS_OPT_NO_REFRESH = 4096;
+
+  /// Tells libgit2 to refresh the stat cache in the index for files that are
+  /// unchanged but have out of date stat einformation in the index.
+  /// It will result in less work being done on subsequent calls to get status.
+  /// This is mutually exclusive with the NO_REFRESH option.
   static const int GIT_STATUS_OPT_UPDATE_INDEX = 8192;
+
+  /// Normally files that cannot be opened or read are ignored as
+  /// these are often transient files; this option will return
+  /// unreadable files as `GIT_STATUS_WT_UNREADABLE`.
   static const int GIT_STATUS_OPT_INCLUDE_UNREADABLE = 16384;
+
+  /// Unreadable files will be detected and given the status
+  /// untracked instead of unreadable.
   static const int GIT_STATUS_OPT_INCLUDE_UNREADABLE_AS_UNTRACKED = 32768;
 }
 
@@ -2681,27 +3552,28 @@ abstract class git_status_opt_t {
 /// Initialize with `GIT_STATUS_OPTIONS_INIT`. Alternatively, you can
 /// use `git_status_options_init`.
 class git_status_options extends ffi.Struct {
-  /// < The version
+  /// The struct version; pass `GIT_STATUS_OPTIONS_VERSION`.
   @ffi.Uint32()
   external int version;
 
   /// The `show` value is one of the `git_status_show_t` constants that
   /// control which files to scan and in what order.
   @ffi.Int32()
-  external int show_1;
+  external int show1;
 
-  /// The `flags` value is an OR'ed combination of the `git_status_opt_t`
-  /// values above.
+  /// The `flags` value is an OR'ed combination of the
+  /// `git_status_opt_t` values above.
   @ffi.Uint32()
   external int flags;
 
   /// The `pathspec` is an array of path patterns to match (using
-  /// fnmatch-style matching), or just an array of paths to match exactly if
-  /// `GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH` is specified in the flags.
+  /// fnmatch-style matching), or just an array of paths to match
+  /// exactly if `GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH` is specified
+  /// in the flags.
   external git_strarray pathspec;
 
-  /// The `baseline` is the tree to be used for comparison to the working directory
-  /// and index; defaults to HEAD.
+  /// The `baseline` is the tree to be used for comparison to the
+  /// working directory and index; defaults to HEAD.
   external ffi.Pointer<git_tree> baseline;
 }
 
@@ -2726,6 +3598,31 @@ class git_status_entry extends ffi.Struct {
   external ffi.Pointer<git_diff_delta> index_to_workdir;
 }
 
+/// Status flags for a single file.
+///
+/// A combination of these values will be returned to indicate the status of
+/// a file.  Status compares the working directory, the index, and the
+/// current HEAD of the repository.  The `GIT_STATUS_INDEX` set of flags
+/// represents the status of file in the index relative to the HEAD, and the
+/// `GIT_STATUS_WT` set of flags represent the status of the file in the
+/// working directory relative to the index.
+abstract class git_status_t {
+  static const int GIT_STATUS_CURRENT = 0;
+  static const int GIT_STATUS_INDEX_NEW = 1;
+  static const int GIT_STATUS_INDEX_MODIFIED = 2;
+  static const int GIT_STATUS_INDEX_DELETED = 4;
+  static const int GIT_STATUS_INDEX_RENAMED = 8;
+  static const int GIT_STATUS_INDEX_TYPECHANGE = 16;
+  static const int GIT_STATUS_WT_NEW = 128;
+  static const int GIT_STATUS_WT_MODIFIED = 256;
+  static const int GIT_STATUS_WT_DELETED = 512;
+  static const int GIT_STATUS_WT_TYPECHANGE = 1024;
+  static const int GIT_STATUS_WT_RENAMED = 2048;
+  static const int GIT_STATUS_WT_UNREADABLE = 4096;
+  static const int GIT_STATUS_IGNORED = 16384;
+  static const int GIT_STATUS_CONFLICTED = 32768;
+}
+
 class git_status_list extends ffi.Opaque {}
 
 const int GIT_REPOSITORY_INIT_OPTIONS_VERSION = 1;
@@ -2741,821 +3638,3 @@ const int GIT_PUSH_OPTIONS_VERSION = 1;
 const int GIT_CLONE_OPTIONS_VERSION = 1;
 
 const int GIT_STATUS_OPTIONS_VERSION = 1;
-
-typedef _c_libgit2_features = ffi.Int32 Function();
-
-typedef _dart_libgit2_features = int Function();
-
-typedef _c_buf_dispose = ffi.Void Function(
-  ffi.Pointer<git_buf> buffer,
-);
-
-typedef _dart_buf_dispose = void Function(
-  ffi.Pointer<git_buf> buffer,
-);
-
-typedef _c_oid_cpy = ffi.Int32 Function(
-  ffi.Pointer<git_oid> out,
-  ffi.Pointer<git_oid> src,
-);
-
-typedef _dart_oid_cpy = int Function(
-  ffi.Pointer<git_oid> out,
-  ffi.Pointer<git_oid> src,
-);
-
-typedef _c_repository_open = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> path,
-);
-
-typedef _dart_repository_open = int Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> path,
-);
-
-typedef _c_repository_free = ffi.Void Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_repository_free = void Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _c_repository_init = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> path,
-  ffi.Uint32 is_bare,
-);
-
-typedef _dart_repository_init = int Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> path,
-  int is_bare,
-);
-
-typedef _c_repository_init_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_repository_init_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_repository_init_options_init = int Function(
-  ffi.Pointer<git_repository_init_options> opts,
-  int version,
-);
-
-typedef _c_repository_init_ext = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> repo_path,
-  ffi.Pointer<git_repository_init_options> opts,
-);
-
-typedef _dart_repository_init_ext = int Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> repo_path,
-  ffi.Pointer<git_repository_init_options> opts,
-);
-
-typedef _c_repository_head = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_repository_head = int Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _c_repository_head_unborn = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_repository_head_unborn = int Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _c_repository_index = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_index>> out,
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_repository_index = int Function(
-  ffi.Pointer<ffi.Pointer<git_index>> out,
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _c_repository_state_cleanup = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_repository_state_cleanup = int Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef git_repository_mergehead_foreach_cb = ffi.Int32 Function(
-  ffi.Pointer<git_oid>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef _c_repository_mergehead_foreach = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.NativeFunction<git_repository_mergehead_foreach_cb>> callback,
-  ffi.Pointer<ffi.Void> payload,
-);
-
-typedef _dart_repository_mergehead_foreach = int Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.NativeFunction<git_repository_mergehead_foreach_cb>> callback,
-  ffi.Pointer<ffi.Void> payload,
-);
-
-typedef _c_repository_set_head = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> refname,
-);
-
-typedef _dart_repository_set_head = int Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> refname,
-);
-
-typedef _c_repository_state = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_repository_state = int Function(
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _c_annotated_commit_from_ref = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_annotated_commit>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _dart_annotated_commit_from_ref = int Function(
-  ffi.Pointer<ffi.Pointer<git_annotated_commit>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _c_annotated_commit_id = ffi.Pointer<git_oid> Function(
-  ffi.Pointer<git_annotated_commit> commit,
-);
-
-typedef _dart_annotated_commit_id = ffi.Pointer<git_oid> Function(
-  ffi.Pointer<git_annotated_commit> commit,
-);
-
-typedef _c_annotated_commit_free = ffi.Void Function(
-  ffi.Pointer<git_annotated_commit> commit,
-);
-
-typedef _dart_annotated_commit_free = void Function(
-  ffi.Pointer<git_annotated_commit> commit,
-);
-
-typedef _c_tree_lookup = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_tree>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_oid> id,
-);
-
-typedef _dart_tree_lookup = int Function(
-  ffi.Pointer<ffi.Pointer<git_tree>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_oid> id,
-);
-
-typedef _c_tree_free = ffi.Void Function(
-  ffi.Pointer<git_tree> tree,
-);
-
-typedef _dart_tree_free = void Function(
-  ffi.Pointer<git_tree> tree,
-);
-
-typedef _c_strarray_dispose = ffi.Void Function(
-  ffi.Pointer<git_strarray> array,
-);
-
-typedef _dart_strarray_dispose = void Function(
-  ffi.Pointer<git_strarray> array,
-);
-
-typedef _c_reference_name_to_id = ffi.Int32 Function(
-  ffi.Pointer<git_oid> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-);
-
-typedef _dart_reference_name_to_id = int Function(
-  ffi.Pointer<git_oid> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-);
-
-typedef _c_reference_dwim = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> shorthand,
-);
-
-typedef _dart_reference_dwim = int Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> shorthand,
-);
-
-typedef _c_reference_target = ffi.Pointer<git_oid> Function(
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _dart_reference_target = ffi.Pointer<git_oid> Function(
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _c_reference_name = ffi.Pointer<ffi.Int8> Function(
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _dart_reference_name = ffi.Pointer<ffi.Int8> Function(
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _c_reference_resolve = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _dart_reference_resolve = int Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _c_reference_set_target = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_reference> ref,
-  ffi.Pointer<git_oid> id,
-  ffi.Pointer<ffi.Int8> log_message,
-);
-
-typedef _dart_reference_set_target = int Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_reference> ref,
-  ffi.Pointer<git_oid> id,
-  ffi.Pointer<ffi.Int8> log_message,
-);
-
-typedef _c_reference_free = ffi.Void Function(
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _dart_reference_free = void Function(
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _c_branch_name = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<ffi.Int8>> out,
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _dart_branch_name = int Function(
-  ffi.Pointer<ffi.Pointer<ffi.Int8>> out,
-  ffi.Pointer<git_reference> ref,
-);
-
-typedef _c_branch_upstream = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_reference> branch,
-);
-
-typedef _dart_branch_upstream = int Function(
-  ffi.Pointer<ffi.Pointer<git_reference>> out,
-  ffi.Pointer<git_reference> branch,
-);
-
-typedef _c_checkout_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_checkout_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_checkout_options_init = int Function(
-  ffi.Pointer<git_checkout_options> opts,
-  int version,
-);
-
-typedef _c_checkout_head = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_checkout_options> opts,
-);
-
-typedef _dart_checkout_head = int Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_checkout_options> opts,
-);
-
-typedef _c_checkout_tree = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_object> treeish,
-  ffi.Pointer<git_checkout_options> opts,
-);
-
-typedef _dart_checkout_tree = int Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_object> treeish,
-  ffi.Pointer<git_checkout_options> opts,
-);
-
-typedef _c_index_free = ffi.Void Function(
-  ffi.Pointer<git_index> index,
-);
-
-typedef _dart_index_free = void Function(
-  ffi.Pointer<git_index> index,
-);
-
-typedef _c_index_write = ffi.Int32 Function(
-  ffi.Pointer<git_index> index,
-);
-
-typedef _dart_index_write = int Function(
-  ffi.Pointer<git_index> index,
-);
-
-typedef _c_index_write_tree = ffi.Int32 Function(
-  ffi.Pointer<git_oid> out,
-  ffi.Pointer<git_index> index,
-);
-
-typedef _dart_index_write_tree = int Function(
-  ffi.Pointer<git_oid> out,
-  ffi.Pointer<git_index> index,
-);
-
-typedef _c_index_add_bypath = ffi.Int32 Function(
-  ffi.Pointer<git_index> index,
-  ffi.Pointer<ffi.Int8> path,
-);
-
-typedef _dart_index_add_bypath = int Function(
-  ffi.Pointer<git_index> index,
-  ffi.Pointer<ffi.Int8> path,
-);
-
-typedef _c_index_remove_bypath = ffi.Int32 Function(
-  ffi.Pointer<git_index> index,
-  ffi.Pointer<ffi.Int8> path,
-);
-
-typedef _dart_index_remove_bypath = int Function(
-  ffi.Pointer<git_index> index,
-  ffi.Pointer<ffi.Int8> path,
-);
-
-typedef _c_merge_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_merge_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_merge_options_init = int Function(
-  ffi.Pointer<git_merge_options> opts,
-  int version,
-);
-
-typedef _c_merge_analysis = ffi.Int32 Function(
-  ffi.Pointer<ffi.Int32> analysis_out,
-  ffi.Pointer<ffi.Int32> preference_out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
-  ffi.IntPtr their_heads_len,
-);
-
-typedef _dart_merge_analysis = int Function(
-  ffi.Pointer<ffi.Int32> analysis_out,
-  ffi.Pointer<ffi.Int32> preference_out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
-  int their_heads_len,
-);
-
-typedef _c_merge = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
-  ffi.IntPtr their_heads_len,
-  ffi.Pointer<git_merge_options> merge_opts,
-  ffi.Pointer<git_checkout_options> checkout_opts,
-);
-
-typedef _dart_merge = int Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Pointer<git_annotated_commit>> their_heads,
-  int their_heads_len,
-  ffi.Pointer<git_merge_options> merge_opts,
-  ffi.Pointer<git_checkout_options> checkout_opts,
-);
-
-typedef _c_credential_userpass_plaintext_new = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_credential>> out,
-  ffi.Pointer<ffi.Int8> username,
-  ffi.Pointer<ffi.Int8> password,
-);
-
-typedef _dart_credential_userpass_plaintext_new = int Function(
-  ffi.Pointer<ffi.Pointer<git_credential>> out,
-  ffi.Pointer<ffi.Int8> username,
-  ffi.Pointer<ffi.Int8> password,
-);
-
-typedef _c_remote_create = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_remote>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-  ffi.Pointer<ffi.Int8> url,
-);
-
-typedef _dart_remote_create = int Function(
-  ffi.Pointer<ffi.Pointer<git_remote>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-  ffi.Pointer<ffi.Int8> url,
-);
-
-typedef _c_remote_lookup = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_remote>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-);
-
-typedef _dart_remote_lookup = int Function(
-  ffi.Pointer<ffi.Pointer<git_remote>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-);
-
-typedef _c_remote_free = ffi.Void Function(
-  ffi.Pointer<git_remote> remote,
-);
-
-typedef _dart_remote_free = void Function(
-  ffi.Pointer<git_remote> remote,
-);
-
-typedef _c_remote_list = ffi.Int32 Function(
-  ffi.Pointer<git_strarray> out,
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _dart_remote_list = int Function(
-  ffi.Pointer<git_strarray> out,
-  ffi.Pointer<git_repository> repo,
-);
-
-typedef _c_fetch_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_fetch_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_fetch_options_init = int Function(
-  ffi.Pointer<git_fetch_options> opts,
-  int version,
-);
-
-typedef _c_push_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_push_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_push_options_init = int Function(
-  ffi.Pointer<git_push_options> opts,
-  int version,
-);
-
-typedef _c_remote_fetch = ffi.Int32 Function(
-  ffi.Pointer<git_remote> remote,
-  ffi.Pointer<git_strarray> refspecs,
-  ffi.Pointer<git_fetch_options> opts,
-  ffi.Pointer<ffi.Int8> reflog_message,
-);
-
-typedef _dart_remote_fetch = int Function(
-  ffi.Pointer<git_remote> remote,
-  ffi.Pointer<git_strarray> refspecs,
-  ffi.Pointer<git_fetch_options> opts,
-  ffi.Pointer<ffi.Int8> reflog_message,
-);
-
-typedef _c_remote_push = ffi.Int32 Function(
-  ffi.Pointer<git_remote> remote,
-  ffi.Pointer<git_strarray> refspecs,
-  ffi.Pointer<git_push_options> opts,
-);
-
-typedef _dart_remote_push = int Function(
-  ffi.Pointer<git_remote> remote,
-  ffi.Pointer<git_strarray> refspecs,
-  ffi.Pointer<git_push_options> opts,
-);
-
-typedef _c_remote_delete = ffi.Int32 Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-);
-
-typedef _dart_remote_delete = int Function(
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> name,
-);
-
-typedef _c_clone_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_clone_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_clone_options_init = int Function(
-  ffi.Pointer<git_clone_options> opts,
-  int version,
-);
-
-typedef _c_clone = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> url,
-  ffi.Pointer<ffi.Int8> local_path,
-  ffi.Pointer<git_clone_options> options,
-);
-
-typedef _dart_clone = int Function(
-  ffi.Pointer<ffi.Pointer<git_repository>> out,
-  ffi.Pointer<ffi.Int8> url,
-  ffi.Pointer<ffi.Int8> local_path,
-  ffi.Pointer<git_clone_options> options,
-);
-
-typedef _c_commit_lookup = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_commit>> commit,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_oid> id,
-);
-
-typedef _dart_commit_lookup = int Function(
-  ffi.Pointer<ffi.Pointer<git_commit>> commit,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_oid> id,
-);
-
-typedef _c_commit_free = ffi.Void Function(
-  ffi.Pointer<git_commit> commit,
-);
-
-typedef _dart_commit_free = void Function(
-  ffi.Pointer<git_commit> commit,
-);
-
-typedef _c_commit_create = ffi.Int32 Function(
-  ffi.Pointer<git_oid> id,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> update_ref,
-  ffi.Pointer<git_signature> author,
-  ffi.Pointer<git_signature> committer,
-  ffi.Pointer<ffi.Int8> message_encoding,
-  ffi.Pointer<ffi.Int8> message,
-  ffi.Pointer<git_tree> tree,
-  ffi.IntPtr parent_count,
-  ffi.Pointer<ffi.Pointer<git_commit>> parents,
-);
-
-typedef _dart_commit_create = int Function(
-  ffi.Pointer<git_oid> id,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<ffi.Int8> update_ref,
-  ffi.Pointer<git_signature> author,
-  ffi.Pointer<git_signature> committer,
-  ffi.Pointer<ffi.Int8> message_encoding,
-  ffi.Pointer<ffi.Int8> message,
-  ffi.Pointer<git_tree> tree,
-  int parent_count,
-  ffi.Pointer<ffi.Pointer<git_commit>> parents,
-);
-
-typedef _c_error_last = ffi.Pointer<git_error> Function();
-
-typedef _dart_error_last = ffi.Pointer<git_error> Function();
-
-typedef _c_error_set_str = ffi.Int32 Function(
-  ffi.Int32 error_class,
-  ffi.Pointer<ffi.Int8> string,
-);
-
-typedef _dart_error_set_str = int Function(
-  int error_class,
-  ffi.Pointer<ffi.Int8> string,
-);
-
-typedef _c_status_options_init = ffi.Int32 Function(
-  ffi.Pointer<git_status_options> opts,
-  ffi.Uint32 version,
-);
-
-typedef _dart_status_options_init = int Function(
-  ffi.Pointer<git_status_options> opts,
-  int version,
-);
-
-typedef _c_status_list_new = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_status_list>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_status_options> opts,
-);
-
-typedef _dart_status_list_new = int Function(
-  ffi.Pointer<ffi.Pointer<git_status_list>> out,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_status_options> opts,
-);
-
-typedef _c_status_list_entrycount = ffi.IntPtr Function(
-  ffi.Pointer<git_status_list> statuslist,
-);
-
-typedef _dart_status_list_entrycount = int Function(
-  ffi.Pointer<git_status_list> statuslist,
-);
-
-typedef _c_status_byindex = ffi.Pointer<git_status_entry> Function(
-  ffi.Pointer<git_status_list> statuslist,
-  ffi.IntPtr idx,
-);
-
-typedef _dart_status_byindex = ffi.Pointer<git_status_entry> Function(
-  ffi.Pointer<git_status_list> statuslist,
-  int idx,
-);
-
-typedef _c_status_list_free = ffi.Void Function(
-  ffi.Pointer<git_status_list> statuslist,
-);
-
-typedef _dart_status_list_free = void Function(
-  ffi.Pointer<git_status_list> statuslist,
-);
-
-typedef _c_libgit2_init = ffi.Int32 Function();
-
-typedef _dart_libgit2_init = int Function();
-
-typedef _c_libgit2_shutdown = ffi.Int32 Function();
-
-typedef _dart_libgit2_shutdown = int Function();
-
-typedef _c_graph_ahead_behind = ffi.Int32 Function(
-  ffi.Pointer<ffi.IntPtr> ahead,
-  ffi.Pointer<ffi.IntPtr> behind,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_oid> local,
-  ffi.Pointer<git_oid> upstream,
-);
-
-typedef _dart_graph_ahead_behind = int Function(
-  ffi.Pointer<ffi.IntPtr> ahead,
-  ffi.Pointer<ffi.IntPtr> behind,
-  ffi.Pointer<git_repository> repo,
-  ffi.Pointer<git_oid> local,
-  ffi.Pointer<git_oid> upstream,
-);
-
-typedef _c_signature_now = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_signature>> out,
-  ffi.Pointer<ffi.Int8> name,
-  ffi.Pointer<ffi.Int8> email,
-);
-
-typedef _dart_signature_now = int Function(
-  ffi.Pointer<ffi.Pointer<git_signature>> out,
-  ffi.Pointer<ffi.Int8> name,
-  ffi.Pointer<ffi.Int8> email,
-);
-
-typedef _c_signature_free = ffi.Void Function(
-  ffi.Pointer<git_signature> sig,
-);
-
-typedef _dart_signature_free = void Function(
-  ffi.Pointer<git_signature> sig,
-);
-
-typedef _typedefC_3 = ffi.Void Function(
-  ffi.Pointer<git_credential>,
-);
-
-typedef git_transport_message_cb = ffi.Int32 Function(
-  ffi.Pointer<ffi.Int8>,
-  ffi.Int32,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef _typedefC_1 = ffi.Int32 Function(
-  ffi.Int32,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_credential_acquire_cb = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_credential>>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Uint32,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_transport_certificate_check_cb = ffi.Int32 Function(
-  ffi.Pointer<git_cert>,
-  ffi.Int32,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_indexer_progress_cb = ffi.Int32 Function(
-  ffi.Pointer<git_indexer_progress>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef _typedefC_2 = ffi.Int32 Function(
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<git_oid>,
-  ffi.Pointer<git_oid>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_packbuilder_progress = ffi.Int32 Function(
-  ffi.Int32,
-  ffi.Uint32,
-  ffi.Uint32,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_push_transfer_progress_cb = ffi.Int32 Function(
-  ffi.Uint32,
-  ffi.Uint32,
-  ffi.IntPtr,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_push_update_reference_cb = ffi.Int32 Function(
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_push_negotiation = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_push_update>>,
-  ffi.IntPtr,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_transport_cb = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_transport>>,
-  ffi.Pointer<git_remote>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_url_resolve_cb = ffi.Int32 Function(
-  ffi.Pointer<git_buf>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Int32,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_checkout_notify_cb = ffi.Int32 Function(
-  ffi.Int32,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<git_diff_file>,
-  ffi.Pointer<git_diff_file>,
-  ffi.Pointer<git_diff_file>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_checkout_progress_cb = ffi.Void Function(
-  ffi.Pointer<ffi.Int8>,
-  ffi.IntPtr,
-  ffi.IntPtr,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_checkout_perfdata_cb = ffi.Void Function(
-  ffi.Pointer<git_checkout_perfdata>,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_repository_create_cb = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_repository>>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Int32,
-  ffi.Pointer<ffi.Void>,
-);
-
-typedef git_remote_create_cb = ffi.Int32 Function(
-  ffi.Pointer<ffi.Pointer<git_remote>>,
-  ffi.Pointer<git_repository>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<ffi.Int8>,
-  ffi.Pointer<ffi.Void>,
-);
