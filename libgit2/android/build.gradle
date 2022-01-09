@@ -43,7 +43,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path "../ios/libgit2-1.1.0/CMakeLists.txt"
+            path "../android/libgit2-1.3.0/CMakeLists.txt"
         }
     }
 }

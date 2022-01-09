@@ -1,7 +1,7 @@
 name: libgit2_ffigen
 
 environment:
-  sdk: '>=2.15.0 <3.0.0'
+  sdk: '>=2.8.0 <3.0.0'
 
 dev_dependencies:
   ffigen:

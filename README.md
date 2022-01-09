@@ -6,7 +6,7 @@ Packaged releases of PlomGit can be found through the [PlomGit webpage](https://
 
 ### Building
 
-PlomGit requires you to download and patch the libgit2 library manually. Go into the libgit2 directory and follow the README.md instructions there about which version of libgit2 to download, where to put it, and how to patch it. Since the iOS and Android versions use different patch sets, you will need separate PlomGit downloads to build things for iOS and Android. You can also update the function interface and going into the libgit2/ffigen directory and follow the README.md instructions there for running ffigen.
+PlomGit requires you to download and patch the libgit2 library manually. Go into the libgit2 directory and follow the README.md instructions there about which version of libgit2 to download, where to put it, and how to patch it. You can also update the function interface and going into the libgit2/ffigen directory and follow the README.md instructions there for running ffigen.
 
 ### Alternative Git Engines Exploration
 
