@@ -173,6 +173,8 @@ public class PlomGitRepositoryProvider extends DocumentsProvider
                 if (file.mkdir())
                     return parentDocumentId + "/" + displayName;
                 else
+// TODO: I think it's actually supposed to return NULL here maybe? Because this is actually called from DocumentFile.createDirectory()?
+// There's just not enough documentation to know what to do.
                     throw new FileNotFoundException();
             }
             else
