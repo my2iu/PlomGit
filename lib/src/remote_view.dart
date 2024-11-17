@@ -91,13 +91,13 @@ class _RemoteListViewState extends State<RemoteListView> {
 
   @override
   Widget build(BuildContext context) {
-    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
-        Theme.of(context).primaryTextTheme;
+    TextTheme appBarTextTheme = 
+        Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
           Text("Remotes"),
-          Text(repositoryName, style: appBarTextTheme.caption)
+          Text(repositoryName, style: appBarTextTheme.bodySmall)
         ]),
       ),
       body: FutureBuilder<List<String>>(

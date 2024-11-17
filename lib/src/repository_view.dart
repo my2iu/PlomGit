@@ -363,9 +363,8 @@ class _RepositoryViewState extends State<RepositoryView> {
   }
 
   Widget? _makeStatusBar() {
-    TextStyle textStyle = (Theme.of(context).appBarTheme.textTheme ??
-            Theme.of(context).primaryTextTheme)
-        .subtitle2!;
+    TextStyle textStyle = 
+            Theme.of(context).textTheme.titleSmall!;
     double size = textStyle.fontSize!;
     // String repoStateMessage = "";
     if ((repoState == null || !repoState!.normal) &&
@@ -393,12 +392,12 @@ class _RepositoryViewState extends State<RepositoryView> {
   @override
   Widget build(BuildContext context) {
     Widget title;
-    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
-        Theme.of(context).primaryTextTheme;
+    TextTheme appBarTextTheme = //Theme.of(context).appBarTheme.textTheme ??
+        Theme.of(context).textTheme;
     if (_path.isNotEmpty) {
       title = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(repositoryName),
-        Text(_path, style: appBarTextTheme.caption)
+        Text(_path, style: appBarTextTheme.bodySmall)
       ]);
     } else {
       title = Text(repositoryName);

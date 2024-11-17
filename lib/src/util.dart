@@ -260,7 +260,7 @@ class CheckboxFormField extends StatelessWidget {
         } else {
           var text = state.hasError
               ? Text(message!,
-                  style: TextStyle(color: Theme.of(context).errorColor))
+                  style: TextStyle(color: Theme.of(context).colorScheme.error))
               : Text(message!);
           main = CheckboxListTile(
             value: state.value,

@@ -12,14 +12,13 @@ class CommitPrepareChangesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
-        Theme.of(context).primaryTextTheme;
+    TextTheme appBarTextTheme = Theme.of(context).textTheme;
     return Scaffold(
         appBar: AppBar(
           title:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
             isMerged ? Text('Commit Merge') : Text('Commit'),
-            Text(repositoryName, style: appBarTextTheme.caption)
+            Text(repositoryName, style: appBarTextTheme.bodySmall)
           ]),
         ),
         body: Padding(
@@ -117,15 +116,14 @@ class CommitFinalView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextTheme appBarTextTheme = Theme.of(context).appBarTheme.textTheme ??
-        Theme.of(context).primaryTextTheme;
+    TextTheme appBarTextTheme = Theme.of(context).textTheme;
 
     return Scaffold(
         appBar: AppBar(
           title:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
             isMerge ? Text('Merge Message') : Text('Commit Message'),
-            Text(repositoryName, style: appBarTextTheme.caption)
+            Text(repositoryName, style: appBarTextTheme.bodySmall)
           ]),
         ),
         body: Form(
@@ -215,7 +213,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
           padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultSectionSpacing,
               kDefaultPadding, kDefaultPadding),
           child: Text('Staged Changes',
-              style: Theme.of(context).textTheme.subtitle1)),
+              style: Theme.of(context).textTheme.titleMedium)),
       Expanded(
           child: Card(
               child: ListView.builder(
@@ -243,7 +241,7 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
       Padding(
           padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultSectionSpacing,
               kDefaultPadding, kDefaultPadding),
-          child: Text('Changes', style: Theme.of(context).textTheme.subtitle1)),
+          child: Text('Changes', style: Theme.of(context).textTheme.titleMedium)),
       Expanded(
           child: Card(
               child: ListView.builder(
