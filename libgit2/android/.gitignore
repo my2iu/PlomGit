@@ -6,5 +6,5 @@
 .DS_Store
 /build
 /captures
-.cxx/
-plomgit-libgit2/
+.cxx
+plomgit-libgit2

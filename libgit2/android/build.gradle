@@ -1,54 +1,65 @@
-group 'com.example.libgit2'
-version '1.0-SNAPSHOT'
+group = "com.example.libgit2"
+version = "1.0"
 
 buildscript {
-    // ext.kotlin_version = '1.3.50'
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.0'
-        // classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath("com.android.tools.build:gradle:8.1.0")
     }
 }
 
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
-apply plugin: 'com.android.library'
-// apply plugin: 'kotlin-android'
+apply plugin: "com.android.library"
 
 android {
-    compileSdkVersion 31
+    if (project.android.hasProperty("namespace")) {
+        namespace = "com.example.libgit2"
+    }
 
-    // sourceSets {
-    //     main.java.srcDirs += 'src/main/kotlin'
-    // }
+    compileSdk = 34
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
-        minSdkVersion 16
+        minSdk = 21
         externalNativeBuild {
             cmake {
                 arguments "-DUSE_HTTPS=OFF", "-DBUILD_CLAR=OFF"
             }
         }
     }
-    lintOptions {
-        disable 'InvalidPackage'
+
+    dependencies {
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("org.mockito:mockito-core:5.0.0")
     }
+    
     externalNativeBuild {
         cmake {
-            path "../android/libgit2-1.3.0/CMakeLists.txt"
+            path = "../android/plomgit-libgit2/CMakeLists.txt"
+        }    
+    }
+    
+    testOptions {
+        unitTests.all {
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
         }
     }
-}
-
-dependencies {
-    // implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.android.support:support-annotations:28.0.0'
 }

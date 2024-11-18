@@ -5,12 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:libgit2/libgit2.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -26,6 +28,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
     try {
       platformVersion = await Libgit2.platformVersion ?? 'Failed to get platform version.';
     } on PlatformException {

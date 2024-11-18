@@ -7,7 +7,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** Libgit2Plugin */
 public class Libgit2Plugin implements FlutterPlugin, MethodCallHandler {
@@ -17,7 +16,8 @@ public class Libgit2Plugin implements FlutterPlugin, MethodCallHandler {
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
 
-  @Override public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
+  @Override
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "libgit2");
     channel.setMethodCallHandler(this);
 
@@ -26,7 +26,8 @@ public class Libgit2Plugin implements FlutterPlugin, MethodCallHandler {
     System.loadLibrary("git2");
   }
 
-  @Override public void onMethodCall(MethodCall call, Result result) {
+  @Override
+  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     } else {
@@ -34,7 +35,8 @@ public class Libgit2Plugin implements FlutterPlugin, MethodCallHandler {
     }
   }
 
-  @Override public void onDetachedFromEngine(FlutterPlugin.FlutterPluginBinding binding) {
+  @Override
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
   }
 }
