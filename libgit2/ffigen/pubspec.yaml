@@ -1,7 +1,7 @@
 name: libgit2_ffigen
 
 environment:
-  sdk: '>=2.15.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dev_dependencies:
   ffigen:
@@ -116,7 +116,14 @@ ffigen:
      - git_status_show_t
      - git_status_opt_t
      - git_checkout_strategy_t
-     - git_object_t     
+     - git_object_t
+    as-int:
+      include:
+       - git_status_t
+       - git_checkout_notify_t
+       - git_merge_analysis_t
+       - git_status_opt_t
+       - git_checkout_strategy_t
   macros:
     include:
      - GIT_FETCH_OPTIONS_VERSION

@@ -63,6 +63,7 @@ class _RepositoryViewState extends State<RepositoryView> {
     repoStateFuture = gitStatus
         .catchError((err) {
           // Ignore errors
+          return <String, GitStatusFlags>{};
         })
         .then((_) => GitIsolate.instance.repositoryState(repositoryDir))
         .then((state) {

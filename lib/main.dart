@@ -35,6 +35,7 @@ import 'dart:developer' as developer;
 // TODO: checkout branches
 // TODO: file status icons in commit view
 // TODO: change user agent on android http client
+// TODO: Check if editing the password in an Account is working properly
 
 void main() {
   log.hierarchicalLoggingEnabled = true;

@@ -4,7 +4,7 @@ import 'generated_bindings.dart';
 import 'package:ffi/ffi.dart';
 
 class gitHelpers {
-  static final Pointer<Int8> _mainString = "main".toNativeUtf8().cast<Int8>();
+  static final Pointer<Char> _mainString = "main".toNativeUtf8().cast<Char>();
   static void repository_init_options_config(
       Pointer<git_repository_init_options> opts) {
     opts.ref.initial_head = _mainString;
@@ -51,12 +51,12 @@ class gitHelpers {
 
   // The second parameter can be null or a pointer to a pointer of a string
   static void status_options_config(
-      Pointer<git_status_options> opts, Pointer<Pointer<Int8>> path) {
+      Pointer<git_status_options> opts, Pointer<Pointer<Char>> path) {
     if (path != nullptr) {
       opts.ref.pathspec.count = 1;
       opts.ref.pathspec.strings = path;
     }
-    opts.ref.show1 = git_status_show_t.GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+    opts.ref.show1AsInt = git_status_show_t.GIT_STATUS_SHOW_INDEX_AND_WORKDIR.value;
     opts.ref.flags = git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED |
         git_status_opt_t.GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
         git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNMODIFIED;
@@ -64,7 +64,7 @@ class gitHelpers {
 
   // The second parameter can be null or a pointer to a pointer of a string
   static void checkout_options_config_for_revert(
-      Pointer<git_checkout_options> opts, Pointer<Pointer<Int8>> path) {
+      Pointer<git_checkout_options> opts, Pointer<Pointer<Char>> path) {
     opts.ref.checkout_strategy = git_checkout_strategy_t.GIT_CHECKOUT_FORCE |
         git_checkout_strategy_t.GIT_CHECKOUT_REMOVE_UNTRACKED |
         git_checkout_strategy_t.GIT_CHECKOUT_RECREATE_MISSING;

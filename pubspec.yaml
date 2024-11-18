@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.08+8
 
 environment:
-  sdk: '>=2.15.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -48,10 +48,10 @@ dependencies:
   universal_platform: ^1.0.0-nullsafety
   path_provider: ^2.0.1
 
-  http: ^0.13.0  
+  http: ^1.2.2  
 
   # To hold passwords for connecting to remotes
-  flutter_secure_storage: ^5.0.2
+  flutter_secure_storage: ^9.2.2
   
   # Lock to version 2.0.0 since higher versions have concurrency problems
   shared_preferences: ^2.0.11
