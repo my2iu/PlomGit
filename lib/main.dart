@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
       // or simply save your changes to "hot reload" in a Flutter IDE).
       // Notice that the counter didn't reset back to zero; the application
       // is not restarted.
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.light),
+      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFA1D9C9), brightness: Brightness.light),
       useMaterial3: true,
       // This makes the visual density adapt to the platform that you run
       // the app on. For desktop platforms, the controls will be smaller and
@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
     );
     var darkTheme = ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFA1D9C9), brightness: Brightness.dark),
       visualDensity: VisualDensity.adaptivePlatformDensity,
 //      colorScheme: ColorScheme.dark(
 //        surface: Colors.blueGrey.shade900,
