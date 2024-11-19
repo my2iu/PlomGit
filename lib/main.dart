@@ -46,10 +46,12 @@ void main() {
     developer.log('${record.loggerName}: ${record.message}',
         level: record.level.value, name: record.loggerName);
   });
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -88,13 +90,13 @@ class MyApp extends StatelessWidget {
       theme: theme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,
-      home: MyHomePage(title: 'PlomGit Repositories'),
+      home: const MyHomePage(title: 'PlomGit Repositories'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, this.title}) : super(key: key);
+  const MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -105,10 +107,10 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String? title;
+  final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
