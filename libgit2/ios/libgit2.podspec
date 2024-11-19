@@ -1,14 +1,14 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint libgit2.podspec' to validate before publishing.
+# Run `pod lib lint libgit2.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
   s.name             = 'libgit2'
   s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
-  s.description      = <<-DESC 
-A new flutter plugin project. 
- DESC
+  s.summary          = 'A new Flutter plugin project.'
+  s.description      = <<-DESC
+A new Flutter plugin project.
+                       DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
@@ -21,7 +21,7 @@ A new flutter plugin project.
 #  s.public_header_files = "Classes/Libgit2Plugin.h" # "plomgit-libgit2/src/**/*.h", "plomgit-libgit2/include/**/*.h"
 #  s.header_mappings_dir = "plomgit-libgit2/include plomgit-libgit2/src"
   s.dependency 'Flutter'
-  s.platform = :ios, '11.0'
+  s.platform = :ios, '12.0'
   s.libraries = "pthread", "iconv"
   #s.compiler_flags = '-Ilibgit2.1.1.0/include'
 
@@ -33,4 +33,10 @@ A new flutter plugin project.
     "GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS":"NO"
   }
   s.swift_version = '5.0'
+
+  # If your plugin requires a privacy manifest, for example if it uses any
+  # required reason APIs, update the PrivacyInfo.xcprivacy file to describe your
+  # plugin's privacy impact, and then uncomment this line. For more information,
+  # see https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
+  # s.resource_bundles = {'libgit2_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
 end

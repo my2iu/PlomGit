@@ -1,4 +1,4 @@
-plomgit-libgit2/
+plomgit-libgit2
 
 .idea/
 .vagrant/
@@ -36,4 +36,5 @@ Icon?
 .tags*
 
 /Flutter/Generated.xcconfig
+/Flutter/ephemeral/
 /Flutter/flutter_export_environment.sh
