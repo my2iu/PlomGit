@@ -20,10 +20,10 @@ class RepositoryView extends StatefulWidget {
   final Uri repositoryUri;
   final String pathInRepository;
 
-  RepositoryView(this.repositoryName, this.repositoryUri,
+  const RepositoryView(this.repositoryName, this.repositoryUri,  
       [this.pathInRepository = ""]);
   @override
-  _RepositoryViewState createState() =>
+  State<RepositoryView> createState() =>
       _RepositoryViewState(repositoryName, repositoryUri, pathInRepository);
 }
 
@@ -107,7 +107,7 @@ class _RepositoryViewState extends State<RepositoryView> {
       parents.removeLast();
       String parentPath = "";
       parents.forEach((dirname) {
-        parentPath += dirname + '/';
+        parentPath += '$dirname/';
         GitStatusFlags parentFlags =
             statusMap.putIfAbsent(parentPath, () => GitStatusFlags());
         if (flags.isStaged)
@@ -140,10 +140,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                         .then((result) {
                       _refresh();
                       ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Fetch successful')));
+                          const SnackBar(content: Text('Fetch successful')));
                     }).catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: ' + error.toString())));
+                          content: Text('Error: $error')));
                     });
                   },
                   child: TextAndIcon(
@@ -166,10 +166,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                         .then((result) {
                       _refresh();
                       ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Push successful')));
+                          const SnackBar(content: Text('Push successful')));
                     }).catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: ' + error.toString())));
+                          content: Text('Error: $error')));
                     });
                   },
                   child: TextAndIcon(
@@ -209,11 +209,11 @@ class _RepositoryViewState extends State<RepositoryView> {
                   _refresh();
                 }).catchError((error) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: ' + error.toString())));
+                      SnackBar(content: Text('Error: $error')));
                 });
               },
               child: TextAndIcon(
-                  Text('Merge with upstream'),
+                  const Text('Merge with upstream'),
                   Icon(Icons.call_merge,
                       color: Theme.of(context).iconTheme.color)),
             ));
@@ -222,7 +222,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                   _refresh();
                 },
                 child: TextAndIcon(
-                    Text("Refresh"),
+                    const Text("Refresh"),
                     Icon(Icons.refresh,
                         color: Theme.of(context).iconTheme.color))));
             entries.add(PopupMenuItem(
@@ -244,10 +244,10 @@ class _RepositoryViewState extends State<RepositoryView> {
                   // Show the commit screen
                 },
                 child: TextAndIcon(
-                    Text("Commit..."),
+                    const Text("Commit..."),
                     Icon(Icons.save_alt,
                         color: Theme.of(context).iconTheme.color))));
-            entries.add(PopupMenuDivider());
+            entries.add(const PopupMenuDivider());
             entries.add(PopupMenuItem(
                 value: () {
                   repoStateFuture
@@ -266,7 +266,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                   // Show the remote list screen
                 },
                 child: TextAndIcon(
-                    Text("Remotes..."),
+                    const Text("Remotes..."),
                     Icon(Icons.cloud_outlined,
                         color: Theme.of(context).iconTheme.color))));
           }
@@ -291,48 +291,48 @@ class _RepositoryViewState extends State<RepositoryView> {
               if (!isDir) {
                 if (statusFlags.isNew) {
                   if (statusFlags.isStaged)
-                    return Icon(Icons.add_circle);
+                    return const Icon(Icons.add_circle);
                   else
-                    return Icon(Icons.add);
+                    return const Icon(Icons.add);
                 }
                 if (statusFlags.isModified) {
                   if (statusFlags.isStaged)
-                    return Icon(Icons.build_circle);
+                    return const Icon(Icons.build_circle);
                   else
-                    return Icon(Icons.build_circle_outlined);
+                    return const Icon(Icons.build_circle_outlined);
                 }
                 if (statusFlags.isDeleted) {
                   if (statusFlags.isStaged)
-                    return Icon(Icons.remove_circle);
+                    return const Icon(Icons.remove_circle);
                   else
-                    return Icon(Icons.remove_circle_outlined);
+                    return const Icon(Icons.remove_circle_outlined);
                 }
                 if (statusFlags.isConflicted) {
                   if (statusFlags.isStaged)
-                    return Icon(Icons.swap_horizontal_circle);
+                    return const Icon(Icons.swap_horizontal_circle);
                   else
-                    return Icon(Icons.swap_horizontal_circle_outlined);
+                    return const Icon(Icons.swap_horizontal_circle_outlined);
                 }
-                if (!statusFlags.isStaged) return Icon(Icons.lens_outlined);
+                if (!statusFlags.isStaged) return const Icon(Icons.lens_outlined);
               } else {
                 if (statusFlags.dirHasStagedModifications &&
                     !statusFlags.dirHasUnstagedModifications)
-                  return Icon(Icons.folder);
+                  return const Icon(Icons.folder);
                 else if (statusFlags.dirHasStagedModifications &&
                     statusFlags.dirHasUnstagedModifications)
-                  return Icon(Icons.snippet_folder);
+                  return const Icon(Icons.snippet_folder);
                 else if (!statusFlags.dirHasStagedModifications &&
                     statusFlags.dirHasUnstagedModifications &&
                     statusFlags.dirIsInGit)
-                  return Icon(Icons.snippet_folder_outlined);
+                  return const Icon(Icons.snippet_folder_outlined);
                 else if (!statusFlags.dirHasStagedModifications &&
                     statusFlags.dirHasUnstagedModifications &&
                     !statusFlags.dirIsInGit)
-                  return Icon(Icons.create_new_folder_outlined);
+                  return const Icon(Icons.create_new_folder_outlined);
                 else if (statusFlags.dirIsInGit)
-                  return Icon(Icons.folder_outlined);
+                  return const Icon(Icons.folder_outlined);
                 else
-                  return Icon(null);
+                  return const Icon(null);
               }
             }
             // Icons.adjust, Icons.album, Icons.album_outlined, Icons.radio_button_checked, Icons.scatter_plot
@@ -344,9 +344,9 @@ class _RepositoryViewState extends State<RepositoryView> {
             // Icons.radio_button_off
             // Icons.swap_horiz, Icons.swap_horizontal_circle, Icons.swap_horizontal_circle_outlined
             //   return Icon(Icons.stop_circle, color: Colors.blueGrey);
-            return Icon(null);
+            return const Icon(null);
           } else {
-            return Icon(null);
+            return const Icon(null);
           }
         });
     return ListTile(
@@ -422,7 +422,7 @@ class _RepositoryViewState extends State<RepositoryView> {
                     itemBuilder: (context, index) =>
                         _makeFileListTile(context, snapshot.data![index]));
               } else {
-                return Text('Loading');
+                return const Text('Loading');
               }
             }));
   }
