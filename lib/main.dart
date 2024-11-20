@@ -65,7 +65,8 @@ class MyApp extends StatelessWidget {
       // or simply save your changes to "hot reload" in a Flutter IDE).
       // Notice that the counter didn't reset back to zero; the application
       // is not restarted.
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFA1D9C9), brightness: Brightness.light),
+      colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFA1D9C9), brightness: Brightness.light),
       useMaterial3: true,
       // This makes the visual density adapt to the platform that you run
       // the app on. For desktop platforms, the controls will be smaller and
@@ -74,11 +75,12 @@ class MyApp extends StatelessWidget {
     );
     var darkTheme = ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFA1D9C9), brightness: Brightness.dark),
+      colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFA1D9C9), brightness: Brightness.dark),
       visualDensity: VisualDensity.adaptivePlatformDensity,
 //      colorScheme: ColorScheme.dark(
 //        surface: Colors.blueGrey.shade900,
-        //background: const Color(0xff121212),
+      //background: const Color(0xff121212),
 //        primary: Colors.blueGrey.shade300,
 //        secondary: Colors.blueGrey.shade700,
 //        onSecondary: Colors.white,
@@ -126,54 +128,37 @@ class _MyHomePageState extends State<MyHomePage> {
         .catchError((err) => <Directory>[]);
   }
 
-  void _newRepositoryPressed(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          return SimpleDialog(title: Text('New repository'), children: <Widget>[
-            SimpleDialogOption(
-                child: Text('Clone repository'),
-                onPressed: () {
-                  Navigator.pop(dialogContext, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<RepositoryRemoteInfo>(
-                        builder: (BuildContext context) =>
-                            RepositoryLocationAndRemoteDialog(),
-                      ),
-                    ).then((result) {
-                      if (result == null) return;
-                      String url = result.url;
-                      String name = result.name;
-                      _cloneRepository(
-                          context,
-                          name,
-                          url,
-                          result.login.credentialInfo,
-                          result.login.user,
-                          result.login.password);
-                    });
-                  });
-                }),
-            SimpleDialogOption(
-                child: Text('Create local repository'),
-                onPressed: () {
-                  Navigator.pop(dialogContext, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<String>(
-                        builder: (BuildContext context) =>
-                            RepositoryLocationDialog(),
-                      ),
-                    ).then((result) {
-                      if (result == null) return;
-                      _createLocalRepository(context, result);
-                    });
-                  });
-                }),
-          ]);
-        }).then((fn) {
-      if (fn != null) fn();
+  // User has chosen the "Clone repository" menu option
+  void cloneRepositoryMenuAction(BuildContext context) {
+    // Navigator.pop(dialogContext, () {
+    Navigator.push(
+      context,
+      MaterialPageRoute<RepositoryRemoteInfo>(
+        builder: (BuildContext context) => RepositoryLocationAndRemoteDialog(),
+      ),
+    ).then((result) {
+      if (result == null) return;
+      String url = result.url;
+      String name = result.name;
+      if (context.mounted) {
+        _cloneRepository(context, name, url, result.login.credentialInfo,
+            result.login.user, result.login.password);
+      }
+    });
+  }
+
+  // User has chosen the "Create local repository" menu option
+  void createLocalRepositoryMenuAction(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<String>(
+        builder: (BuildContext context) => RepositoryLocationDialog(),
+      ),
+    ).then((result) {
+      if (result == null) return;
+      if (context.mounted) {
+        _createLocalRepository(context, result);
+      }
     });
   }
 
@@ -367,10 +352,25 @@ class _MyHomePageState extends State<MyHomePage> {
               }),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _newRepositoryPressed(context),
-        tooltip: 'New repository',
-        child: Icon(Icons.add),
+      floatingActionButton: MenuAnchor(
+        builder: (context, MenuController controller, Widget? child) {
+          return FloatingActionButton(
+            onPressed: () =>
+                controller.isOpen ? controller.close() : controller.open(),
+            tooltip: 'New repository',
+            child: const Icon(Icons.add),
+          );
+        },
+        menuChildren: <Widget>[
+          //Text('New repository'),
+          MenuItemButton(
+            child: Text("Clone repository"),
+            onPressed: () => cloneRepositoryMenuAction(context),
+          ),
+          MenuItemButton(
+              child: Text("Create local repository"),
+              onPressed: () => createLocalRepositoryMenuAction(context)),
+        ],
       ),
     );
   }
