@@ -91,8 +91,7 @@ class _RemoteListViewState extends State<RemoteListView> {
 
   @override
   Widget build(BuildContext context) {
-    TextTheme appBarTextTheme = 
-        Theme.of(context).textTheme;
+    TextTheme appBarTextTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
         title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
@@ -163,18 +162,22 @@ class RepositoryRemoteInfo {
 }
 
 class RemoteConfigurationWidget extends StatelessWidget {
-  RemoteConfigurationWidget(this.remoteInfo,
-      {this.forRemote = false, this.autofocus = false});
+  const RemoteConfigurationWidget(this.remoteInfo,
+      {super.key,
+      this.forRemote = false,
+      this.autofocus = false,
+      this.onUrlChange});
   final RepositoryRemoteInfo remoteInfo;
   final bool forRemote;
   final bool autofocus;
+  final void Function(String url)? onUrlChange;
 
   @override
   Widget build(BuildContext context) {
     return Column(children: [
       Card(
           child: Padding(
-              padding: EdgeInsets.all(kDefaultPadding),
+              padding: const EdgeInsets.all(kDefaultPadding),
               child: Column(children: [
                 RepositoryOrRemoteNameTextFormField(
                     autofocus: autofocus,
@@ -183,13 +186,14 @@ class RemoteConfigurationWidget extends StatelessWidget {
                     forRemote: forRemote),
                 TextFormField(
                   initialValue: remoteInfo.url,
-                  decoration: InputDecoration(labelText: 'Remote url'),
+                  decoration: const InputDecoration(labelText: 'Remote url'),
                   autocorrect: false,
                   keyboardType: TextInputType.url,
                   onSaved: (text) => remoteInfo.url = text!,
+                  onChanged: onUrlChange,
                 ),
               ]))),
-      SizedBox(height: kDefaultSectionSpacing),
+      const SizedBox(height: kDefaultSectionSpacing),
       RemoteCredentialsWidget(remoteInfo.login),
     ]);
   }
