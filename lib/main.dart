@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:plomgit/src/repository_view.dart' show RepositoryView;
 import 'package:plomgit/src/remote_view.dart'
-    show RemoteConfigurationWidget, RepositoryRemoteInfo;
+    show
+        RemoteConfigurationWidget,
+        RepositoryRemoteInfo,
+        RepositoryRemoteConfigurationAdviceWidget;
 import 'package:plomgit/src/account_credential_view.dart'
     show AccountCredentialListView;
 import 'package:plomgit/src/util.dart'
@@ -445,7 +448,6 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
                     autofocus: true,
                     onUrlChange: (url) => remoteUrlNotifier.value = url,
                   )),
-              RepositoryRemoteConfigurationAdviceWidget(remoteUrlNotifier),
               SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {
@@ -455,72 +457,7 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
                     }
                   },
                   child: Text('Clone')),
+              RepositoryRemoteConfigurationAdviceWidget(remoteUrlNotifier),
             ])));
-  }
-}
-
-// Need a way to show advice on how to configure the remote information properly. This widget will manage all the state for that so that the parent can be stateless
-class RepositoryRemoteConfigurationAdviceWidget extends StatefulWidget {
-  const RepositoryRemoteConfigurationAdviceWidget(this.urlNotifier,
-      {super.key});
-
-  final ValueNotifier<String> urlNotifier;
-
-  @override
-  State<RepositoryRemoteConfigurationAdviceWidget> createState() =>
-      _RepositoryRemoteConfigurationAdviceWidgetState();
-}
-
-class _RepositoryRemoteConfigurationAdviceWidgetState
-    extends State<RepositoryRemoteConfigurationAdviceWidget> {
-  String adviceText = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _updateAdviceText();
-    widget.urlNotifier.addListener(() => setState(() => _updateAdviceText()));
-  }
-
-  void _updateAdviceText() {
-    String url = widget.urlNotifier.value;
-    if (url.startsWith('ssh:')) {
-      adviceText =
-          'PlomGit does not support ssh connections. Only https connections are supported.';
-    } else if (url.startsWith('git@github.com:')) {
-      adviceText = 'PlomGit is not able to connect to GitHub over ssh connections. Please enter an https web URL for the repository instead.';
-    } else if (url.startsWith('https://git@github.com:')) {
-      adviceText = 'GitHub https web URLs are typically of the form https://github.com/[user]/[repo].git';
-    } else if (url.startsWith('https://github.com/') && !url.endsWith('.git')) {
-      adviceText = 'GitHub https web URLs are typically of the form https://github.com/[user]/[repo].git';
-    } else if (url.startsWith('https://github.com/') && url.endsWith('.git')) {
-      adviceText = 'If you are supplying login credentials for GitHub, do not use your regular GitHub password. For https web URLs, GitHub requires you to use a personal access token instead. You can generate a GitHub personal access token by going into your account settings, then navigating to Developer Settings/Personal access tokens/Tokens (classic), and then generating a new classic token with "repo" scope.';
-    } else {
-      adviceText = '';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
-    if (adviceText.isEmpty) {
-      return const SizedBox.shrink();
-    } else {
-      return Column(children: <Widget>[
-        const SizedBox(height: kDefaultSectionSpacing),
-        Opacity(
-            // Hint text color already has transparency, but we want to experiment with more
-            opacity: 0.8,
-            child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: kDefaultSectionSpacing * 2),
-                child: Text(
-                  adviceText,
-                  style: TextStyle(
-                      fontSize: theme.textTheme.bodyMedium?.fontSize,
-                      fontStyle: FontStyle.italic,
-                      color: theme.hintColor),
-                )))
-      ]);
-    }
   }
 }
