@@ -20,7 +20,7 @@ class RepositoryView extends StatefulWidget {
   final Uri repositoryUri;
   final String pathInRepository;
 
-  const RepositoryView(this.repositoryName, this.repositoryUri,  
+  const RepositoryView(this.repositoryName, this.repositoryUri,
       [this.pathInRepository = ""]);
   @override
   State<RepositoryView> createState() =>
@@ -121,157 +121,162 @@ class _RepositoryViewState extends State<RepositoryView> {
   }
 
   Widget buildActionsPopupMenu(BuildContext context) {
-    return PopupMenuButton(
-        onSelected: (dynamic fn) => fn(),
-        itemBuilder: (BuildContext context) {
-          List<PopupMenuEntry> entries = [];
-          if (remoteList != null) {
-            remoteList.forEach((remote) {
-              entries.add(PopupMenuItem(
-                  value: () {
-                    showProgressWhileWaitingFor(
-                            context,
-                            retryWithAskCredentials(
-                                repositoryName,
-                                remote,
-                                (user, password) => GitIsolate.instance.fetch(
-                                    repositoryDir, remote, user, password),
-                                context))
-                        .then((result) {
-                      _refresh();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Fetch successful')));
-                    }).catchError((error) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: $error')));
-                    });
-                  },
-                  child: TextAndIcon(
-                      Text('Fetch from $remote'),
-                      Icon(Icons.cloud_download_outlined,
-                          color: Theme.of(context).iconTheme.color))));
-            });
-            remoteList.forEach((remote) {
-              entries.add(PopupMenuItem(
-                  value: () {
-                    showProgressWhileWaitingFor(
-                            context,
-                            retryWithAskCredentials(
-                                repositoryName,
-                                remote,
-                                (username, password) => GitIsolate.instance
-                                    .push(repositoryDir, remote, username,
-                                        password),
-                                context))
-                        .then((result) {
-                      _refresh();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Push successful')));
-                    }).catchError((error) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: $error')));
-                    });
-                  },
-                  child: TextAndIcon(
-                      Text('Push to $remote'),
-                      Icon(Icons.cloud_upload_outlined,
-                          color: Theme.of(context).iconTheme.color))));
-            });
-            entries.add(PopupMenuItem(
-              value: () {
-                GitIsolate.instance
-                    .mergeWithUpstream(repositoryDir)
-                    .then((result) {
-                  String message;
-                  switch (result) {
-                    case MergeStatus.FAST_FORWARD:
-                      message = "Merge fast-forward";
-                      break;
-                    case MergeStatus.MERGE_FAILED:
-                      message = "Cannot merge";
-                      break;
-                    case MergeStatus.NORMAL_MERGE:
-                      message = "Merge complete, please commit";
-                      break;
-                    case MergeStatus.NO_HEAD:
-                      message = "No HEAD commit to merge";
-                      break;
-                    case MergeStatus.UP_TO_DATE:
-                      message = "Merge already up-to-date";
-                      break;
-                  }
-                  if (result == MergeStatus.NORMAL_MERGE) {
-                    PlomGitPrefs.instance
-                        .writeRepositoryCommitMessage(repositoryName, "Merge");
-                  }
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(message)));
-                  _refresh();
-                }).catchError((error) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $error')));
-                });
-              },
-              child: TextAndIcon(
-                  const Text('Merge with upstream'),
-                  Icon(Icons.call_merge,
-                      color: Theme.of(context).iconTheme.color)),
-            ));
-            entries.add(PopupMenuItem(
-                value: () {
-                  _refresh();
-                },
-                child: TextAndIcon(
-                    const Text("Refresh"),
-                    Icon(Icons.refresh,
-                        color: Theme.of(context).iconTheme.color))));
-            entries.add(PopupMenuItem(
-                value: () {
-                  repoStateFuture
-                      .then((state) => Navigator.push(
-                          context,
-                          MaterialPageRoute<String>(
-                              builder: (BuildContext context) =>
-                                  CommitPrepareChangesView(repositoryName,
-                                      repositoryUri, state.merge))))
-                      .then((result) {
-                    _refresh();
-                    if (result != null) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(result)));
-                    }
-                  });
-                  // Show the commit screen
-                },
-                child: TextAndIcon(
-                    const Text("Commit..."),
-                    Icon(Icons.save_alt,
-                        color: Theme.of(context).iconTheme.color))));
-            entries.add(const PopupMenuDivider());
-            entries.add(PopupMenuItem(
-                value: () {
-                  repoStateFuture
-                      .then((state) => Navigator.push(
-                          context,
-                          MaterialPageRoute<String>(
-                              builder: (BuildContext context) => RemoteListView(
-                                  repositoryName, repositoryUri))))
-                      .then((result) {
-                    _refresh();
-                    if (result != null) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(result)));
-                    }
-                  });
-                  // Show the remote list screen
-                },
-                child: TextAndIcon(
-                    const Text("Remotes..."),
-                    Icon(Icons.cloud_outlined,
-                        color: Theme.of(context).iconTheme.color))));
-          }
-          return entries;
-        });
+    List<Widget> entries = [];
+    {
+      for (var remote in remoteList) {
+        entries.add(MenuItemButton(
+            onPressed: () => _fetchFromRemote(context, remote),
+            child: TextAndIcon(
+                Text('Fetch from $remote'),
+                Icon(Icons.cloud_download_outlined,
+                    color: Theme.of(context).iconTheme.color))));
+      }
+      for (var remote in remoteList) {
+        entries.add(MenuItemButton(
+            onPressed: () => _pushToRemote(context, remote),
+            child: TextAndIcon(
+                Text('Push to $remote'),
+                Icon(Icons.cloud_upload_outlined,
+                    color: Theme.of(context).iconTheme.color))));
+      }
+      entries.add(MenuItemButton(
+        onPressed: () => _mergeWithUpstream(context),
+        child: TextAndIcon(const Text('Merge with upstream'),
+            Icon(Icons.call_merge, color: Theme.of(context).iconTheme.color)),
+      ));
+      entries.add(MenuItemButton(
+          onPressed: () => _refresh(),
+          child: TextAndIcon(const Text("Refresh"),
+              Icon(Icons.refresh, color: Theme.of(context).iconTheme.color))));
+      entries.add(MenuItemButton(
+          onPressed: () => _showCommitScreen(context),
+          child: TextAndIcon(const Text("Commit..."),
+              Icon(Icons.save_alt, color: Theme.of(context).iconTheme.color))));
+      entries.add(const Divider());
+      entries.add(MenuItemButton(
+          onPressed: () => _showRemoteListScreen(context),
+          child: TextAndIcon(
+              const Text("Remotes..."),
+              Icon(Icons.cloud_outlined,
+                  color: Theme.of(context).iconTheme.color))));
+    }
+
+    return MenuAnchor(
+      builder: (context, controller, child) {
+        return IconButton(
+          icon: const Icon(Icons.more_horiz),
+          onPressed: () {
+            controller.isOpen ? controller.close() : controller.open();
+          },
+        );
+      },
+      menuChildren: entries,
+    );
+  }
+
+  void _fetchFromRemote(BuildContext context, String remote) {
+    showProgressWhileWaitingFor(
+            context,
+            retryWithAskCredentials(
+                repositoryName,
+                remote,
+                (user, password) => GitIsolate.instance
+                    .fetch(repositoryDir, remote, user, password),
+                context))
+        .then((result) {
+      _refresh();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Fetch successful')));
+    }).catchError((error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $error')));
+    });
+  }
+
+  void _pushToRemote(BuildContext context, String remote) {
+    showProgressWhileWaitingFor(
+            context,
+            retryWithAskCredentials(
+                repositoryName,
+                remote,
+                (username, password) => GitIsolate.instance
+                    .push(repositoryDir, remote, username, password),
+                context))
+        .then((result) {
+      _refresh();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Push successful')));
+    }).catchError((error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $error')));
+    });
+  }
+
+  void _mergeWithUpstream(BuildContext context) {
+    GitIsolate.instance.mergeWithUpstream(repositoryDir).then((result) {
+      String message;
+      switch (result) {
+        case MergeStatus.FAST_FORWARD:
+          message = "Merge fast-forward";
+          break;
+        case MergeStatus.MERGE_FAILED:
+          message = "Cannot merge";
+          break;
+        case MergeStatus.NORMAL_MERGE:
+          message = "Merge complete, please commit";
+          break;
+        case MergeStatus.NO_HEAD:
+          message = "No HEAD commit to merge";
+          break;
+        case MergeStatus.UP_TO_DATE:
+          message = "Merge already up-to-date";
+          break;
+      }
+      if (result == MergeStatus.NORMAL_MERGE) {
+        PlomGitPrefs.instance
+            .writeRepositoryCommitMessage(repositoryName, "Merge");
+      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+      _refresh();
+    }).catchError((error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $error')));
+    });
+  }
+
+  void _showCommitScreen(BuildContext context) {
+    repoStateFuture
+        .then((state) => Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+                builder: (BuildContext context) => CommitPrepareChangesView(
+                    repositoryName, repositoryUri, state.merge))))
+        .then((result) {
+      _refresh();
+      if (result != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(result)));
+      }
+    });
+    // Show the commit screen
+  }
+
+  void _showRemoteListScreen(BuildContext context) {
+    repoStateFuture
+        .then((state) => Navigator.push(
+            context,
+            MaterialPageRoute<String>(
+                builder: (BuildContext context) =>
+                    RemoteListView(repositoryName, repositoryUri))))
+        .then((result) {
+      _refresh();
+      if (result != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(result)));
+      }
+    });
+    // Show the remote list screen
   }
 
   Widget _makeFileListTile(BuildContext context, FileSystemEntity entry) {
@@ -313,7 +318,8 @@ class _RepositoryViewState extends State<RepositoryView> {
                   else
                     return const Icon(Icons.swap_horizontal_circle_outlined);
                 }
-                if (!statusFlags.isStaged) return const Icon(Icons.lens_outlined);
+                if (!statusFlags.isStaged)
+                  return const Icon(Icons.lens_outlined);
               } else {
                 if (statusFlags.dirHasStagedModifications &&
                     !statusFlags.dirHasUnstagedModifications)
@@ -364,8 +370,7 @@ class _RepositoryViewState extends State<RepositoryView> {
   }
 
   Widget? _makeStatusBar() {
-    TextStyle textStyle = 
-            Theme.of(context).textTheme.titleSmall!;
+    TextStyle textStyle = Theme.of(context).textTheme.titleSmall!;
     double size = textStyle.fontSize!;
     // String repoStateMessage = "";
     if ((repoState == null || !repoState!.normal) &&
