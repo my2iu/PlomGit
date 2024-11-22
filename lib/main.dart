@@ -41,6 +41,7 @@ import 'dart:developer' as developer;
 // TODO: Check if editing the password in an Account is working properly
 // TODO: Update libgit2
 // TODO: Move PopupMenuButton to MenuAnchor
+// TODO: Move android/proguard-rules.pro into libgit2 plugin
 
 void main() {
   log.hierarchicalLoggingEnabled = true;
