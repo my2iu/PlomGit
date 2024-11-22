@@ -16,10 +16,11 @@ class CommitPrepareChangesView extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title:
-              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            isMerged ? Text('Commit Merge') : Text('Commit'),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            isMerged ? const Text('Commit Merge') : const Text('Commit'),
             Text(repositoryName, style: appBarTextTheme.bodySmall)
           ]),
+          centerTitle: false,
         ),
         body: Padding(
             padding: EdgeInsets.all(kDefaultPadding),
@@ -121,10 +122,13 @@ class CommitFinalView extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title:
-              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            isMerge ? Text('Merge Message') : Text('Commit Message'),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            isMerge
+                ? const Text('Merge Message')
+                : const Text('Commit Message'),
             Text(repositoryName, style: appBarTextTheme.bodySmall)
           ]),
+          centerTitle: false,
         ),
         body: Form(
           key: _formKey,
@@ -203,99 +207,106 @@ class _CommitFilesViewState extends State<_CommitFilesView> {
     List<_ChangedFileForStaging> unstaged = <_ChangedFileForStaging>[];
     allChanges.forEach((entry) {
       var gitFlags = RawGitStatusFlags.fromStatus(entry[2]);
-      if (gitFlags.staged) staged.add(_ChangedFileForStaging(entry[0] ?? entry[1], gitFlags));
-      if (gitFlags.unstaged) unstaged.add(_ChangedFileForStaging(entry[0] ?? entry[1], gitFlags));
+      if (gitFlags.staged)
+        staged.add(_ChangedFileForStaging(entry[0] ?? entry[1], gitFlags));
+      if (gitFlags.unstaged)
+        unstaged.add(_ChangedFileForStaging(entry[0] ?? entry[1], gitFlags));
     });
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-        Widget>[
-      // MaterialBanner(content: Text("Staged Changed"), actions: []),
-      Padding(
-          padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultSectionSpacing,
-              kDefaultPadding, kDefaultPadding),
-          child: Text('Staged Changes',
-              style: Theme.of(context).textTheme.titleMedium)),
-      Expanded(
-          child: Card(
-              child: ListView.builder(
-        itemCount: staged.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-              title: Text(staged[index].name),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(
-                  tooltip: "Remove",
-                  icon: Icon(Icons.remove),
-                  onPressed: () {
-                    GitIsolate.instance
-                        .unstage(repositoryDir, staged[index].name)
-                        .then((result) => _refresh())
-                        .catchError((error) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: ' + error.toString())));
-                    });
-                  },
-                ),
-              ]));
-        },
-      ))),
-      Padding(
-          padding: EdgeInsets.fromLTRB(kDefaultPadding, kDefaultSectionSpacing,
-              kDefaultPadding, kDefaultPadding),
-          child: Text('Changes', style: Theme.of(context).textTheme.titleMedium)),
-      Expanded(
-          child: Card(
-              child: ListView.builder(
-        itemCount: unstaged.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-              title: Text(unstaged[index].name),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(
-                  tooltip: "Revert",
-                  icon: Icon(Icons.undo),
-                  onPressed: () {
-                    showConfirmDialog(
-                            context, "Revert", "Revert changes?", "Revert")
-                        .then((response) {
-                      if (response ?? false) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // MaterialBanner(content: Text("Staged Changed"), actions: []),
+          Padding(
+              padding: EdgeInsets.fromLTRB(kDefaultPadding,
+                  kDefaultSectionSpacing, kDefaultPadding, kDefaultPadding),
+              child: Text('Staged Changes',
+                  style: Theme.of(context).textTheme.titleMedium)),
+          Expanded(
+              child: Card(
+                  child: ListView.builder(
+            itemCount: staged.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                  title: Text(staged[index].name),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(
+                      tooltip: "Remove",
+                      icon: Icon(Icons.remove),
+                      onPressed: () {
                         GitIsolate.instance
-                            .revertFile(repositoryDir, unstaged[index].name)
+                            .unstage(repositoryDir, staged[index].name)
                             .then((result) => _refresh())
                             .catchError((error) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text('Error: ' + error.toString())));
                         });
-                      }
-                    });
-                  },
-                ),
-                IconButton(
-                  tooltip: "Add",
-                  icon: Icon(Icons.add),
-                  onPressed: () {
-                    if (!unstaged[index].flags.workTreeDeleted) {
-                      GitIsolate.instance
-                          .addToIndex(repositoryDir, unstaged[index].name)
-                          .then((result) => _refresh())
-                          .catchError((error) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text('Error: ' + error.toString())));
-                      });
-                    } else {
-                      GitIsolate.instance
-                          .removeFromIndex(repositoryDir, unstaged[index].name)
-                          .then((result) => _refresh())
-                          .catchError((error) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text('Error: ' + error.toString())));
-                      });
-                    }
-                  },
-                ),
-              ]));
-        },
-      ))),
-    ]);
+                      },
+                    ),
+                  ]));
+            },
+          ))),
+          Padding(
+              padding: EdgeInsets.fromLTRB(kDefaultPadding,
+                  kDefaultSectionSpacing, kDefaultPadding, kDefaultPadding),
+              child: Text('Changes',
+                  style: Theme.of(context).textTheme.titleMedium)),
+          Expanded(
+              child: Card(
+                  child: ListView.builder(
+            itemCount: unstaged.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                  title: Text(unstaged[index].name),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(
+                      tooltip: "Revert",
+                      icon: Icon(Icons.undo),
+                      onPressed: () {
+                        showConfirmDialog(
+                                context, "Revert", "Revert changes?", "Revert")
+                            .then((response) {
+                          if (response ?? false) {
+                            GitIsolate.instance
+                                .revertFile(repositoryDir, unstaged[index].name)
+                                .then((result) => _refresh())
+                                .catchError((error) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text('Error: ' + error.toString())));
+                            });
+                          }
+                        });
+                      },
+                    ),
+                    IconButton(
+                      tooltip: "Add",
+                      icon: Icon(Icons.add),
+                      onPressed: () {
+                        if (!unstaged[index].flags.workTreeDeleted) {
+                          GitIsolate.instance
+                              .addToIndex(repositoryDir, unstaged[index].name)
+                              .then((result) => _refresh())
+                              .catchError((error) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Error: ' + error.toString())));
+                          });
+                        } else {
+                          GitIsolate.instance
+                              .removeFromIndex(
+                                  repositoryDir, unstaged[index].name)
+                              .then((result) => _refresh())
+                              .catchError((error) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Error: ' + error.toString())));
+                          });
+                        }
+                      },
+                    ),
+                  ]));
+            },
+          ))),
+        ]);
   }
 
   @override

@@ -109,7 +109,7 @@ class _AccountCredentialListViewState extends State<AccountCredentialListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: const Row(
             children: [Icon(Icons.manage_accounts), Text(" Manage Accounts")]),
 
         // title: Column(
@@ -148,10 +148,10 @@ class AccountCredentialsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Account Credentials'),
+          title: const Text('Account Credentials'),
         ),
         body: SingleChildScrollView(
-            padding: EdgeInsets.all(kDefaultPadding),
+            padding: const EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(
                   key: _formKey,
@@ -159,7 +159,7 @@ class AccountCredentialsDialog extends StatelessWidget {
                     accountInfo,
                     autofocus: true,
                   )),
-              SizedBox(height: kDefaultSectionSpacing),
+              const SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {

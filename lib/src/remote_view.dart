@@ -94,10 +94,11 @@ class _RemoteListViewState extends State<RemoteListView> {
     TextTheme appBarTextTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Text("Remotes"),
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text("Remotes"),
           Text(repositoryName, style: appBarTextTheme.bodySmall)
         ]),
+        centerTitle: false,
       ),
       body: FutureBuilder<List<String>>(
           future: remotes,
@@ -136,10 +137,10 @@ class NewRemoteDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('New Remote'),
+          title: const Text('New Remote'),
         ),
         body: SingleChildScrollView(
-            padding: EdgeInsets.all(kDefaultPadding),
+            padding: const EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(
                   key: _formKey,
@@ -149,7 +150,7 @@ class NewRemoteDialog extends StatelessWidget {
                     autofocus: true,
                     onUrlChange: (url) => remoteUrlNotifier.value = url,
                   )),
-              SizedBox(height: kDefaultSectionSpacing),
+              const SizedBox(height: kDefaultSectionSpacing),
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
@@ -158,7 +159,7 @@ class NewRemoteDialog extends StatelessWidget {
                     }
                   },
                   child: Text('Create')),
-                  RepositoryRemoteConfigurationAdviceWidget(remoteUrlNotifier)
+              RepositoryRemoteConfigurationAdviceWidget(remoteUrlNotifier)
             ])));
   }
 }

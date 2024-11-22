@@ -344,7 +344,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title!),
+        title: Text(widget.title),
         actions: [buildActionsPopupMenu(context)],
       ),
       body: Column(
@@ -369,11 +369,11 @@ class _MyHomePageState extends State<MyHomePage> {
         menuChildren: <Widget>[
           //Text('New repository'),
           MenuItemButton(
-            child: Text("Clone repository"),
+            child: const Text("Clone repository"),
             onPressed: () => cloneRepositoryMenuAction(context),
           ),
           MenuItemButton(
-              child: Text("Create local repository"),
+              child: const Text("Create local repository"),
               onPressed: () => createLocalRepositoryMenuAction(context)),
         ],
       ),
@@ -391,16 +391,16 @@ class RepositoryLocationDialog extends StatelessWidget {
     String repositoryName = DEFAULT_REPO_NAME;
     return Scaffold(
         appBar: AppBar(
-          title: Text('Repository Configuration'),
+          title: const Text('Repository Configuration'),
         ),
         body: SingleChildScrollView(
-            padding: EdgeInsets.all(kDefaultPadding),
+            padding: const EdgeInsets.all(kDefaultPadding),
             child: Form(
                 key: _formKey,
                 child: Column(children: [
                   Card(
                       child: Padding(
-                          padding: EdgeInsets.all(kDefaultPadding),
+                          padding: const EdgeInsets.all(kDefaultPadding),
                           child: Column(children: [
                             RepositoryNameTextFormField(
                                 autofocus: true,
@@ -436,10 +436,10 @@ class RepositoryLocationAndRemoteDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Repository Configuration'),
+          title: const Text('Repository Configuration'),
         ),
         body: SingleChildScrollView(
-            padding: EdgeInsets.all(kDefaultPadding),
+            padding: const EdgeInsets.all(kDefaultPadding),
             child: Column(children: [
               Form(
                   key: _formKey,

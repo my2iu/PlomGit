@@ -415,6 +415,7 @@ class _RepositoryViewState extends State<RepositoryView> {
     return Scaffold(
         appBar: AppBar(
           title: title,
+          centerTitle: false,
           actions: appBarActions,
         ),
         body: FutureBuilder<List<FileSystemEntity>>(
